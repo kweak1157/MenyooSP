@@ -39,6 +39,9 @@
 HMODULE g_MainModule = 0;
 MODULEINFO g_MainModuleInfo = { 0 };
 
+ScriptTable* scriptTable = nullptr;
+ScriptHeader* shopController = nullptr;
+
 template<typename R> R GetMultilayerPointer(void* base, const std::vector<DWORD>& offsets)
 {
 	DWORD64 addr = (UINT64)base;
@@ -708,11 +711,17 @@ void GTAmemory::Init()
 	// Get relative address and add it to the instruction address.
 	// 3 bytes equal the size of the opcode and its first argument. 7 bytes are the length of opcode and all its parameters.
 
-	address = FindPattern("\x4C\x8D\x05\x00\x00\x00\x00\x0F\xB7\xC1", "xxx????xxx");
-	if (address) _blipList = reinterpret_cast<BlipList*>(*reinterpret_cast<int *>(address + 3) + address + 7);
+	address = FindPattern("\x3B\x35\x00\x00\x00\x00\x74\x00\x48\x81\xFD", "xx????x?xxx");
+	if (address) _blipList = reinterpret_cast<BlipList*>(*reinterpret_cast<int *>(address - 4) + address);
+	else
+	{
+		address = FindPattern("\x4C\x8D\x05\x00\x00\x00\x00\x0F\xB7\xC1", "xxx????xxx");
+		if (address) _blipList = reinterpret_cast<BlipList*>(*reinterpret_cast<int *>(address + 3) + address + 7);
+	}
 
-	address = FindPattern("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x18\x89\x54\x24\x10\x56\x57\x41\x56\x48\x83\xEC\x20", "xxxxxxxxxxxxxxxxxxxxxx");
-	_gxtLabelFromHashFuncAddr = reinterpret_cast<char*(__fastcall *)(UINT64, unsigned int)>(address);
+	address = FindPattern("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x18\x89\x54\x24\x10\x56\x57\x41\x56\x48\x83\xEC\x20\x48\x8B\xD9", "xxxxxxxxxxxxxxxxxxxxxxxxx");
+	if (!address) address = FindPattern("\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x18\x89\x54\x24\x10\x56\x57\x41\x56\x48\x83\xEC\x20", "xxxxxxxxxxxxxxxxxxxxxx");
+	if (address) _gxtLabelFromHashFuncAddr = reinterpret_cast<char*(__fastcall *)(UINT64, unsigned int)>(address);
 	address = FindPattern("\x84\xC0\x74\x34\x48\x8D\x0D\x00\x00\x00\x00\x48\x8B\xD3", "xxxxxxx????xxx");
 	_gxtLabelFromHashAddr1 = *reinterpret_cast<int *>(address + 7) + address + 11;
 
@@ -765,8 +774,20 @@ void GTAmemory::Init()
 	address = FindPattern("\x48\x8B\x05\x00\x00\x00\x00\x8B\x78\x10\x85\xFF", "xxx????xxxxx");
 	_objectPoolAddress = reinterpret_cast<UINT64 *>(*reinterpret_cast<int *>(address + 3) + address + 7);
 
-	CreateNmMessageFunc = FindPattern("\x33\xDB\x48\x89\x1D\x00\x00\x00\x00\x85\xFF", "xxxxx????xx") - 0x42;
-	GiveNmMessageFunc = FindPattern("\x0F\x84\x00\x00\x00\x00\x48\x8B\x01\xFF\x90\x00\x00\x00\x00\x41\x3B\xC5", "xx????xxxxx????xxx") - 0x78;
+	address = FindPattern("\x40\x53\x48\x83\xEC\x20\x83\x61\x0C\x00\x44\x89\x41\x08\x49\x63\xC0", "xxxxxxxxxxxxxxxxx");
+	if (address) CreateNmMessageFunc = address;
+	else
+	{
+		address = FindPattern("\x33\xDB\x48\x89\x1D\x00\x00\x00\x00\x85\xFF", "xxxxx????xx");
+		if (address) CreateNmMessageFunc = address - 0x42;
+	}
+	address = FindPattern("\x0F\x84\x8B\x00\x00\x00\x48\x8B\x47\x30\x48\x8B\x48\x10\x48\x8B\x51\x20\x80\x7A\x10\x0A", "xxxxxxxxxxxxxxxxxxxxxx");
+	if (address) GiveNmMessageFunc = *reinterpret_cast<int*>(address - 0x1E) + address - 0x1A;
+	else
+	{
+		address = FindPattern("\x0F\x84\x00\x00\x00\x00\x48\x8B\x01\xFF\x90\x00\x00\x00\x00\x41\x3B\xC5", "xx????xxxxx????xxx");
+		if (address) GiveNmMessageFunc = address - 0x78;
+	}
 	address = FindPattern("\x48\x89\x5C\x24\x00\x57\x48\x83\xEC\x20\x48\x8B\xD9\x48\x63\x49\x0C\x41\x8A\xF8", "xxxx?xxxxxxxxxxxxxxx");
 	SetNmBoolAddress = reinterpret_cast<unsigned char(*)(__int64, __int64, unsigned char)>(address);
 	address = FindPattern("\x40\x53\x48\x83\xEC\x30\x48\x8B\xD9\x48\x63\x49\x0C", "xxxxxxxxxxxxx");
@@ -802,8 +823,13 @@ void GTAmemory::Init()
 	GenerateVehicleModelList();
 
 	// Bypass model requests block
-	address = MemryScan::PatternScanner::FindPattern("48 85 C0 0F 84 ? ? ? ? 8B 48 50");
-	if (address) memset(reinterpret_cast<void*>(address), 0x90, 24);
+	address = MemryScan::PatternScanner::FindPattern("45 84 e4 74 ? e8 ? ? ? ? 48 85 c0");
+	if (address) memset(reinterpret_cast<void*>(address - 24), 0x90, 24);
+	else
+	{
+		address = MemryScan::PatternScanner::FindPattern("48 85 C0 0F 84 ? ? ? ? 8B 48 50");
+		if (address) memset(reinterpret_cast<void*>(address), 0x90, 24);
+	}
 
 	// Bypass is player model allowed to spawn checks
 	address = MemryScan::PatternScanner::FindPattern("48 8B C8 FF 52 30 84 C0 74 05 48");
@@ -1324,6 +1350,71 @@ uintptr_t GTAmemory::FindPattern(const char *pattern, const char *mask)
 	return 0;
 }
 
+uintptr_t GTAmemory::FindPattern(const char *pattern, const char *mask, const char *startAddress, size_t size)
+{
+	const char *currAddress = startAddress;
+	const char *endAddress = startAddress + size;
+	const uintptr_t mask_length = static_cast<uintptr_t>(strlen(mask) - 1);
+
+	for (uintptr_t i = 0; currAddress < endAddress; currAddress++)
+	{
+		if (*currAddress == pattern[i] || mask[i] == '?')
+		{
+			if (mask[i + 1] == '\0')
+			{
+				return reinterpret_cast<uintptr_t>(currAddress) - mask_length;
+			}
+			i++;
+		}
+		else
+		{
+			i = 0;
+		}
+	}
+	return 0;
+}
+
+bool GTAmemory::FindShopController()
+{
+	return FindScript(0x39DA738B);
+}
+
+bool GTAmemory::FindScript(int hash)
+{
+	UINT64 patternAddr = FindPattern("\x48\x03\x15\x00\x00\x00\x00\x4C\x23\xC2\x49\x8B\x08", "xxx????xxxxxx");
+	if (!patternAddr)
+	{
+		ige::myLog << ige::LogType::LOG_ERROR << "script table pattern not found";
+		return false;
+	}
+
+	scriptTable = reinterpret_cast<ScriptTable*>(patternAddr + *reinterpret_cast<int*>(patternAddr + 3) + 7);
+
+	ScriptTableItem* Item = scriptTable->FindScript(hash);
+	DWORD timeout = GetTickCount() + 10000;
+	while (!Item && GetTickCount() < timeout)
+	{
+		WAIT(100);
+		Item = scriptTable->FindScript(hash);
+	}
+	if (!Item)
+	{
+		ige::myLog << ige::LogType::LOG_ERROR << "shop_controller not found";
+		return false;
+	}
+
+	while (!Item->IsLoaded() && GetTickCount() < timeout)
+		WAIT(100);
+	if (!Item->IsLoaded())
+	{
+		ige::myLog << ige::LogType::LOG_ERROR << "shop_controller not loaded";
+		return false;
+	}
+
+	shopController = Item->Header;
+	return true;
+}
+
 //--------------------------------SpSnow---------------------------------------------------------
 
 SpSnow _SpSnow;
@@ -1596,62 +1687,61 @@ void GeneralGlobalHax::DisableAnnoyingRecordingUI(bool uSure)
 		*GTAmemory::GetGlobalPtr<INT32>(0x56C3 + 0x82) = uSure ? 1 : 0; break;
 	}
 }
-void GeneralGlobalHax::EnableBlockedMpVehiclesInSp(bool uSure)
+void GeneralGlobalHax::EnableBlockedMpVehiclesInSp()
 {
-	// Has to be updated every patch.
+	if (!shopController)
+		return;
 
-	switch (GTAmemory::GetGameVersion())
+	const char* pattern;
+	const char* mask;
+	int offset;
+
+	const char* patt617_1 = "\x2C\x01\x00\x00\x20\x56\x04\x00\x6E\x2E\x00\x01\x5F\x00\x00\x00\x00\x04\x00\x6E\x2E\x00\x01";
+	const char* mask617_1 = "xx??xxxxxx?xx????xxxx?x";
+	const int offset617_1 = 13;
+
+	const char* patt1604_0 = "\x2D\x00\x00\x00\x00\x2C\x01\x00\x00\x56\x04\x00\x6E\x2E\x00\x01\x5F\x00\x00\x00\x00\x04\x00\x6E\x2E\x00\x01";
+	const char* mask1604_0 = "x??xxxx??xxxxx?xx????xxxx?x";
+	const int offset1604_0 = 17;
+
+	const char* patt2802_0 = "\x2D\x00\x00\x00\x00\x2C\x01\x00\x00\x56\x04\x00\x71\x2E\x00\x01\x62\x00\x00\x00\x00\x04\x00\x71\x2E\x00\x01";
+	const char* mask2802_0 = "x??xxxx??xxxxx?xx????xxxx?x";
+	const int offset2802_0 = 17;
+
+	pattern = patt617_1;
+	mask = mask617_1;
+	offset = offset617_1;
+
+	if (getGameVersion() >= 80)
 	{
-	case eGameVersion::VER_1_0_757_4_NOSTEAM: case eGameVersion::VER_1_0_757_4_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(0x271803) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_791_2_NOSTEAM: case eGameVersion::VER_1_0_791_2_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(0x272A34) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_877_1_NOSTEAM: case eGameVersion::VER_1_0_877_1_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(0x2750BD) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_944_2_NOSTEAM: case eGameVersion::VER_1_0_944_2_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(0x279476) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1011_1_NOSTEAM: case eGameVersion::VER_1_0_1011_1_STEAM:
-	case eGameVersion::VER_1_0_1032_1_NOSTEAM: case eGameVersion::VER_1_0_1032_1_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(2593970) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1103_2_NOSTEAM: case eGameVersion::VER_1_0_1103_2_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(2599337) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1180_2_NOSTEAM: case eGameVersion::VER_1_0_1180_2_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(2606794) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1290_1_NOSTEAM: case eGameVersion::VER_1_0_1290_1_STEAM:
-	case eGameVersion::VER_1_0_1365_1_NOSTEAM: case eGameVersion::VER_1_0_1365_1_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(4265719) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1493_0_NOSTEAM: case eGameVersion::VER_1_0_1493_0_STEAM:
-	case eGameVersion::VER_1_0_1493_1_NOSTEAM: case eGameVersion::VER_1_0_1493_1_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(4266042) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1604_0_NOSTEAM: case eGameVersion::VER_1_0_1604_0_STEAM:
-	case eGameVersion::VER_1_0_1604_1_NOSTEAM: case eGameVersion::VER_1_0_1604_1_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(4266905) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1737_0_NOSTEAM: case eGameVersion::VER_1_0_1737_0_STEAM:
-	case eGameVersion::VER_1_0_1737_6_NOSTEAM: case eGameVersion::VER_1_0_1737_6_STEAM:
-        *GTAmemory::GetGlobalPtr<INT32>(4267883) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_1868_0_NOSTEAM: case eGameVersion::VER_1_0_1868_0_STEAM:
-	case eGameVersion::VER_1_0_1868_1_NOSTEAM: case eGameVersion::VER_1_0_1868_1_STEAM:
-        *GTAmemory::GetGlobalPtr<INT32>(4268190) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_2060_0_NOSTEAM: case eGameVersion::VER_1_0_2060_0_STEAM:
-	case eGameVersion::VER_1_0_2060_1_NOSTEAM: case eGameVersion::VER_1_0_2060_1_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(4268340) = uSure ? 1 : 0; break;
-    case eGameVersion::VER_1_0_2189_0_NOSTEAM: case eGameVersion::VER_1_0_2189_0_STEAM:
-	case eGameVersion::VER_1_0_2215_0_NOSTEAM: case eGameVersion::VER_1_0_2215_0_STEAM:
-	case eGameVersion::VER_1_0_2245_0_NOSTEAM: case eGameVersion::VER_1_0_2245_0_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(4269479) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_2372_0_NOSTEAM: case eGameVersion::VER_1_0_2372_0_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(4270934) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_2545_0_NOSTEAM: case eGameVersion::VER_1_0_2545_0_STEAM:
-	case eGameVersion::VER_1_0_2612_1_NOSTEAM: case eGameVersion::VER_1_0_2612_1_STEAM:
-	case eGameVersion::VER_1_0_2628_2_NOSTEAM: case eGameVersion::VER_1_0_2628_2_STEAM:
-		*GTAmemory::GetGlobalPtr<INT32>(4533757) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_2699_0_NOSTEAM: case eGameVersion::VER_1_0_2699_0_STEAM:
-	case eGameVersion::VER_1_0_2699_16:
-		*GTAmemory::GetGlobalPtr<INT32>(4539659) = uSure ? 1 : 0; break;
-	case eGameVersion::VER_1_0_2802_0:
-	case eGameVersion::VER_1_0_3725_0: default:
-		*GTAmemory::GetGlobalPtr<INT32>(4540726) = uSure ? 1 : 0; break;
+		pattern = patt2802_0;
+		mask = mask2802_0;
+		offset = offset2802_0;
 	}
+	else if (getGameVersion() >= 46)
+	{
+		pattern = patt1604_0;
+		mask = mask1604_0;
+		offset = offset1604_0;
+	}
+
+	for (int i = 0; i < shopController->CodePageCount(); i++)
+	{
+		int size = shopController->GetCodePageSize(i);
+		if (!size)
+			continue;
+
+		uintptr_t address = GTAmemory::FindPattern(pattern, mask, (const char*)shopController->GetCodePageAddress(i), size);
+		if (address)
+		{
+			int globalindex = *(int*)(address + offset) & 0xFFFFFF;
+			ige::myLog << ige::LogType::LOG_INFO << "MP vehicle global " << globalindex << " set to 1";
+			*GTAmemory::GetGlobalPtr<INT32>(globalindex) = 1;
+			return;
+		}
+	}
+
+	ige::myLog << ige::LogType::LOG_ERROR << "MP vehicle global not found";
 }
 
 void** GeneralGlobalHax::WorldPtrPtr()
@@ -1706,6 +1796,8 @@ float GeneralGlobalHax::GetPlayerSwimSpeed()
 			return *(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0x150}));
 		else if (gameVersion <= eGameVersion::VER_1_0_2245_0_NOSTEAM)
 			return *(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0x170}));
+		else if (gameVersion <= eGameVersion::VER_1_0_3725_0)
+			return *(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10A8, 0x1C8}));
 	}
 	return 1.0f;
 }
@@ -1727,6 +1819,8 @@ void GeneralGlobalHax::SetPlayerSwimSpeed(float value)
 			*(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0x150})) = value;
 		else if (gameVersion <= eGameVersion::VER_1_0_2245_0_NOSTEAM)
 			*(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0x170})) = value;
+		else if (gameVersion <= eGameVersion::VER_1_0_3725_0)
+			*(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10A8, 0x1C8})) = value;
 	}
 }
 float GeneralGlobalHax::GetPlayerMovementSpeed()
@@ -1747,7 +1841,8 @@ float GeneralGlobalHax::GetPlayerMovementSpeed()
 			return *(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0xCD0}));
 		else if (gameVersion <= eGameVersion::VER_1_0_2245_0_NOSTEAM)
 			return *(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0xCF0}));
-		
+		else if (gameVersion <= eGameVersion::VER_1_0_3725_0)
+			return *(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10A8, 0xD50}));
 	}
 	return 1.0f;
 }
@@ -1769,6 +1864,8 @@ void GeneralGlobalHax::SetPlayerMovementSpeed(float value)
 			*(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0xCD0})) = value;
 		else if (gameVersion <= eGameVersion::VER_1_0_2245_0_NOSTEAM) 
 			*(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10C8, 0xCF0})) = value;
+		else if (gameVersion <= eGameVersion::VER_1_0_3725_0)
+			*(GetMultilayerPointer<float*>(baddr, std::vector<DWORD>{0x8, 0x10A8, 0xD50})) = value;
 	}
 }
 

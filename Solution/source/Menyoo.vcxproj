@@ -71,6 +71,7 @@
     <ClCompile Include="Submenus\StatManager.cpp" />
     <ClCompile Include="Submenus\Teleport\ArenaWar.cpp" />
     <ClCompile Include="Submenus\Teleport\BikerInteriors.cpp" />
+    <ClCompile Include="Submenus\Teleport\CayoPerico.cpp" />
     <ClCompile Include="Submenus\Teleport\Facilities.cpp" />
     <ClCompile Include="Submenus\Teleport\GunRunningInteriors.cpp" />
     <ClCompile Include="Submenus\Teleport\Hangars.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="Submenus\StatManager.h" />
     <ClInclude Include="Submenus\Teleport\ArenaWar.h" />
     <ClInclude Include="Submenus\Teleport\BikerInteriors.h" />
+    <ClInclude Include="Submenus\Teleport\CayoPerico.h" />
     <ClInclude Include="Submenus\Teleport\Facilities.h" />
     <ClInclude Include="Submenus\Teleport\GunRunningInteriors.h" />
     <ClInclude Include="Submenus\Teleport\Hangars.h" />
@@ -239,13 +241,13 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Menyoo</RootNamespace>
     <ProjectName>Menyoo</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -268,8 +270,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetExt>.asi</TargetExt>
-    <OutDir>bin\$(Configuration)\</OutDir>
-    <IntDir>tmp\$(Configuration)\</IntDir>
+    <OutDir>_Build\bin\$(Configuration)\</OutDir>
+    <IntDir>_Build\tmp\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)\external;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -282,16 +285,18 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;NativeTrainer_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)\external\ScriptHookV\SDK\lib\ScriptHookV.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

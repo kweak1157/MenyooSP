@@ -2,7 +2,7 @@
 
 Read `GLOBAL.md` first. Talk in ASD-STE100.
 
-This repo is the old MAFINS tree (v1.8.1). A live fork is https://github.com/itsjustcurtis/MenyooSP
+This repo is the old MAFINS tree (v1.9.0). A live fork is https://github.com/itsjustcurtis/MenyooSP
 
 Use this file to see what is done and where to work next.
 
@@ -13,10 +13,10 @@ Use this file to see what is done and where to work next.
 | Area | State |
 | --- | --- |
 | 1. Game version to 1.0.3725 | **Done** |
-| 2. Memory / ScriptHookV | Open |
-| 3. Natives | Open |
-| 4. Content lists | Open |
-| 5. Build / CI | Open |
+| 2. Memory / ScriptHookV | **Done** |
+| 3. Natives | **Done** |
+| 4. Content lists | **Done** |
+| 5. Build / CI | **Done** |
 | 6. Code shape | Open |
 
 ---
@@ -51,79 +51,138 @@ Target: Legacy **1.0.3725**.
 
 ---
 
-## 2. Memory / ScriptHookV — OPEN (high)
+## 2. Memory / ScriptHookV — DONE
 
-Patterns and offsets may be wrong on 3725.
+Target: Legacy **1.0.3725**.
+
+### What we did
+
+- MP cars now use a `shop_controller` script scan (same method as SHVDN / the live fork). No more hard global `4540726`.
+- `GTAmemory::Init()` now tries 3725-safe patterns first (blip list, GXT, NM, model-request bypass). Old patterns stay as fallback.
+- Swim and move speed use the 3521 offsets `{0x8, 0x10A8, 0x1C8}` and `{0x8, 0x10A8, 0xD50}` up to 3725.
+- Height still uses `{0x8, 0x88}` up to 3725.
+- Unlock runs once in `MenyooMain`, not every tick.
 
 ### Files
 
-| File | What to fix |
+| File | What to look for |
 | --- | --- |
-| `Solution/source/Memory/GTAmemory.cpp` | `GTAmemory::Init()` — patterns. `EnableBlockedMpVehiclesInSp` — global `4540726` may be wrong. Swim / move / boost still stop at old builds (2245 / 2372). |
-| `Solution/source/Memory/GTAmemory.h` | Version helpers |
-| `Solution/external/ScriptHookV/SDK/lib/ScriptHookV.lib` | Old SDK lib |
+| `Solution/source/Memory/GTAmemory.cpp` | `FindShopController`, `EnableBlockedMpVehiclesInSp`, `GTAmemory::Init`, swim / move |
+| `Solution/source/Memory/GTAmemory.h` | `ScriptHeader` / `ScriptTable`, `FindShopController` |
+| `Solution/source/Menu/Routine.cpp` | One-time unlock in `MenyooMain`. Unlimited rocket boost uses natives. |
 
-### Find it
+### Still open in this area
 
-Search: `FindPattern`, `VER_1_0_2245`, `VER_1_0_2372`, `4540726`
+- `ScriptHookV.lib` is still the old import lib. The `ScriptHookV.dll` on the PC must be new enough for 3725.
+- Unlimited rocket boost now uses natives (`SET_ROCKET_BOOST_FILL` / `SET_ROCKET_BOOST_ACTIVE`). Old memory helpers still stop at 2372 and are unused.
+
+### Do not
+
+- Do not write a hard global for MP cars again.
+- Do not add Enhanced (`GTA5_Enhanced.exe`) code unless the user asks.
+
+### Test on 1.0.3725
+
+- Spawn an MP-only vehicle.
+- Change player height.
+- Change swim speed and move speed.
+- Use unlimited rocket boost on an Oppressor.
 
 ---
 
-## 3. Natives — OPEN (high)
+## 3. Natives — DONE
 
-`natives.h` is old. New hashes may be missing. Old names may be wrong.
+Source: live fork `natives.h` (NativeDB, up to b3095).
+
+### What we did
+
+- Replaced `natives.h` with the live-fork list (6499 natives).
+- `WAIT` stays in `natives2.h`.
+- `nativeCaller.h`, `types.h`, and `natives2` wrappers did not need a change.
 
 ### Files
 
-| File | What to fix |
+| File | What to look for |
 | --- | --- |
-| `Solution/source/Natives/natives.h` | Native list (very large) |
-| `Solution/source/Natives/natives2.h` | Wrappers (`WAIT`, etc.) |
+| `Solution/source/Natives/natives.h` | Native list from the live fork |
+| `Solution/source/Natives/natives2.h` | Wrappers (`WAIT`, `GET_HASH_KEY`) |
 | `Solution/source/Natives/natives2.cpp` | Wrapper impl |
 | `Solution/source/Natives/nativeCaller.h` | `invoke` |
 | `Solution/source/Natives/types.h` | Types |
 
-### Find it
+### Do not
 
-Search: `invoke<`, NativeDB https://alloc8or.re/gta5/nativedb/
+- Do not restore `WAIT` or `GET_HASH_KEY` inside `natives.h`. They live in `natives2`.
 
----
+### Next if you touch natives
 
-## 4. Content lists — OPEN (high)
-
-Add vehicles, weapons, peds, teleports, interiors, cutscenes after Cayo / Tuners / later DLC.
-
-### Files
-
-| File | What to fix |
-| --- | --- |
-| `Solution/source/Scripting/ModelNames.h` | Vehicle hash arrays |
-| `Solution/source/Scripting/ModelNames.cpp` | `PopulateVehicleModelsArray` |
-| `Solution/source/Scripting/WeaponIndivs.h` / `.cpp` | Weapons |
-| `Solution/source/Scripting/enums.h` / `.cpp` | Game enums |
-| `Solution/source/Submenus/VehicleSpawner.cpp` | Spawn menu |
-| `Solution/source/Submenus/VehicleModShop.cpp` | Mods |
-| `Solution/source/Submenus/WeaponOptions.cpp` | Weapon menu |
-| `Solution/source/Submenus/PedModelChanger.cpp` | Ped models |
-| `Solution/source/Submenus/Teleport/` | Locations / interiors |
-| `Solution/source/Submenus/CutscenePlayer.cpp` | Cutscenes |
-
-### Find it
-
-Search: `g_vehHashes`, `PopulateVehicleModelsArray`, `TeleLocation`
+- NativeDB https://alloc8or.re/gta5/nativedb/ — list stops at b3095. Add later hashes only if a call needs them.
 
 ---
 
-## 5. Build / CI — OPEN (medium)
+## 4. Content lists — DONE
+
+Target: Legacy **1.0.3725**.
+
+### What we did
+
+- Added `VehicleHash` from Cayo Perico through A Safehouse in the Hills (3717 / 3725).
+- Added weapons after Drug Wars: Tactical SMG, Battle Rifle, Hacking Device, Snow Launcher, Stun Rod, Newspaper.
+- Added Money Fronts and Safehouse ped hashes.
+- Added Cayo Perico teleport menu. Island load uses `SET_ISLAND_ENABLED`.
+- Added later plate types (eCola through Sprunk).
+- Spawn menu still fills extra cars from game memory. Cutscenes still use `CutsceneLabels.txt`.
 
 ### Files
 
-| File | What to fix |
+| File | What to look for |
 | --- | --- |
-| `Solution/source/Menyoo.vcxproj` | Debug toolset is `v141`. Release is `v143`. C++20 only on Release. |
-| `README.md` | Still says Visual Studio 2017. Repo is archived. |
-| `.appveyor.yml` | Old CI. No `.github/workflows` here. |
-| `Solution/source/macros.h` | `MENYOO_CURRENT_VER_` is `"1.8.1"` |
+| `Solution/source/Scripting/enums.h` | `VehicleHash` last value `VEHICLE_XTREME`. `WeaponHash` last value `WEAPON_NEWSPAPER` |
+| `Solution/source/Scripting/WeaponIndivs.cpp` | New weapon labels and category rows |
+| `Solution/source/Submenus/Teleport/CayoPerico.cpp` | Cayo Perico locations |
+| `Solution/source/Submenus/Teleport/Locations.cpp` | Cayo Perico category |
+| `Solution/source/Submenus/VehicleModShop.cpp` | Extra plate names |
+
+### Do not
+
+- Do not add Enhanced-only code (`GTA5_Enhanced.exe`) unless the user asks.
+- Do not add `WEAPON_STRICKLER`. That weapon is gen9 only.
+
+### Next if you touch lists
+
+- Ped spawn still uses `PedList.xml` at run time.
+- Cutscene list still uses `CutsceneLabels.txt` at run time.
+
+---
+
+## 5. Build / CI — DONE
+
+### What we did
+
+- Debug and Release both use toolset `v143` and C++20.
+- Windows SDK is `10.0` so MSBuild uses the SDK on the PC.
+- Debug now links ScriptHookV and writes to `_Build`.
+- The solution file is Visual Studio 2022. Debug maps to Debug.
+- `README.md` now says VS 2022 and Legacy 1.0.3725.
+- Removed `.appveyor.yml`. GitHub Actions use checkout v4, MSBuild v2, and artifact v4.
+- `MENYOO_CURRENT_VER_` is `"1.9.0"`.
+- C++20 build now works: `operator==` is const, Cayo Perico includes `GTAentity.h`, and stat min/max use float.
+
+### Files
+
+| File | What to look for |
+| --- | --- |
+| `Solution/source/Menyoo.vcxproj` | Debug and Release `v143`, `stdcpp20` |
+| `Solution/Menyoo.sln` | Visual Studio Version 17 |
+| `README.md` | Visual Studio 2022 |
+| `.github/workflows/msbuild.yml` | Branch builds |
+| `.github/workflows/master_build.yml` | Master / main builds |
+| `Solution/source/macros.h` | `MENYOO_CURRENT_VER_` is `"1.9.0"` |
+
+### Do not
+
+- Do not add Premake unless the user asks.
+- Do not add Enhanced or FiveM build steps unless the user asks.
 
 ---
 
@@ -149,4 +208,4 @@ Do this after the game works on 3725.
 3. Do one area. Then mark it **Done** in the table above.
 4. Do not commit unless the user asks.
 
-Suggested next area: **2. Memory / ScriptHookV** (test spawn, height, MP cars on 1.0.3725).
+Suggested next area: **6. Code shape**.

@@ -997,7 +997,7 @@ namespace sub
 
 		auto& plateTexter_value = _globalSpawnVehicle_plateTexter_value;
 		std::vector<std::string> plateTexter{ _globalSpawnVehicle_plateText, "Random" };
-		std::vector<std::string> ms_vPlateTypeNames{ "CMOD_PLA_0", "CMOD_PLA_4", "CMOD_PLA_3", "CMOD_PLA_1", "CMOD_PLA_2", "Yankton" }; // BOW1, YOBLA, YOBLU, BOW2, BOW3, YANKTON 
+		std::vector<std::string> ms_vPlateTypeNames{ "CMOD_PLA_0", "CMOD_PLA_4", "CMOD_PLA_3", "CMOD_PLA_1", "CMOD_PLA_2", "Yankton", "eCola", "Las Venturas", "Liberty City", "LS Car Meet", "LS Panic", "LS Pounders", "Sprunk" }; 
 
 		AddTitle("Spawn Settings");
 		AddToggle("Delete Old Vehicle", _globalSpawnVehicle_deleteOld);

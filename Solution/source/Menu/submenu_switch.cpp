@@ -46,6 +46,7 @@
 #include "..\Submenus\Teleport\Nightclubs.h"
 #include "..\Submenus\Teleport\ArenaWar.h"
 #include "..\Submenus\Teleport\Yachts.h"
+#include "..\Submenus\Teleport\CayoPerico.h"
 
 #include "..\Submenus\MiscMapMods.h"
 #include "..\Submenus\CutscenePlayer.h"
@@ -190,6 +191,7 @@ void Menu::submenu_switch()
 	case SUB::TELEPORTOPS_ARENAWAR:					sub::TeleportLocations_catind::ArenaWar::Sub_ArenaWar(); break;
 	case SUB::TELEPORTOPS_YACHTS:					sub::TeleportLocations_catind::Yachts::Sub_Yachts(); break;
 	case SUB::TELEPORTOPS_YACHTS_INGRP:				sub::TeleportLocations_catind::Yachts::Sub_Yachts_InGrp(); break;
+	case SUB::TELEPORTOPS_CAYOPERICO:				sub::TeleportLocations_catind::CayoPerico::Sub_CayoPerico(); break;
 	case SUB::WEAPONOPS:				sub::Weaponops(); break;
 	case SUB::WEAPONOPS_WEAPONFAVOURITES:	sub::WeaponFavourites_catind::Sub_WeaponFavourites(); break;
 	case SUB::WEAPONOPS_INDIVS_CATEGORIES:	sub::WeaponIndivs_catind::Sub_CategoriesList(); break;

@@ -51,6 +51,9 @@ std::map<Hash, std::string> WeaponIndivs::vWeaponLabels
 	{ WEAPON_FERTILIZERCAN, "Fertilizer Can" }, //2545
 	{ WEAPON_METALDETECTOR, "Metal Detector" }, //2699
 	{ WEAPON_CANDYCANE, "Candy Cane" }, //2802
+	{ WEAPON_STUNROD, "Stun Rod" },
+	{ WEAPON_HACKINGDEVICE, "Hacking Device" },
+	{ WEAPON_NEWSPAPER, "Newspaper" },
 	//slot pistol (22)
 	{ WEAPON_PISTOL, "Pistol" },
 	{ WEAPON_PISTOL_MK2, "Pistol Mk2" },
@@ -99,6 +102,7 @@ std::map<Hash, std::string> WeaponIndivs::vWeaponLabels
 	{ WEAPON_COMBATMG_MK2, "Combat MG Mk2" },
 	{ WEAPON_GUSENBERG, "Gusenberg Sweeper" },
 	{ WEAPON_MINISMG, "Mini SMG" },
+	{ WEAPON_TECPISTOL, "Tactical SMG" },
 	//slot Rifle (14)
 	{ WEAPON_ASSAULTRIFLE, "Assault Rifle" },
 	{ WEAPON_ASSAULTRIFLE_MK2, "Assault Rifle Mk2" },
@@ -114,7 +118,8 @@ std::map<Hash, std::string> WeaponIndivs::vWeaponLabels
     // 1.0.2189.0
 	{ WEAPON_MILITARYRIFLE, "Military Rifle" },
 	{ WEAPON_HEAVYRIFLE, "Heavy Rifle" }, //2545
-	{ WEAPON_TACTICALRIFLE, "Tactical Rifle" }, //2699                                                             
+	{ WEAPON_TACTICALRIFLE, "Tactical Rifle" }, //2699
+	{ WEAPON_BATTLERIFLE, "Battle Rifle" },
 	//slot Sniper (6)
 	{ WEAPON_SNIPERRIFLE, "Sniper Rifle" },
 	{ WEAPON_HEAVYSNIPER, "Heavy Sniper" },
@@ -149,6 +154,7 @@ std::map<Hash, std::string> WeaponIndivs::vWeaponLabels
 	{ WEAPON_RAYMINIGUN, "Ray Minigun" },
 	{ WEAPON_EMPLAUNCHER, "EMP Launcher" }, //2545
 	{ WEAPON_RAILGUNXM3, "Railgun XM3" }, //2802
+	{ WEAPON_SNOWLAUNCHER, "Snow Launcher" },
 
 };
 #pragma endregion
@@ -295,6 +301,12 @@ std::vector<WeaponAndComponents> WeaponIndivs::wc_MELEE
 	{ WEAPON_METALDETECTOR,{
 	}, nullptr },
 	{ WEAPON_CANDYCANE,{
+	}, nullptr },
+	{ WEAPON_STUNROD,{
+	}, &WeaponIndivs::vCaptions_Tints },
+	{ WEAPON_HACKINGDEVICE,{
+	}, nullptr },
+	{ WEAPON_NEWSPAPER,{
 	}, nullptr },
 };
 #pragma endregion
@@ -585,6 +597,13 @@ std::vector<WeaponAndComponents> WeaponIndivs::wc_SMGS
 	{ WEAPON_MINISMG,{
 		{ "Standard_Clip", COMPONENT_MINISMG_CLIP_01 },
 		{ "Extended_Clip", COMPONENT_MINISMG_CLIP_02 },
+	}, &WeaponIndivs::vCaptions_Tints },
+
+	{ WEAPON_TECPISTOL,{
+		{ "Standard_Clip", GET_HASH_KEY("COMPONENT_TECPISTOL_CLIP_01") },
+		{ "Drum Magazine", GET_HASH_KEY("COMPONENT_TECPISTOL_CLIP_02") },
+		{ "Suppressor", COMPONENT_AT_AR_SUPP_02 },
+		{ "Scope", COMPONENT_AT_SCOPE_MACRO },
 	}, &WeaponIndivs::vCaptions_Tints },
 };
 #pragma endregion
@@ -915,6 +934,11 @@ std::vector<WeaponAndComponents> WeaponIndivs::wc_ASSAULTRIFLES
 		{ "Suppressor", GET_HASH_KEY("COMPONENT_AT_AR_SUPP") },
 		{ "Grip", GET_HASH_KEY("COMPONENT_AT_AR_AFGRIP") },
 	}, &WeaponIndivs::vCaptions_Tints },
+	{ WEAPON_BATTLERIFLE,{
+		{ "Standard_Clip", GET_HASH_KEY("COMPONENT_BATTLERIFLE_CLIP_01") },
+		{ "Extended_Clip", GET_HASH_KEY("COMPONENT_BATTLERIFLE_CLIP_02") },
+		{ "Suppressor", GET_HASH_KEY("COMPONENT_AT_AR_SUPP") },
+	}, &WeaponIndivs::vCaptions_Tints },
 	{ WEAPON_TACTICALRIFLE,{
 		{ "Standard_Clip", GET_HASH_KEY("COMPONENT_TACTICALRIFLE_CLIP_01") },
 		{ "Extended_Clip", GET_HASH_KEY("COMPONENT_TACTICALRIFLE_CLIP_02") },
@@ -1152,6 +1176,8 @@ std::vector<WeaponAndComponents> WeaponIndivs::wc_HEAVY
 	}, &WeaponIndivs::vCaptions_Tints },
 	{ WEAPON_RAILGUNXM3,{
 		{ "Standard_Clip", GET_HASH_KEY("COMPONENT_RAILGUNXM3_CLIP_01") },
+	}, &WeaponIndivs::vCaptions_Tints },
+	{ WEAPON_SNOWLAUNCHER,{
 	}, &WeaponIndivs::vCaptions_Tints },
 };
 #pragma endregion

@@ -48,6 +48,61 @@ typedef int Entity;
 enum eGameVersion : int;
 class Vector3;
 
+struct ScriptHeader {
+	char padding1[16];
+	unsigned char** codeBlocksOffset;
+	char padding2[4];
+	int codeLength;
+	char padding3[4];
+	int localCount;
+	char padding4[4];
+	int nativeCount;
+	__int64* localOffset;
+	char padding5[8];
+	__int64* nativeOffset;
+	char padding6[16];
+	int nameHash;
+	char padding7[4];
+	char* name;
+	char** stringsOffset;
+	int stringSize;
+	char padding8[12];
+
+	bool IsValid() const { return codeLength > 0; }
+	int CodePageCount() const { return (codeLength + 0x3FFF) >> 14; }
+	int GetCodePageSize(int page) const {
+		return (page < 0 || page >= CodePageCount() ? 0 : (page == CodePageCount() - 1) ? codeLength & 0x3FFF : 0x4000);
+	}
+	unsigned char* GetCodePageAddress(int page) const { return (page < 0 || page >= CodePageCount()) ? nullptr : codeBlocksOffset[page]; }
+};
+
+struct ScriptTableItem {
+	ScriptHeader* Header;
+	char padding[4];
+	int hash;
+
+	inline bool IsLoaded() const {
+		return Header != NULL;
+	}
+};
+
+struct ScriptTable {
+	ScriptTableItem* TablePtr;
+	char padding[16];
+	int count;
+	ScriptTableItem* FindScript(int hash) {
+		if (TablePtr == NULL) {
+			return NULL;
+		}
+		for (int i = 0; i < count; i++) {
+			if (TablePtr[i].hash == hash) {
+				return &TablePtr[i];
+			}
+		}
+		return NULL;
+	}
+};
+
 extern HMODULE g_MainModule;
 extern MODULEINFO g_MainModuleInfo;
 
@@ -323,6 +378,9 @@ public:
 	static INT32 TransitionStatus();
 
 	static uintptr_t FindPattern(const char *pattern, const char *mask);
+	static uintptr_t FindPattern(const char *pattern, const char *mask, const char *startAddress, size_t size);
+	static bool FindShopController();
+	static bool FindScript(int hash);
 
 private:
 	static UINT64 modelHashTable, modelNum2, modelNum3, modelNum4;
@@ -364,7 +422,7 @@ class GeneralGlobalHax final
 {
 public:
 	static void DisableAnnoyingRecordingUI(bool uSure);
-	static void EnableBlockedMpVehiclesInSp(bool uSure);
+	static void EnableBlockedMpVehiclesInSp();
 
 	static void** WorldPtrPtr();
 	static float GetPlayerHeight();

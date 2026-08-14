@@ -391,9 +391,9 @@ namespace sub
 				return curr;
 			}
 
-			bool operator ==(MenyooTheme const& value2)
+			bool operator ==(MenyooTheme const& value2) const
 			{
-				MenyooTheme& value1 = *this;
+				MenyooTheme const& value1 = *this;
 
 				return
 					value1.grads == value2.grads &&

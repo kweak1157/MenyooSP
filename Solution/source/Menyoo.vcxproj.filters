@@ -235,6 +235,9 @@
     <ClCompile Include="Submenus\Teleport\ArenaWar.cpp">
       <Filter>Submenus\Teleport</Filter>
     </ClCompile>
+    <ClCompile Include="Submenus\Teleport\CayoPerico.cpp">
+      <Filter>Submenus\Teleport</Filter>
+    </ClCompile>
     <ClCompile Include="Submenus\VehicleOptions.cpp">
       <Filter>Submenus\Vehicle</Filter>
     </ClCompile>
@@ -560,6 +563,9 @@
       <Filter>Submenus\Teleport</Filter>
     </ClInclude>
     <ClInclude Include="Submenus\Teleport\ArenaWar.h">
+      <Filter>Submenus\Teleport</Filter>
+    </ClInclude>
+    <ClInclude Include="Submenus\Teleport\CayoPerico.h">
       <Filter>Submenus\Teleport</Filter>
     </ClInclude>
     <ClInclude Include="Submenus\VehicleOptions.h">

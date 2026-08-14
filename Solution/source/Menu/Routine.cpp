@@ -69,6 +69,7 @@
 #include "..\Submenus\BreatheStuff.h"
 #include "..\Submenus\MiscOptions.h"
 #include "..\Submenus\Teleport\Yachts.h"
+#include "..\Submenus\Teleport\CayoPerico.h"
 #include "..\Submenus\Teleport\TeleMethods.h"
 #include "..\Submenus\PtfxSubs.h"
 #include "..\Submenus\Spooner\SpoonerEntity.h"
@@ -125,6 +126,9 @@ inline void MenyooMain()
 	MenuConfig::ConfigInit();
 	g_MenyooConfigTick = GetTickCount();
 	g_FaderTick = GetTickCount();
+
+	if (GTAmemory::FindShopController())
+		GeneralGlobalHax::EnableBlockedMpVehiclesInSp();
 
 	for (;;)
 	{
@@ -2477,21 +2481,14 @@ inline void set_self_vehicle_nativeboost()
 		if (IS_PED_SITTING_IN_ANY_VEHICLE(myPed.GetHandle()) && DOES_ENTITY_EXIST(g_myVeh) && GET_HAS_ROCKET_BOOST(g_myVeh))
 		{
 			//LOG_PRINT("boostCharge %.4f", *boostCharge);
-			if (IS_CONTROL_PRESSED(2, INPUT_VEH_HORN)) //_IS_VEHICLE_ROCKET_BOOST_ACTIVE(g_myVeh))
+			if (IS_CONTROL_PRESSED(2, INPUT_VEH_HORN))
 			{
-				float* boostCharge = GeneralGlobalHax::GetVehicleBoostChargePtr();
-				if (boostCharge != nullptr)
-					*boostCharge = 1.24f; // 2.5f full 1.25f full after b944
-				GeneralGlobalHax::SetVehicleBoostState(1);
-				//_SET_VEHICLE_ROCKET_BOOST_ACTIVE(g_myVeh, true);
+				SET_ROCKET_BOOST_FILL(g_myVeh, 1.0f);
+				SET_ROCKET_BOOST_ACTIVE(g_myVeh, true);
 			}
 			else
 			{
-				float* boostCharge = GeneralGlobalHax::GetVehicleBoostChargePtr();
-				if (boostCharge != nullptr)
-					*boostCharge = 1.24f;
-				GeneralGlobalHax::SetVehicleBoostState(0);
-				//_SET_VEHICLE_ROCKET_BOOST_ACTIVE(g_myVeh, false);
+				SET_ROCKET_BOOST_ACTIVE(g_myVeh, false);
 			}
 		}
 	}
@@ -2779,8 +2776,6 @@ void Menu::loops()
 
 	if (loop_Check_self_death_model)
 		_ManualRespawn_::Check_self_death_model();
-
-	GeneralGlobalHax::EnableBlockedMpVehiclesInSp(true);
 
 	if (loop_restricted_areas_access)
 	{
@@ -3351,6 +3346,7 @@ void Thread_menu_loops2()
 
 
 		sub::TeleportLocations_catind::Yachts::Tick();
+		sub::TeleportLocations_catind::CayoPerico::Tick();
 
 		_ManualRespawn_::g_manualRespawn.Tick();
 
