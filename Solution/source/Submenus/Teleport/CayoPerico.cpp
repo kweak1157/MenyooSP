@@ -396,7 +396,7 @@ namespace sub::TeleportLocations_catind
 				bCayoPericoEnabled = true;
 				_EnableIsland();
 			}
-			teleport_net_ped(Static_241, loc.pos.x, loc.pos.y, loc.pos.z);
+			teleport_net_ped(g_selectedPed, loc.pos.x, loc.pos.y, loc.pos.z);
 		}
 
 		void Sub_CayoPerico()

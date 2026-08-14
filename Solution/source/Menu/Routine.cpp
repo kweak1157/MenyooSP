@@ -197,10 +197,10 @@ GTAmodel::Model g_myVeh_model;
 Hash g_myWeap = 0U;
 PTFX::sFxData triggerfx_gun_data = { "scr_fbi4", "scr_fbi4_trucks_crash" };
 Hash kaboom_gun_hash = EXPLOSION::DIR_WATER_HYDRANT, bullet_gun_hash = WEAPON_FLARE;
-GTAmodel::Model ped_gun_hash = PedHash::KillerWhale, object_gun_hash = VEHICLE_BUS;
+GTAmodel::Model ped_gun_hash = PedHash::KillerWhale, object_gun_hash = 3235319999;
 FLOAT current_timescale = 1.0f;
-INT Static_241, Static_240, Static_242, Static_12;
-const char* Static_239;
+INT g_selectedPed, g_selectedPlayer, g_selectedPlayerGroup, g_selectedIndex;
+const char* g_selectedPlayerName;
 INT bit_MSPaints_RGB_mode;
 bool kaboom_gun_invis = 0, kaboom_gun_rand_bit = 0, ped_gun_rand_bit = 0, object_gun_rand_bit_o = 0, object_gun_rand_bit_v = 0;
 bool bit_night_vision = false;
@@ -261,7 +261,7 @@ loop_car_hydraulics = 0, loop_super_grip = 0, loop_SuprKarMode = 0, loop_unlimVe
 loop_vehweap_lines = 0, loop_vehicle_RPG = 0, loop_vehicle_fireworks = 0, loop_vehicle_guns = 0, loop_vehicle_snowballs = 0, loop_vehicle_balls = 0, loop_vehicle_waterhyd = 0, loop_vehicle_laser_green = 0, loop_vehicle_flameleak = 0,
 loop_vehicle_laser_red = 0, loop_vehicle_turrets_valkyrie = 0, loop_vehicle_flaregun = 0, loop_vehicle_heavysnip = 0, loop_vehicle_tazerweap = 0, loop_vehicle_molotovweap = 0, loop_vehicle_combatpdw = 0,
 
-loop_car_colour_change = 0, loop_vehicle_invisibility = 0, loop_self_engineOn = 0, loop_hide_hud = 0, loop_showFullHud = 0,
+loop_car_colour_change = 0, loop_self_engineOn = 0, loop_hide_hud = 0, loop_showFullHud = 0,
 loop_pause_clock = 0, loop_sync_clock = 0, loop_triple_bullets = 0, loop_rapid_fire = 0, loop_self_resurrectionGun = 0, loop_soulswitch_gun = 0, loop_self_deleteGun = 0, loop_vehicle_fixloop = 0, loop_vehicle_fliploop = 0,
 loop_blackout_mode = 0, loop_simple_blackout_mode = 0, loop_restricted_areas_access = 0, loop_HVSnipers = 0, loop_vehicle_disableSiren = 0, loop_fireworksDisplay = 0,
 bit_infinite_ammo = 0, loop_self_inf_parachutes = 0;
@@ -318,6 +318,26 @@ void display_full_hud_this_frame(bool bEnabled)
 }
 
 // World - Entities
+static bool nearby_stuff_arrays_needed()
+{
+	if (loop_massacre_mode || loop_blackout_mode || loop_ignored_by_everyone
+		|| loop_vehicle_heavymass)
+		return true;
+	if (_JumpAroundMode_::bEnabled || _VehicleTow_::g_vehicleTow.Enabled()
+		|| _SmashAbility_::g_smashAbility.Enabled()
+		|| sub::AnimalRiding_catind::Enabled()
+		|| sub::GravityGun_catind::Enabled()
+		|| sub::VehicleAutoDrive_catind::Enabled())
+		return true;
+	switch (Menu::currentsub)
+	{
+	case SUB::SPOONER_SAVEFILES:
+	case SUB::SPOONER_MANAGEDB_REMOVAL:
+		return true;
+	default:
+		return false;
+	}
+}
 void update_nearby_stuff_arrays_tick()
 {
 	_nearbyPeds.clear();
@@ -328,47 +348,21 @@ void update_nearby_stuff_arrays_tick()
 	_worldObjects.clear();
 	_worldEntities.clear();
 
-	//bool alreadyIn;
 	GTAmemory::GetVehicleHandles(_worldVehicles);
 	GTAmemory::GetPedHandles(_worldPeds);
 	GTAmemory::GetPropHandles(_worldObjects);
-	GTAmemory::GetEntityHandles(_worldEntities);
 
-	/*INT i, offsettedID, count = 80;
-
-	Ped *peds = new Ped[count * 2 + 2];
-	peds[0] = count;
-	INT found = GET_PED_NEARBY_PEDS(PLAYER_PED_ID(), peds, -1);
-	for (i = 0; i < found; i++)
-	{
-	offsettedID = i * 2 + 2;
-
-	if (!DOES_ENTITY_EXIST(peds[offsettedID]))	continue;
-
-	_nearbyPeds.push_back(peds[offsettedID]);
-	}
-	delete[] peds;
-
-
-	Vehicle *vehicles = new Vehicle[count * 2 + 2];
-	vehicles[0] = count;
-	found = GET_PED_NEARBY_VEHICLES(PLAYER_PED_ID(), vehicles);
-	for (i = 0; i < found; i++)
-	{
-	offsettedID = i * 2 + 2;
-
-	if (!DOES_ENTITY_EXIST(vehicles[offsettedID]))	continue;
-
-	_nearbyVehicles.push_back(vehicles[offsettedID]);
-	}
-	delete[] vehicles;*/
+	_worldEntities.reserve(_worldPeds.size() + _worldVehicles.size() + _worldObjects.size());
+	_worldEntities.insert(_worldEntities.end(), _worldVehicles.begin(), _worldVehicles.end());
+	_worldEntities.insert(_worldEntities.end(), _worldPeds.begin(), _worldPeds.end());
+	_worldEntities.insert(_worldEntities.end(), _worldObjects.begin(), _worldObjects.end());
 
 	Ped me = PLAYER_PED_ID();
-	//Vector3 pedPos = GET_ENTITY_COORDS(me, 1);
 
-	INT i, offsettedID, count = 100;
+	INT i, offsettedID;
+	const INT count = 100;
 
-	Ped *peds = new Ped[count * 2 + 2];
+	static Ped peds[202];
 	peds[0] = count;
 	INT found = GET_PED_NEARBY_PEDS(me, (Any*)peds, -1);
 	for (i = 0; i < found; i++)
@@ -377,21 +371,10 @@ void update_nearby_stuff_arrays_tick()
 
 		if (!DOES_ENTITY_EXIST(peds[offsettedID]))	continue;
 
-		//if (pedPos.DistanceTo(GET_ENTITY_COORDS(peds[offsettedID], 1)) < 100.0f)
 		_nearbyPeds.push_back(peds[offsettedID]);
-
-		/*for (auto& wp : _worldPeds)
-		{
-		if (peds[offsettedID] != wp) alreadyIn = false;
-		alreadyIn = true;
-		break;
-		}
-		if (!alreadyIn) _worldPeds.push_back(peds[offsettedID]);*/
 	}
-	delete[] peds;
 
-
-	Vehicle *vehicles = new Vehicle[count * 2 + 2];
+	static Vehicle vehicles[202];
 	vehicles[0] = count;
 	found = GET_PED_NEARBY_VEHICLES(me, (Any*)vehicles);
 	for (i = 0; i < found; i++)
@@ -400,57 +383,8 @@ void update_nearby_stuff_arrays_tick()
 
 		if (!DOES_ENTITY_EXIST(vehicles[offsettedID]))	continue;
 
-		//if (pedPos.DistanceTo(GET_ENTITY_COORDS(vehicles[offsettedID], 1)) < 100.0f)
 		_nearbyVehicles.push_back(vehicles[offsettedID]);
-
-		/*for (auto& wv : _worldVehicles)
-		{
-		if (vehicles[offsettedID] != wv) alreadyIn = false;
-		alreadyIn = true;
-		break;
-		}
-		if (!alreadyIn) _worldVehicles.push_back(vehicles[offsettedID]);*/
 	}
-	delete[] vehicles;
-
-	/*for (auto& nv : _nearbyVehicles)
-	{
-	for (auto& wv : _worldVehicles)
-	{
-	if (nv != wv) alreadyIn = false;
-	alreadyIn = true;
-	break;
-	}
-	if (!alreadyIn) _worldVehicles.push_back(nv);
-	}
-	for (auto& np : _nearbyPeds)
-	{
-	for (auto& wp : _worldPeds)
-	{
-	if (np != wp) alreadyIn = false;
-	alreadyIn = true;
-	break;
-	}
-	if (!alreadyIn) _worldPeds.push_back(np);
-	}*/
-
-	//for (auto& v : _worldVehicles) _worldEntities.push_back(v);
-	//for (auto& p : _worldPeds) _worldEntities.push_back(p);
-	//for (auto& o : _worldObjects) _worldEntities.push_back(o);
-
-	/*for (auto& veh : _worldVehicles)
-	{
-	if (pedPos.DistanceTo(GET_ENTITY_COORDS(veh, 1)) < 100.0f)
-	_nearbyVehicles.push_back(veh);
-	}
-
-	for (auto& ped : _worldPeds)
-	{
-	if (pedPos.DistanceTo(GET_ENTITY_COORDS(ped, 1)) < 100.0f && ped != me)
-	_nearbyPeds.push_back(ped);
-	}*/
-
-
 }
 
 // Game - HUD (teleport to wp command) - Doesn't work in SP?
@@ -915,8 +849,8 @@ void set_soulswitch_gun()
 			SET_CONTROL_SHAKE(0, 4000, 210);
 			STOP_CONTROL_SHAKE(0);
 
-			if (Static_241 == playerPed.Handle())
-				Static_241 = PLAYER_PED_ID();
+			if (g_selectedPed == playerPed.Handle())
+				g_selectedPed = PLAYER_PED_ID();
 
 			soulswitchentity.Handle() = 0;
 			sub::Spooner::SpoonerEntity spe;
@@ -1914,18 +1848,19 @@ void set_local_forcefield()
 	switch (loop_forcefield)
 	{
 	case 1: //push out
-		for (GTAentity ent : _worldEntities)
+	{
+		std::vector<Entity> nearby;
+		GTAmemory::GetEntityHandles(nearby, myPos, 10.0f);
+		for (GTAentity ent : nearby)
 		{
 			if (ent.Handle() != myPed.Handle() && ent.Handle() != g_myVeh)
 			{
 				const Vector3& entPos = ent.Position_get();
-				if (myPos.DistanceTo(entPos) < 10.0f)
-				{
-					ent.ApplyForce(entPos - myPos, ForceType::MaxForceRot2);
-				}
+				ent.ApplyForce(entPos - myPos, ForceType::MaxForceRot2);
 			}
 		}
 		break;
+	}
 	case 2://explode
 		myPed.SetExplosionProof(true);
 		World::AddExplosion(myPos, EXPLOSION::BLIMP, 5.0f, 0.0f, false, false);
@@ -2724,7 +2659,8 @@ void Menu::loops()
 
 	Game::CustomHelpText::Tick();
 
-	update_nearby_stuff_arrays_tick();
+	if (nearby_stuff_arrays_needed())
+		update_nearby_stuff_arrays_tick();
 
 	if (gameIsPaused)
 		SetPauseMenuTeleToWpCommand();
@@ -2751,7 +2687,8 @@ void Menu::loops()
 
 	MenuInput::UpdateDeltaCursorNormal();
 
-	if (IS_PED_IN_ANY_VEHICLE(PLAYER_PED_ID(), 0))
+	const bool bPedInAnyVehicle = IS_PED_IN_ANY_VEHICLE(PLAYER_PED_ID(), 0);
+	if (bPedInAnyVehicle)
 	{
 		g_myVeh = GET_VEHICLE_PED_IS_IN(PLAYER_PED_ID(), 0);
 		g_myVeh_model = GET_ENTITY_MODEL(g_myVeh);
@@ -2776,17 +2713,6 @@ void Menu::loops()
 
 	if (loop_Check_self_death_model)
 		_ManualRespawn_::Check_self_death_model();
-
-	if (loop_restricted_areas_access)
-	{
-		TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("am_armybase");
-		TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("restrictedareas");
-		TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_armybase");
-		TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_lossantosintl");
-		TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_prison");
-		TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_prisonvanbreak");
-		TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("am_doors");
-	}
 
 	if (!IS_PLAYER_SWITCH_IN_PROGRESS())
 	{
@@ -2820,6 +2746,17 @@ void Menu::loops()
 		player = PLAYER_ID();
 		player2.Handle() = (player);
 		iped = PLAYER_PED_ID();
+
+		if (loop_restricted_areas_access)
+		{
+			TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("am_armybase");
+			TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("restrictedareas");
+			TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_armybase");
+			TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_lossantosintl");
+			TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_prison");
+			TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("re_prisonvanbreak");
+			TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("am_doors");
+		}
 
 		// Ignored by everyone
 		if (loop_ignored_by_everyone)
@@ -2874,64 +2811,74 @@ void Menu::loops()
 				SET_RADIO_TO_STATION_NAME(GET_RADIO_STATION_NAME(g_frozenRadioStation));
 		}
 
-		if (loop_clearWeaponPickups) {
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_BULLPUPSHOTGUN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_ASSAULTSMG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_VEHICLE_WEAPON_ASSAULTSMG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_PISTOL50);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_ASSAULTRIFLE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_CARBINERIFLE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_ADVANCEDRIFLE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_MG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_COMBATMG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_SNIPERRIFLE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_HEAVYSNIPER);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_MICROSMG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_SMG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_RPG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_MINIGUN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_PUMPSHOTGUN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_SAWNOFFSHOTGUN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_ASSAULTSHOTGUN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_GRENADE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_MOLOTOV);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_SMOKEGRENADE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_STICKYBOMB);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_PISTOL);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_COMBATPISTOL);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_APPISTOL);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_GRENADELAUNCHER);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_STUNGUN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_FIREEXTINGUISHER);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_PETROLCAN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_KNIFE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_NIGHTSTICK);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_HAMMER);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_BAT);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_GOLFCLUB);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_CROWBAR);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_BULLPUPRIFLE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_BOTTLE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_SNSPISTOL);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_GUSENBERG);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_HEAVYPISTOL);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_SPECIALCARBINE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_DAGGER);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_VINTAGEPISTOL);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_FIREWORK);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_MUSKET);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_HEAVYSHOTGUN);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_MARKSMANRIFLE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_PROXMINE);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_HOMINGLAUNCHER);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_FLAREGUN);
-
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_PISTOL_MK2);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_SMG_MK2);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_ASSAULTRIFLE_MK2);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_CARBINERIFLE_MK2);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_COMBATMG_MK2);
-			REMOVE_ALL_PICKUPS_OF_TYPE(PICKUP_WEAPON_HEAVYSNIPER_MK2);
+		if (loop_clearWeaponPickups)
+		{
+			static DWORD lastWeaponPickupClear = 0;
+			const DWORD now = GET_GAME_TIMER();
+			if (now - lastWeaponPickupClear >= 4000)
+			{
+				lastWeaponPickupClear = now;
+				static const Hash weaponPickupTypes[] = {
+					PICKUP_WEAPON_BULLPUPSHOTGUN,
+					PICKUP_WEAPON_ASSAULTSMG,
+					PICKUP_VEHICLE_WEAPON_ASSAULTSMG,
+					PICKUP_WEAPON_PISTOL50,
+					PICKUP_WEAPON_ASSAULTRIFLE,
+					PICKUP_WEAPON_CARBINERIFLE,
+					PICKUP_WEAPON_ADVANCEDRIFLE,
+					PICKUP_WEAPON_MG,
+					PICKUP_WEAPON_COMBATMG,
+					PICKUP_WEAPON_SNIPERRIFLE,
+					PICKUP_WEAPON_HEAVYSNIPER,
+					PICKUP_WEAPON_MICROSMG,
+					PICKUP_WEAPON_SMG,
+					PICKUP_WEAPON_RPG,
+					PICKUP_WEAPON_MINIGUN,
+					PICKUP_WEAPON_PUMPSHOTGUN,
+					PICKUP_WEAPON_SAWNOFFSHOTGUN,
+					PICKUP_WEAPON_ASSAULTSHOTGUN,
+					PICKUP_WEAPON_GRENADE,
+					PICKUP_WEAPON_MOLOTOV,
+					PICKUP_WEAPON_SMOKEGRENADE,
+					PICKUP_WEAPON_STICKYBOMB,
+					PICKUP_WEAPON_PISTOL,
+					PICKUP_WEAPON_COMBATPISTOL,
+					PICKUP_WEAPON_APPISTOL,
+					PICKUP_WEAPON_GRENADELAUNCHER,
+					PICKUP_WEAPON_STUNGUN,
+					PICKUP_WEAPON_FIREEXTINGUISHER,
+					PICKUP_WEAPON_PETROLCAN,
+					PICKUP_WEAPON_KNIFE,
+					PICKUP_WEAPON_NIGHTSTICK,
+					PICKUP_WEAPON_HAMMER,
+					PICKUP_WEAPON_BAT,
+					PICKUP_WEAPON_GOLFCLUB,
+					PICKUP_WEAPON_CROWBAR,
+					PICKUP_WEAPON_BULLPUPRIFLE,
+					PICKUP_WEAPON_BOTTLE,
+					PICKUP_WEAPON_SNSPISTOL,
+					PICKUP_WEAPON_GUSENBERG,
+					PICKUP_WEAPON_HEAVYPISTOL,
+					PICKUP_WEAPON_SPECIALCARBINE,
+					PICKUP_WEAPON_DAGGER,
+					PICKUP_WEAPON_VINTAGEPISTOL,
+					PICKUP_WEAPON_FIREWORK,
+					PICKUP_WEAPON_MUSKET,
+					PICKUP_WEAPON_HEAVYSHOTGUN,
+					PICKUP_WEAPON_MARKSMANRIFLE,
+					PICKUP_WEAPON_PROXMINE,
+					PICKUP_WEAPON_HOMINGLAUNCHER,
+					PICKUP_WEAPON_FLAREGUN,
+					PICKUP_WEAPON_PISTOL_MK2,
+					PICKUP_WEAPON_SMG_MK2,
+					PICKUP_WEAPON_ASSAULTRIFLE_MK2,
+					PICKUP_WEAPON_CARBINERIFLE_MK2,
+					PICKUP_WEAPON_COMBATMG_MK2,
+					PICKUP_WEAPON_HEAVYSNIPER_MK2,
+				};
+				for (Hash pickupType : weaponPickupTypes)
+					REMOVE_ALL_PICKUPS_OF_TYPE(pickupType);
+			}
 		}
 
 	}
@@ -3100,7 +3047,7 @@ void Menu::loops()
 		GeneralGlobalHax::SetPlayerHeight(g_playerVerticalElongationMultiplier);
 
 	// Acceleration and brake 'multipliers'
-	if (IS_PED_IN_ANY_VEHICLE(PLAYER_PED_ID(), 0))
+	if (bPedInAnyVehicle)
 	{
 		if (!g_myVeh_model.IsHeli())
 		{
@@ -3151,7 +3098,7 @@ void Menu::loops()
 
 
 	// ONLY IF SELF IS IN A VEHICLE
-	if (IS_PED_IN_ANY_VEHICLE(PLAYER_PED_ID(), 0))
+	if (bPedInAnyVehicle)
 	{
 		// Vehicle invincibility
 		if (loop_vehicle_invincibility)
@@ -3198,15 +3145,6 @@ void Menu::loops()
 		// Vehicle flip
 		if (loop_vehicle_fliploop)
 			set_vehicle_fliploop(g_myVeh);
-
-		// Vehicle invisibility
-		if (loop_vehicle_invisibility)
-		{
-			inull = IS_ENTITY_VISIBLE(PLAYER_PED_ID());
-			SET_ENTITY_VISIBLE(g_myVeh, false, false);
-			SET_ENTITY_VISIBLE(PLAYER_PED_ID(), inull, false);
-			loop_vehicle_invisibility = false;
-		}
 
 		// Vehicle rainbow mode-
 		if (loop_car_colour_change/* && GET_GAME_TIMER() >= delayedTimer - 400*/)
@@ -3336,8 +3274,7 @@ void Thread_menu_loops2()
 		switch (loop_autoKillEnemies)
 		{
 		case 1: //Weak
-			World::KillNearbyPeds(playerPed, FLT_MAX, PedRelationship::Hate);
-			World::KillNearbyPeds(playerPed, FLT_MAX, PedRelationship::Dislike);
+			World::KillNearbyPeds(playerPed, 500.0f);
 			break;
 		case 2: //Radical
 			World::KillMyEnemies();

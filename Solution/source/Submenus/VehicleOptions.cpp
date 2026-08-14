@@ -93,7 +93,8 @@ namespace sub
 			damageAndDefense_plus = 0, damageAndDefense_minus = 0, damageAndDefense_custom = 0,
 			//VehicleOpsInvincibilityOn_ = 0,
 			VehicleOpsInvincibilityOff_ = 0,
-			VehicleOpsInvisible_ = 0,
+			VehicleOpsInvisibleOn_ = 0,
+			VehicleOpsInvisibleOff_ = 0,
 			VehicleOpsSlippyTires_ = 0,
 			VehicleOpsEngine_ = 0,
 			VehicleOpsInteriorLight_ = 0,
@@ -119,12 +120,12 @@ namespace sub
 			VehicleOps_Slam_On = 0,
 			VehicleOpsHeavyMassOff_ = 0;
 
-		Static_241 = PLAYER_PED_ID();
-		Static_240 = PLAYER_ID();
+		g_selectedPed = PLAYER_PED_ID();
+		g_selectedPlayer = PLAYER_ID();
 
 		bool bAmIOnline = NETWORK_IS_IN_SESSION() != 0;
-		GTAped myPed = Static_241;
-		GTAplayer myPlayer = Static_240;
+		GTAped myPed = g_selectedPed;
+		GTAplayer myPlayer = g_selectedPlayer;
 		GTAvehicle myVehicle = g_myVeh;
 		bool bMyPedIsInVehicle = myPed.IsInVehicle();
 		const Model& myVehicleModel = myVehicle.Model();
@@ -159,7 +160,7 @@ namespace sub
 		AddNumber("Damage & Defense", loop_vehicle_damageAndDefense, 2, damageAndDefense_custom, damageAndDefense_plus, damageAndDefense_minus);
 		//AddLocal("Invincibility", VehicleOpsInvincibility_bit, VehicleOpsInvincibilityOn_, VehicleOpsInvincibilityOff_);
 		AddToggle("Invincibility (Looped)", loop_vehicle_invincibility, null, VehicleOpsInvincibilityOff_);
-		AddLocal("Invisibility", !myVehicle.IsVisible(), loop_vehicle_invisibility, VehicleOpsInvisible_);
+		AddLocal("Invisibility", !myVehicle.IsVisible(), VehicleOpsInvisibleOn_, VehicleOpsInvisibleOff_);
 		AddToggle("Auto-Repair", loop_vehicle_fixloop);
 		AddToggle("Auto-Flip", loop_vehicle_fliploop);
 		AddToggle("Keep Engine & Lights On", loop_self_engineOn);
@@ -221,16 +222,16 @@ namespace sub
 		//if (vcollisionon) SET_ENTITY_COLLISION(g_myVeh, TRUE, 0);
 		//if (vcollisionoff) SET_ENTITY_COLLISION(g_myVeh, FALSE, 0);
 
-		if (set_ent_12) Static_12 = g_myVeh;
+		if (set_ent_12) g_selectedIndex = g_myVeh;
 		if (goToSlamItSub) sub::VehicleSlam_catind::InitSub(g_myVeh, &loop_vehicle_slam);
 
 		if (VehicleOps_sub_modshop) {
-			if (DOES_ENTITY_EXIST(g_myVeh)) { Static_12 = g_myVeh; Menu::SetSub_new(SUB::MODSHOP); }
+			if (DOES_ENTITY_EXIST(g_myVeh)) { g_selectedIndex = g_myVeh; Menu::SetSub_new(SUB::MODSHOP); }
 			else Game::Print::PrintBottomCentre("~r~Error:~s~ You are not in a vehicle.");
 			return;
 		}
 		if (VehicleOps_sub_alphaLevel) {
-			if (DOES_ENTITY_EXIST(g_myVeh)) { Static_12 = g_myVeh; Menu::SetSub_new(SUB::ENTITYALPHALEVEL); }
+			if (DOES_ENTITY_EXIST(g_myVeh)) { g_selectedIndex = g_myVeh; Menu::SetSub_new(SUB::ENTITYALPHALEVEL); }
 			else Game::Print::PrintBottomCentre("~r~Error:~s~ You are not in a vehicle.");
 			return;
 		}
@@ -246,7 +247,7 @@ namespace sub
 		}
 
 		if (VehicleOpsTeleportClosestCar_) {
-			/*Vector3 myPos = GET_ENTITY_COORDS(Static_241, 1);
+			/*Vector3 myPos = GET_ENTITY_COORDS(g_selectedPed, 1);
 			int CarType = 64;
 			CarType |= 2710;
 			CarType |= 2048;
@@ -257,7 +258,7 @@ namespace sub
 			CarType |= 16;
 			CarType |= 8;
 			int tempVehicle = GET_CLOSEST_VEHICLE(myPos.x, myPos.y, myPos.z, 400.0f, 0, CarType);
-			if (DOES_ENTITY_EXIST(tempVehicle)) SET_PED_INTO_VEHICLE(Static_241, tempVehicle, tempVehicle.FirstFreeSeat(SEAT_DRIVER));*/
+			if (DOES_ENTITY_EXIST(tempVehicle)) SET_PED_INTO_VEHICLE(g_selectedPed, tempVehicle, tempVehicle.FirstFreeSeat(SEAT_DRIVER));*/
 			const GTAvehicle& tempVehicle = World::GetClosestVehicle(myPed.Position_get(), FLT_MAX);
 			if (tempVehicle.Exists())
 				myPed.SetIntoVehicle(tempVehicle, tempVehicle.FirstFreeSeat(SEAT_DRIVER));
@@ -356,21 +357,24 @@ namespace sub
 			return;
 		}
 
-		if (VehicleOpsInvisible_) {
+		if (VehicleOpsInvisibleOn_) {
 			if (!IS_PED_IN_ANY_VEHICLE(PLAYER_PED_ID(), 0)) Game::Print::PrintBottomCentre("~r~Error:~s~ You are not in a vehicle.");
 			else
 			{
-				//if (IS_ENTITY_VISIBLE(g_myVeh))
-				//{
-				//	RequestControlOfEnt(g_myVeh);
-				//	SET_ENTITY_VISIBLE(g_myVeh, 0);
-				//	SET_ENTITY_VISIBLE(PLAYER_PED_ID(), 1);
-				//}
-				//else
-				//{
+				const bool pedWasVisible = IS_ENTITY_VISIBLE(PLAYER_PED_ID());
+				myVehicle.RequestControlOnce();
+				myVehicle.SetVisible(false);
+				SET_ENTITY_VISIBLE(PLAYER_PED_ID(), pedWasVisible, false);
+			}
+			return;
+		}
+
+		if (VehicleOpsInvisibleOff_) {
+			if (!IS_PED_IN_ANY_VEHICLE(PLAYER_PED_ID(), 0)) Game::Print::PrintBottomCentre("~r~Error:~s~ You are not in a vehicle.");
+			else
+			{
 				myVehicle.RequestControlOnce();
 				myVehicle.SetVisible(true);
-				//}
 			}
 			return;
 		}
@@ -880,6 +884,10 @@ namespace sub
 		{
 			Methods.Tick();
 		}
+		bool& Enabled()
+		{
+			return Methods.Enabled();
+		}
 
 
 		void Sub_AutoDrive()
@@ -941,7 +949,7 @@ namespace sub
 
 	namespace VehicleSlam_catind
 	{
-		Vehicle& _slamVehicle = Static_12;
+		Vehicle& _slamVehicle = g_selectedIndex;
 		float* _slamValue;
 		void InitSub(GTAvehicle veh, float* val)
 		{
@@ -995,7 +1003,7 @@ namespace sub
 			if (Hash)
 			{
 				if (!HAS_WEAPON_ASSET_LOADED(Hash)) REQUEST_WEAPON_ASSET(Hash, 31, 0);
-				//	GIVE_WEAPON_TO_PED(Static_241, Hash, 120, 1, 1);
+				//	GIVE_WEAPON_TO_PED(g_selectedPed, Hash, 120, 1, 1);
 				Game::Print::PrintBottomLeft("Press ~b~LS/L1/NUM_PLUS~s~ for hax!");
 			}
 		}

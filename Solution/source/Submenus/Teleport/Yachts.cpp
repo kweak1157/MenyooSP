@@ -225,6 +225,7 @@ namespace sub::TeleportLocations_catind
 		}
 		void CreateYacht(YachtBuildInfoStructure& yachtInfo)
 		{
+			update_nearby_stuff_arrays_tick();
 			if (_worldObjects.size() > 2000)//GTA_MAX_ENTITIES - 48)
 			{
 				Game::Print::PrintBottomCentre("~r~Error:~s~ Too many entities in world.");
@@ -563,7 +564,7 @@ namespace sub::TeleportLocations_catind
 				Menu::SetSub_previous();
 				return;
 			}
-			GTAped ped = Static_241;
+			GTAped ped = g_selectedPed;
 
 			AddTitle(currentYachtInfo.location->second.name);
 

@@ -397,7 +397,7 @@ private:
 class SpSnow final// This is for sp since the global doesn't work in sp
 {
 private:
-	bool bDisabled, loop_spsnow, bInitialized;
+	bool bDisabled, loop_spsnow, bInitialized, bPatchApplied;
 	bool bUseAddr13, bUseAddr22;
 	bool tracks_available;
 	DWORD64 traxp; //pedTracks

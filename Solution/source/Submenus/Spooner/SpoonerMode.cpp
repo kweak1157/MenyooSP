@@ -193,51 +193,42 @@ namespace sub::Spooner
 		{
 			SelectedEntity.Handle = 0;
 		}
-		bool GetEntityPtr(GTAentity& inEntity, SpoonerEntity*& outEntity)
+		bool GetEntityPtr(GTAentity& inEntity, SpoonerEntity*& outEntity, SpoonerEntity& nonDbStorage)
 		{
-			outEntity = new SpoonerEntity;
-
-			outEntity->Handle = inEntity;
-			outEntity->Type = (EntityType)inEntity.Type();
-			const Model& outEntity_model = inEntity.Model();
-			outEntity->HashName = outEntity->Type == EntityType::PROP ? get_prop_model_label(outEntity_model)
-				: (outEntity->Type == EntityType::PED ? get_ped_model_label(outEntity_model, true)
-					: get_vehicle_model_label(outEntity_model, true));
-			if (outEntity->HashName.length() == 0) outEntity->HashName = int_to_hexstring(outEntity_model.hash, true);
-			outEntity->Dynamic = !outEntity->Handle.IsPositionFrozen();//outEntity->Type == EntityType::PED || outEntity->Type == EntityType::VEHICLE;
-			//outEntity->LastAnimation.dict.clear();
-			//outEntity->LastAnimation.name.clear();
-			outEntity->IsStill = false;
-
-			auto idindb = EntityManagement::GetEntityIndexInDb(*outEntity);
+			auto idindb = EntityManagement::GetEntityIndexInDb(inEntity);
 			if (idindb >= 0)
 			{
-				delete outEntity;
 				outEntity = &Databases::EntityDb[idindb];
-				return true; // Is in db
+				return true;
 			}
-			else
-			{
-				return false; // Is not in db
-			}
+
+			nonDbStorage.Handle = inEntity;
+			nonDbStorage.Type = (EntityType)inEntity.Type();
+			const Model& outEntity_model = inEntity.Model();
+			nonDbStorage.HashName = nonDbStorage.Type == EntityType::PROP ? get_prop_model_label(outEntity_model)
+				: (nonDbStorage.Type == EntityType::PED ? get_ped_model_label(outEntity_model, true)
+					: get_vehicle_model_label(outEntity_model, true));
+			if (nonDbStorage.HashName.length() == 0) nonDbStorage.HashName = int_to_hexstring(outEntity_model.hash, true);
+			nonDbStorage.Dynamic = !nonDbStorage.Handle.IsPositionFrozen();
+			nonDbStorage.IsStill = false;
+
+			outEntity = &nonDbStorage;
+			return false;
 		}
 		SpoonerEntity GetEntityPtrValue(GTAentity& entity)
 		{
+			SpoonerEntity nonDbStorage;
 			SpoonerEntity* eifoc;
-			bool isAlreadyInDb = SpoonerMode::GetEntityPtr(entity, eifoc);
-			SpoonerEntity toReturn = *eifoc;
-			if (!isAlreadyInDb)
-				delete eifoc;
-			return toReturn;
+			SpoonerMode::GetEntityPtr(entity, eifoc, nonDbStorage);
+			return *eifoc;
 		}
 		inline void SetAsSelectedEntity(GTAentity& entity)
 		{
+			SpoonerEntity nonDbStorage;
 			SpoonerEntity* eifoc;
-			bool isAlreadyInDb = SpoonerMode::GetEntityPtr(entity, eifoc);
+			SpoonerMode::GetEntityPtr(entity, eifoc, nonDbStorage);
 			SelectedEntity = *eifoc;
 			SelectedEntity.Handle.RequestControl();
-			if (!isAlreadyInDb)
-				delete eifoc;
 		}
 
 		inline void CamTick()
@@ -886,19 +877,36 @@ namespace sub::Spooner
 			if (SpoonerMode::IsHotkeyPressed())
 				SpoonerMode::Toggle(); // Hotkey (when mayo closed)
 
-			CamTick();
-
-			if (Settings::bShowBoxAroundSelectedEntity)
-				EntityManagement::ShowBoxAroundEntity(SelectedEntity.Handle);
-
-			for (auto& ent : Databases::EntityDb)
+			if (SpoonerMode::bEnabled)
 			{
-				if (ent.Handle.Exists())
-					ent.TaskSequence.Tick(reinterpret_cast<void*>(&ent)); //ent.TaskSequence.Tick((GTAped)ent.Handle);
-			}
+				CamTick();
 
-			if (!Databases::MarkerDb.empty())
-				MarkerManagement::DrawAll();
+				if (Settings::bShowBoxAroundSelectedEntity)
+					EntityManagement::ShowBoxAroundEntity(SelectedEntity.Handle);
+
+				for (auto& ent : Databases::EntityDb)
+				{
+					if (ent.TaskSequence.IsActive() && ent.Handle.Exists())
+						ent.TaskSequence.Tick(reinterpret_cast<void*>(&ent));
+				}
+
+				if (!Databases::MarkerDb.empty())
+					MarkerManagement::DrawAll();
+			}
+			else
+			{
+				if (SpoonerMode::spoonerModeCamera.Handle() != 0)
+					CamTick();
+
+				for (auto& ent : Databases::EntityDb)
+				{
+					if (ent.TaskSequence.IsActive() && ent.Handle.Exists())
+						ent.TaskSequence.Tick(reinterpret_cast<void*>(&ent));
+				}
+
+				if (!Databases::MarkerDb.empty())
+					MarkerManagement::DrawAll();
+			}
 		}
 
 		void TurnOn()

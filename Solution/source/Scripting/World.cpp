@@ -187,12 +187,18 @@ namespace World
 
 	void GetNearbyPeds(std::vector<GTAped>& result, GTAped ped, float radius)
 	{
-		return GetNearbyPeds(result, ped, radius, 10000);
+		return GetNearbyPeds(result, ped, radius, 100);
 	}
 	void GetNearbyPeds(std::vector<GTAped>& result, GTAped ped, float radius, int maxAmount)
 	{
+		if (maxAmount < 1)
+			return;
+
 		const Vector3 position = ped.Position_get();
-		int *handles = new int[maxAmount * 2 + 2];
+		constexpr int kStackMax = 100;
+		int stackHandles[kStackMax * 2 + 2];
+		const bool useHeap = maxAmount > kStackMax;
+		int* handles = useHeap ? new int[maxAmount * 2 + 2] : stackHandles;
 
 		handles[0] = maxAmount;
 
@@ -216,12 +222,12 @@ namespace World
 			}
 		}
 
-		delete[] handles;
+		if (useHeap)
+			delete[] handles;
 	}
 	void GetNearbyPeds(std::vector<GTAped>& result, const Vector3& position, float radius)
 	{
-		//std::vector<Entity> handles;
-		//GTAmemory::GetPedHandles(handles);
+		update_nearby_stuff_arrays_tick();
 		auto& handles = _worldPeds;
 
 		for (auto& currped : handles)
@@ -266,8 +272,7 @@ namespace World
 	}
 	void GetNearbyVehicles(std::vector<GTAvehicle>& result, const Vector3& position, float radius)
 	{
-		//std::vector<Entity> handles;
-		//GTAmemory::GetVehicleHandles(handles);
+		update_nearby_stuff_arrays_tick();
 		auto& handles = _worldVehicles;
 
 		for (auto& currveh : handles)
@@ -283,8 +288,7 @@ namespace World
 	}
 	void GetNearbyProps(std::vector<GTAprop>& result, const Vector3& position, float radius)
 	{
-		//std::vector<Entity> handles;
-		//GTAmemory::GetPropHandles(handles);
+		update_nearby_stuff_arrays_tick();
 		auto& handles = _worldObjects;
 
 		for (auto& currprop : handles)
@@ -415,7 +419,8 @@ namespace World
 			position.z = World::GetGroundHeight(position) + model.Dim1().z;//model.Dim2().z;
 		}
 
-		model.Load(3000);
+		if (!model.Load(3000))
+			return 0;
 
 		GTAentity ped = CREATE_PED(26, model.hash, position.x, position.y, position.z, heading, 1, 1);
 		if (placeOnGround) ped.PlaceOnGround();
@@ -441,7 +446,8 @@ namespace World
 	{
 		if (!model.IsInCdImage()) return 0;
 
-		model.Load(3000);
+		if (!model.Load(3000))
+			return 0;
 
 		return CREATE_PED_INSIDE_VEHICLE(vehicle.GetHandle(), PedType::Human, model.hash, static_cast<int>(seat), TRUE, TRUE);
 	}
@@ -458,7 +464,8 @@ namespace World
 			position.z = World::GetGroundHeight(position) + model.Dim1().z;//model.Dim2().z;
 		}
 
-		model.Load(3000);
+		if (!model.Load(3000))
+			return 0;
 
 		GTAentity vehicle = CREATE_VEHICLE(model.hash, position.x, position.y, position.z, heading, 1, 1, 0);
 		if (placeOnGround) vehicle.PlaceOnGround();
@@ -658,62 +665,34 @@ namespace World
 
 
 	// World - Relationships - nearby
-	void KillNearbyPeds(GTAped originPed, float range, PedRelationship::PedRelationship relationshipWithOriginPed)
+	void KillNearbyPeds(GTAped originPed, float range)
 	{
 		if (!originPed.Exists())
 			return;
 
-		INT i, j;
 		GTAped ped;
-
 		const Vector3& originCoord = originPed.Position_get();
 
-		Ped *peds = new Ped[140 * 2 + 2]; // Five minutes into doubled stack size and chill and it gives you that ped handle
+		Ped peds[140 * 2 + 2];
 		peds[0] = 140;
-		INT found = GET_PED_NEARBY_PEDS(originPed.Handle(), (Any*)peds, -1);
-		for (i = 0; i < found; i++)
+		const INT found = GET_PED_NEARBY_PEDS(originPed.Handle(), (Any*)peds, -1);
+		for (INT i = 0; i < found; i++)
 		{
-			j = i * 2 + 2;
-
-			ped.Handle() = peds[j];
+			ped.Handle() = peds[i * 2 + 2];
 			if (!ped.Exists())
 				continue;
 
 			if (!ped.IsInRangeOf(originCoord, range))
 				continue;
 
-			//if (relationshipWithOriginPed == PedRelationship::Hate || relationshipWithOriginPed == PedRelationship::Dislike)
-			//{
-			//if (!IS_PED_IN_COMBAT(ped.Handle(), originPed.Handle())) continue;
-			//}
-			//else
-
-			if (relationshipWithOriginPed != PedRelationship::MinusOneWat)
-			{
-				if (GET_RELATIONSHIP_BETWEEN_PEDS(ped.Handle(), originPed.Handle()) != relationshipWithOriginPed)
-					continue;
-			}
+			const int rel = GET_RELATIONSHIP_BETWEEN_PEDS(ped.Handle(), originPed.Handle());
+			if (rel != PedRelationship::Hate && rel != PedRelationship::Dislike)
+				continue;
 
 			ped.RequestControl();
 			ped.Kill();
 			EXPLODE_PED_HEAD(ped.Handle(), WEAPON_HEAVYSNIPER);
-
 		}
-		delete[] peds;
-
-		/*bool originPedExists = originPed.Exists();
-
-		for (auto& ped : allPeds)
-		{
-		if (!DOES_ENTITY_EXIST(ped)) continue;
-		if (coord.DistanceTo(GET_ENTITY_COORDS(ped, 1)) > radius) continue;
-
-		if (originPedExists) { if (GET_RELATIONSHIP_BETWEEN_PEDS(originPed.Handle(), ped) != relationshipWithOriginPed) continue; }
-
-		RequestControlOfEnt(ped);
-		EXPLODE_PED_HEAD(ped, WEAPON_HEAVYSNIPER);
-		}*/
-
 	}
 	void KillMyEnemies()
 	{
@@ -758,12 +737,18 @@ void clear_area_of_entities(const EntityType& type, const Vector3& coords, float
 	}
 
 	GTAentity myPed = PLAYER_PED_ID();
+	GTAentity myVeh = GET_VEHICLE_PED_IS_IN(myPed.Handle(), false);
 	for (GTAentity ent : entities)
 	{
+		if (ent == myPed || (myVeh.Handle() != 0 && ent == myVeh))
+			continue;
+		if (IS_ENTITY_A_PED(ent.Handle()) && IS_PED_A_PLAYER(ent.Handle()))
+			continue;
+
 		const auto& excit = std::find(excludes.begin(), excludes.end(), ent);
 		if (excit == excludes.end()) // Not found in excludes
 		{
-			ent.Delete(ent != myPed);
+			ent.Delete(false);
 		}
 	}
 	WAIT(0);
@@ -816,7 +801,6 @@ void clear_area_of_vehicles_around_entity(Entity entity, float radius, bool memr
 
 				NETWORK_REQUEST_CONTROL_OF_ENTITY(vehicles[offsettedID]);
 				SET_ENTITY_AS_MISSION_ENTITY(vehicles[offsettedID], 0, 1);
-				SET_ENTITY_COORDS(vehicles[offsettedID], 32.2653f, 7683.5249f, 0.5696f, 0, 0, 0, 1);
 				DELETE_VEHICLE(&vehicles[offsettedID]);
 
 				CLEAR_AREA_OF_VEHICLES(Pos.x, Pos.y, Pos.z, radius, 0, 0, 1, 1, 0, 0, 0);
@@ -860,7 +844,6 @@ void clear_area_of_peds_around_entity(Entity entity, float radius, bool memry)
 				if (IS_PED_A_PLAYER(peds[offsettedID]))
 					continue;
 				SET_ENTITY_AS_MISSION_ENTITY(peds[offsettedID], 0, 1);
-				SET_ENTITY_COORDS(peds[offsettedID], 32.2653f, 7683.5249f, 0.5696f, 0, 0, 0, 1);
 				DELETE_PED(&peds[offsettedID]);
 
 				CLEAR_AREA_OF_PEDS(Pos.x, Pos.y, Pos.z, radius, 0);
@@ -879,6 +862,7 @@ void clear_area_of_peds_around_entity(Entity entity, float radius, bool memry)
 }
 void clear_attachments_off_entity(const GTAentity& entity, const EntityType& entType)
 {
+	update_nearby_stuff_arrays_tick();
 	auto* handles = &_worldEntities;
 	switch (entType)
 	{
@@ -904,7 +888,7 @@ void clear_attachments_off_entity(const GTAentity& entity, const EntityType& ent
 			{
 				e.RequestControl();
 				e.Detach();
-				e.Delete(true);
+				e.Delete(false);
 			}
 		}
 	}

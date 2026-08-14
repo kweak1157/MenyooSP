@@ -190,25 +190,25 @@ namespace sub::TeleportLocations_catind
 		}
 		void ToWaypoint241()
 		{
-			TeleMethods::ToWaypoint(Static_241);
+			TeleMethods::ToWaypoint(g_selectedPed);
 		}
 		void ToMissionBlip241()
 		{
-			teleport_to_missionBlip(Static_241);
+			teleport_to_missionBlip(g_selectedPed);
 		}
 		void ToForward241()
 		{
-			auto& entityToTeleport = Static_241;
+			auto& entityToTeleport = g_selectedPed;
 			Vector3 yoffsetforward = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(entityToTeleport, 0.0f, 3.5f, 0.0f);
 			teleport_net_ped(entityToTeleport, yoffsetforward.x, yoffsetforward.y, yoffsetforward.z, true, false);
 		}
 		void ToCoordinates241(const Vector3& coord)
 		{
-			teleport_net_ped(Static_241, coord.x, coord.y, coord.z);
+			teleport_net_ped(g_selectedPed, coord.x, coord.y, coord.z);
 		}
 		void ToTeleLocation241(const TeleLocation& loc)
 		{
-			auto& entityToTeleport = Static_241;
+			auto& entityToTeleport = g_selectedPed;
 
 			bool isOnline = NETWORK_IS_IN_SESSION() != 0;
 			if (loc.bOnTheLine && loc.bOffTheLine)

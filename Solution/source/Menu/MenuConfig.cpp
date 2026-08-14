@@ -38,10 +38,12 @@
 #include "..\Submenus\VehicleOptions.h"
 
 #include <Windows.h>
+#include <string>
 #include <simpleini\SimpleIni.h>
 
 CSimpleIniA MenuConfig::iniFile;
 bool MenuConfig::bSaveAtIntervals = true;
+static std::string s_lastConfigFileData;
 
 void MenuConfig::ConfigInit()
 {
@@ -552,7 +554,14 @@ void MenuConfig::ConfigSave()
 	ini.SetDoubleValue(section_haxValues.c_str(), "speedo_screen_pos_y", sub::Speedo_catind::_speedoPosition.y);
 	ini.SetValue(section_haxValues.c_str(), "speedo_bg_name", sub::Speedo_catind::_currentSpeedoBg.fileName.c_str());
 
-	ini.SaveFile((GetPathffA(Pathff::Main, true) + "menyooConfig.ini").c_str());
+	std::string data;
+	if (ini.Save(data) < 0)
+		return;
+	if (data == s_lastConfigFileData)
+		return;
+	if (ini.SaveFile((GetPathffA(Pathff::Main, true) + "menyooConfig.ini").c_str()) < 0)
+		return;
+	s_lastConfigFileData = std::move(data);
 }
 
 void MenuConfig::ConfigResetHaxValues()

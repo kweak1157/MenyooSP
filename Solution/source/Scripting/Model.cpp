@@ -330,19 +330,12 @@ namespace GTAmodel
 	}
 	bool Model::Load(DWORD timeOut) const
 	{
-		if (HAS_MODEL_LOADED(this->hash)) return true;
-		else
-		{
-			REQUEST_MODEL(this->hash);
-
-			for (timeOut += GetTickCount(); GetTickCount() < timeOut;)
-			{
-				if (HAS_MODEL_LOADED(this->hash))
-					return true;
-				WAIT(0);
-			}
-			return false;
-		}
+		// Do not WAIT on the menu thread. Callers must retry on a later frame.
+		(void)timeOut;
+		if (HAS_MODEL_LOADED(this->hash))
+			return true;
+		REQUEST_MODEL(this->hash);
+		return HAS_MODEL_LOADED(this->hash) != 0;
 	}
 	void Model::LoadAndWait() const
 	{

@@ -943,7 +943,7 @@ namespace sub
 		if (spnrandom || spawnvehicle_input)
 		{
 			Model model;
-			Ped ped = Static_241;
+			Ped ped = g_selectedPed;
 
 			if (spnrandom)
 			{
@@ -977,7 +977,7 @@ namespace sub
 		/*if (spawnvehicle_input)
 		{
 		OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::VehicleSpawnerInput, std::string(), 64U, "Enter vehicle model name (e.g. adder):");
-		OnscreenKeyboard::State::arg1._int = Static_241;
+		OnscreenKeyboard::State::arg1._int = g_selectedPed;
 		}*/
 
 		/*PCHAR chartick;
@@ -1182,7 +1182,7 @@ namespace sub
 				sub::Spooner::MenuOptions::AddOption_AddVehicle(vehModel.VehicleDisplayName(true), vehModel);
 				break;
 			case SUB::SPAWNVEHICLE:
-				AddVSpawnOption_(vehModel.VehicleDisplayName(true), vehModel, Static_241);
+				AddVSpawnOption_(vehModel.VehicleDisplayName(true), vehModel, g_selectedPed);
 				break;
 
 			}
@@ -1196,9 +1196,9 @@ namespace sub
 				AddkgunOption_(vehModel.VehicleDisplayName(true), vehModel.hash, nullptr, false);
 				break;
 			case SUB::MSENGINESOUND:
-				AddTickol(vehModel.VehicleDisplayName(true), get_vehicle_engine_sound_name(Static_12) == vehModel.VehicleDisplayName(false), bSetEngSoundPressed, bSetEngSoundPressed); if (bSetEngSoundPressed)
+				AddTickol(vehModel.VehicleDisplayName(true), get_vehicle_engine_sound_name(g_selectedIndex) == vehModel.VehicleDisplayName(false), bSetEngSoundPressed, bSetEngSoundPressed); if (bSetEngSoundPressed)
 				{
-					GTAvehicle veh12 = Static_12;
+					GTAvehicle veh12 = g_selectedIndex;
 					veh12.RequestControl(200);
 					set_vehicle_engine_sound_name(veh12, vehModel.VehicleDisplayName(false));
 				}
@@ -1251,7 +1251,7 @@ namespace sub
 		auto& _searchStr = dict2;
 		using namespace SpawnVehicle_catind;
 
-		GTAped myPed = Static_241;
+		GTAped myPed = g_selectedPed;
 		GTAvehicle myVehicle = myPed.CurrentVehicle();
 		bool bIsInVehicle = myVehicle.Exists();
 
@@ -1378,7 +1378,7 @@ namespace sub
 						sub::Spooner::MenuOptions::AddOption_AddVehicle(vehDisplayName, vehModel);
 						break;
 					case SUB::SPAWNVEHICLE:
-						AddVSpawnOption_(vehDisplayName, vehModel, Static_241);
+						AddVSpawnOption_(vehDisplayName, vehModel, g_selectedPed);
 						break;
 					}
 					/// one submenu back >>>
@@ -1391,9 +1391,9 @@ namespace sub
 						AddkgunOption_(vehDisplayName, vehModel.hash, &null, false);
 						break;
 					case SUB::MSENGINESOUND:
-						AddTickol(vehDisplayName, get_vehicle_engine_sound_name(Static_12) == vehModel.VehicleDisplayName(false), bSetEngSoundPressed, bSetEngSoundPressed); if (bSetEngSoundPressed)
+						AddTickol(vehDisplayName, get_vehicle_engine_sound_name(g_selectedIndex) == vehModel.VehicleDisplayName(false), bSetEngSoundPressed, bSetEngSoundPressed); if (bSetEngSoundPressed)
 						{
-							GTAvehicle veh12 = Static_12;
+							GTAvehicle veh12 = g_selectedIndex;
 							veh12.RequestControl(200);
 							set_vehicle_engine_sound_name(veh12, vehModel.VehicleDisplayName(false));
 						}
@@ -2048,7 +2048,7 @@ namespace sub
 			auto& _name = dict;
 			auto& _dir = dict3;
 
-			auto ped = Static_241;
+			auto ped = g_selectedPed;
 			auto vehicle = GET_VEHICLE_PED_IS_USING(ped);
 			bool isPedInVeh = IS_PED_IN_ANY_VEHICLE(ped, 0) || IS_PED_SITTING_IN_ANY_VEHICLE(ped);
 
@@ -2200,7 +2200,7 @@ namespace sub
 			auto& _dir = dict3;
 			std::string filePath = _dir + "\\" + _name + ".xml";
 
-			auto& ped = Static_241;
+			auto& ped = g_selectedPed;
 			auto vehicle = GET_VEHICLE_PED_IS_USING(ped);
 			bool isPedInVeh = IS_PED_IN_ANY_VEHICLE(ped, 0) || IS_PED_SITTING_IN_ANY_VEHICLE(ped);
 

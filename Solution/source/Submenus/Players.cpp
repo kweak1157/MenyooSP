@@ -35,13 +35,13 @@ namespace sub
 				bool bPlayerPressed = false;
 				AddOption(GET_PLAYER_NAME(i), bPlayerPressed);
 
-				//if (Menu::printingop == *Menu::currentopATM) Static_240 = i;
+				//if (Menu::printingop == *Menu::currentopATM) g_selectedPlayer = i;
 
 				if (bPlayerPressed)
 				{
-					Static_240 = i;
-					Static_241 = GET_PLAYER_PED(Static_240); // Store ped
-					Static_239 = GET_PLAYER_NAME(Static_240); // Store name
+					g_selectedPlayer = i;
+					g_selectedPed = GET_PLAYER_PED(g_selectedPlayer); // Store ped
+					g_selectedPlayerName = GET_PLAYER_NAME(g_selectedPlayer); // Store name
 					Menu::SetSub_new(SUB::PLAYERSSUBAMENU); // Change submenu to 'PlayersSubAMenu_'
 				}
 			}
@@ -61,14 +61,14 @@ namespace sub
 		}
 		else spectatePlayerStr = "Spectate Player";
 
-		AddTitle(Static_239); // Title = player name
+		AddTitle(g_selectedPlayerName); // Title = player name
 		AddOption("Set Waypoint To Player", bSetWp);
-		AddLocal(spectatePlayerStr, loop_spectate_player == Static_240, bSpectateOn, bSpectateOff); // Spectate Player
+		AddLocal(spectatePlayerStr, loop_spectate_player == g_selectedPlayer, bSpectateOn, bSpectateOff); // Spectate Player
 
 		if (bSpectateOn)
 		{
 			Ped ped;
-			loop_spectate_player = Static_240;
+			loop_spectate_player = g_selectedPlayer;
 			for (int i = 0; i < GAME_PLAYERCOUNT; i++)
 			{
 				if (!NETWORK_IS_PLAYER_ACTIVE(i)) continue;
@@ -101,7 +101,7 @@ namespace sub
 
 		if (bSetWp)
 		{
-			GTAplayer player = Static_240;
+			GTAplayer player = g_selectedPlayer;
 			if (player.IsActive())
 			{
 				const GTAped& playerPed = player.GetPed();

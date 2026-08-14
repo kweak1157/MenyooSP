@@ -49,7 +49,7 @@ namespace sub::Spooner
 		void SpawnModelPreview();
 
 		void ResetSelectedEntity();
-		bool GetEntityPtr(GTAentity& inEntity, SpoonerEntity*& outEntity);
+		bool GetEntityPtr(GTAentity& inEntity, SpoonerEntity*& outEntity, SpoonerEntity& nonDbStorage);
 		SpoonerEntity GetEntityPtrValue(GTAentity& entity);
 		inline void SetAsSelectedEntity(GTAentity& entity);
 

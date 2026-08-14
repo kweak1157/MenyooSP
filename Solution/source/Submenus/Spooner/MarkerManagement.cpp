@@ -35,8 +35,87 @@ namespace sub::Spooner
 {
 	namespace MarkerManagement
 	{
+		namespace
+		{
+			enum class MarkerTeleportPhase : UINT8
+			{
+				Idle = 0,
+				FadeOut,
+				AfterTeleport
+			};
+
+			MarkerTeleportPhase s_tpPhase = MarkerTeleportPhase::Idle;
+			int s_tpPhaseStartMs = 0;
+			int s_tpEntityHandle = 0;
+			Vector3 s_tpFinalDest;
+			float s_tpFinalDestHeading = 0.0f;
+			bool s_tpIsVehicle = false;
+
+			void ApplyMarkerTeleport()
+			{
+				GTAentity entityToTeleport(s_tpEntityHandle);
+				if (!entityToTeleport.Exists())
+				{
+					DO_SCREEN_FADE_IN(300);
+					s_tpPhase = MarkerTeleportPhase::Idle;
+					return;
+				}
+
+				entityToTeleport.RequestControl();
+				entityToTeleport.Position_set(s_tpFinalDest);
+				entityToTeleport.Heading_set(s_tpFinalDestHeading);
+				if (s_tpIsVehicle)
+					GTAvehicle(entityToTeleport).Speed_set(4.2f); // Approx 15 km/h
+				GameplayCamera::RelativeHeading_set(0.0f);
+				GameplayCamera::RelativePitch_set(0.0f);
+			}
+
+			void TickMarkerTeleport()
+			{
+				if (s_tpPhase == MarkerTeleportPhase::Idle)
+					return;
+
+				const int now = GET_GAME_TIMER();
+				const int elapsed = now - s_tpPhaseStartMs;
+
+				if (s_tpPhase == MarkerTeleportPhase::FadeOut)
+				{
+					if (elapsed >= 20)
+					{
+						ApplyMarkerTeleport();
+						s_tpPhase = MarkerTeleportPhase::AfterTeleport;
+						s_tpPhaseStartMs = now;
+					}
+				}
+				else if (s_tpPhase == MarkerTeleportPhase::AfterTeleport)
+				{
+					if (elapsed >= 100)
+					{
+						DO_SCREEN_FADE_IN(300);
+						s_tpPhase = MarkerTeleportPhase::Idle;
+					}
+				}
+			}
+
+			void BeginMarkerTeleport(GTAentity& entityToTeleport, const Vector3& finalDest, float finalDestHeading)
+			{
+				SpoonerMarker::bPlayerJustTeleportedBetweenMarkers = true;
+				DO_SCREEN_FADE_OUT(5);
+				entityToTeleport.RequestControl();
+
+				s_tpEntityHandle = entityToTeleport.Handle();
+				s_tpFinalDest = finalDest;
+				s_tpFinalDestHeading = finalDestHeading;
+				s_tpIsVehicle = ((EntityType)entityToTeleport.Type() == EntityType::VEHICLE);
+				s_tpPhase = MarkerTeleportPhase::FadeOut;
+				s_tpPhaseStartMs = GET_GAME_TIMER();
+			}
+		}
+
 		void DrawAll()
 		{
+			TickMarkerTeleport();
+
 			GTAentity myPed = PLAYER_PED_ID();
 			GTAentity myVehicle = GET_VEHICLE_PED_IS_IN(myPed.Handle(), false);
 			GTAentity* entityToTeleport = &myPed;
@@ -118,6 +197,9 @@ namespace sub::Spooner
 					}
 				}
 
+				if (s_tpPhase != MarkerTeleportPhase::Idle)
+					continue;
+
 				if (!SpoonerMarker::bPlayerJustTeleportedBetweenMarkers)
 				{
 					SpoonerMarkerPosition* dest = marker.m_destinationPtr == nullptr ? &marker.m_destinationVal : marker.m_destinationPtr;
@@ -130,11 +212,6 @@ namespace sub::Spooner
 							{
 								if (c.DistanceTo(finalPosition) < marker.m_scale)
 								{
-									SpoonerMarker::bPlayerJustTeleportedBetweenMarkers = true;
-									DO_SCREEN_FADE_OUT(5);
-									entityToTeleport->RequestControl();
-									WAIT(20);
-
 									Vector3 finalDest;
 									float finalDestHeading;
 									if (dest->m_attachmentArgs.attachedTo.Exists())
@@ -148,28 +225,7 @@ namespace sub::Spooner
 										finalDestHeading = marker.m_destinationHeading;
 									}
 
-									entityToTeleport->Position_set(finalDest);
-									entityToTeleport->Heading_set(finalDestHeading);
-									switch ((EntityType)entityToTeleport->Type())
-									{
-									case EntityType::PED:
-									{
-										//TaskSequence sq;
-										//Vector3& outsideMarkerPos = entityToTeleport->GetOffsetInWorldCoords(0, marker.m_scale + 1.0f, 0);
-										//TASK_GO_STRAIGHT_TO_COORD(0, outsideMarkerPos.x, outsideMarkerPos.y, outsideMarkerPos.z, 1.5f, 2000, Vector3::DirectionToRotation(outsideMarkerPos - marker.m_destination).z, 0.0f);
-										//sq.Close();
-										//sq.MakePedPerform(*entityToTeleport);
-										//sq.Clear();
-										break;
-									}
-									case EntityType::VEHICLE:
-										GTAvehicle(*entityToTeleport).Speed_set(4.2f); // Approx 15 km/h
-										break;
-									}
-									GameplayCamera::RelativeHeading_set(0.0f);
-									GameplayCamera::RelativePitch_set(0.0f);
-									WAIT(100);
-									DO_SCREEN_FADE_IN(300);
+									BeginMarkerTeleport(*entityToTeleport, finalDest, finalDestHeading);
 									return;
 								}
 							}

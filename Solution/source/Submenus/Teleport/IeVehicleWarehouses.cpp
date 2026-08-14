@@ -134,7 +134,7 @@ namespace sub::TeleportLocations_catind
 				Menu::SetSub_previous();
 				return;
 			}
-			GTAped ped = Static_241;
+			GTAped ped = g_selectedPed;
 			AddTitle(currentWarehouseInfo.location->name);
 
 			for (auto& o : vOptionArrays)

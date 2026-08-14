@@ -64,8 +64,21 @@ namespace _MagnetGun_
 
 				World::DrawMarker(MarkerType::DebugSphere, targetPos, Vector3(), Vector3(), Vector3(0.5f, 0.5f, 0.5f), g_fadedRGB.ToRGBA(150));
 
+				const float magRadius = 18.7f;
 				std::vector<Entity> magEntities;
-				GTAmemory::GetEntityHandles(magEntities, targetPos, 18.7f);
+				if (!_worldEntities.empty())
+				{
+					magEntities.reserve(_worldEntities.size());
+					for (Entity e : _worldEntities)
+					{
+						if (targetPos.DistanceTo(GET_ENTITY_COORDS(e, 1)) <= magRadius)
+							magEntities.push_back(e);
+					}
+				}
+				else
+				{
+					GTAmemory::GetEntityHandles(magEntities, targetPos, magRadius);
+				}
 
 				for (GTAentity entity : magEntities)
 				{

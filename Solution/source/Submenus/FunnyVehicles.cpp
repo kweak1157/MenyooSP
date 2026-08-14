@@ -160,7 +160,7 @@ namespace sub
 		// Spawn funny veh function
 		int PlaceFunnyVeh_(Hash hash)
 		{
-			return FuncSpawnVehicle_(hash, Static_241);
+			return FuncSpawnVehicle_(hash, g_selectedPed);
 		}
 
 		// Funny vehicles

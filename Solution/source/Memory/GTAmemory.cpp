@@ -1510,6 +1510,9 @@ void SpSnow::EnableSnow(bool bEnable)
 		this->bInitialized = true;
 	}
 
+	if (this->bPatchApplied == bEnable)
+		return;
+
 	//auto snow_ptr = GetTunablePtr<INT32>(RawTunableIndex::TURN_SNOW_ON_OFF);
 
 
@@ -1561,6 +1564,7 @@ void SpSnow::EnableSnow(bool bEnable)
 		//USE_SNOW_FOOT_VFX_WHEN_UNSHELTERED(true);
 		//USE_SNOW_WHEEL_VFX_WHEN_UNSHELTERED(true);
 		this->EnableTracks(true, true, true, true);
+		this->bPatchApplied = true;
 		// Now on
 	}
 	else
@@ -1578,6 +1582,7 @@ void SpSnow::EnableSnow(bool bEnable)
 		//USE_SNOW_FOOT_VFX_WHEN_UNSHELTERED(false);
 		//USE_SNOW_WHEEL_VFX_WHEN_UNSHELTERED(false);
 		this->EnableTracks(false, false, false, false);
+		this->bPatchApplied = false;
 		// Now off
 	}
 }
@@ -1615,7 +1620,7 @@ void SpSnow::EnableTracks(bool tracksPed, bool deepTracksPed, bool tracksVehicle
 }
 
 SpSnow::SpSnow()
-	: bDisabled(true), loop_spsnow(false), bInitialized(false),
+	: bDisabled(true), loop_spsnow(false), bInitialized(false), bPatchApplied(false),
 	bUseAddr13(false), bUseAddr22(false),
 	tracks_available(true),
 	traxp(NULL),

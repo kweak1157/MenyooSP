@@ -9,12 +9,8 @@
 */
 #pragma once
 
-// nts: This is so useless with the way it's used
 class GenericLoopedMode abstract
 {
-public:
-	static void TickAll();
-
 protected:
 	bool bEnabled;
 public:

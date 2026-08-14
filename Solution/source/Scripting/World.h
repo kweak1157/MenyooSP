@@ -163,7 +163,7 @@ namespace World
 
 
 	// World - Relationships - nearby
-	void KillNearbyPeds(GTAped originPed, float range, PedRelationship::PedRelationship relationshipWithOriginPed);
+	void KillNearbyPeds(GTAped originPed, float range);
 	void KillMyEnemies();
 
 }

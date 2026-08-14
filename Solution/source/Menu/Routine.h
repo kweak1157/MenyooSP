@@ -13,9 +13,6 @@
 #include <unordered_set>
 #include <map>
 
-#define TRUE 1
-#define FALSE 0
-
 typedef signed short INT16;
 typedef unsigned short UINT16;
 typedef signed char INT8;
@@ -68,8 +65,8 @@ extern PTFX::sFxData triggerfx_gun_data;
 extern Hash kaboom_gun_hash, bullet_gun_hash;
 extern GTAmodel::Model ped_gun_hash, object_gun_hash;
 extern FLOAT current_timescale;
-extern INT Static_241, Static_240, Static_242, Static_12;
-extern const char* Static_239;
+extern INT g_selectedPed, g_selectedPlayer, g_selectedPlayerGroup, g_selectedIndex;
+extern const char* g_selectedPlayerName;
 extern INT bit_MSPaints_RGB_mode;
 extern bool kaboom_gun_invis, kaboom_gun_rand_bit, ped_gun_rand_bit, object_gun_rand_bit_o, object_gun_rand_bit_v;
 extern bool bit_night_vision;
@@ -126,7 +123,7 @@ loop_car_hydraulics, loop_super_grip, loop_SuprKarMode, loop_unlimVehBoost,
 loop_vehweap_lines, loop_vehicle_RPG, loop_vehicle_fireworks, loop_vehicle_guns, loop_vehicle_snowballs, loop_vehicle_balls, loop_vehicle_waterhyd, loop_vehicle_laser_green, loop_vehicle_flameleak,
 loop_vehicle_laser_red, loop_vehicle_turrets_valkyrie, loop_vehicle_flaregun, loop_vehicle_heavysnip, loop_vehicle_tazerweap, loop_vehicle_molotovweap, loop_vehicle_combatpdw,
 
-loop_car_colour_change, loop_vehicle_invisibility, loop_self_engineOn, loop_hide_hud, loop_showFullHud,
+loop_car_colour_change, loop_self_engineOn, loop_hide_hud, loop_showFullHud,
 loop_pause_clock, loop_sync_clock, loop_triple_bullets, loop_rapid_fire, loop_self_resurrectionGun, loop_soulswitch_gun, loop_self_deleteGun, loop_vehicle_fixloop, loop_vehicle_fliploop,
 loop_blackout_mode, loop_simple_blackout_mode, loop_restricted_areas_access, loop_HVSnipers, loop_vehicle_disableSiren, loop_fireworksDisplay,
 bit_infinite_ammo, loop_self_inf_parachutes;

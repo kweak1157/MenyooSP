@@ -620,24 +620,14 @@ bool GTAentity::RequestControlOnce()
 }
 bool GTAentity::RequestControl()
 {
-	uint8_t tick = 0;
-
-	while (!this->RequestControlOnce() && tick <= 12)
-	{
-		//WAIT(0); // Let's just not wait here ever again geez
-		tick++;
-	}
-	return tick <= 12;
+	// One try per call/frame. Game cannot grant control in a same-frame busy loop.
+	return this->RequestControlOnce();
 }
 bool GTAentity::RequestControl(DWORD timeOut)
 {
-	for (timeOut += GetTickCount(); GetTickCount() < timeOut;)
-	{
-		if (this->RequestControlOnce())
-			return true;
-		WAIT(0);
-	}
-	return false;
+	// Do not WAIT on the menu thread. Callers that need control must retry on a later frame.
+	(void)timeOut;
+	return this->RequestControlOnce();
 }
 void GTAentity::Delete(bool tele)
 {

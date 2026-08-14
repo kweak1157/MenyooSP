@@ -1331,7 +1331,6 @@ namespace sub::Spooner
 				Vector3 wpCoords;
 				for (;;)
 				{
-					SpoonerMode::Tick();
 					bSpoocamIsActive = spoocam.IsActive();
 
 					Game::Print::setupdraw(GTAfont::Caps, Vector2(0.9f, 0.9f), true, false, false);

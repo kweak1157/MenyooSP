@@ -328,9 +328,9 @@ namespace sub
 		if (anim_name.length() == 0)
 			anim_name = text;
 		bool pressed = false;
-		AddTickol(text, IS_ENTITY_PLAYING_ANIM(Static_241, anim_dict.c_str(), anim_name.c_str(), 3), pressed, pressed, TICKOL::MANWON); if (pressed)
+		AddTickol(text, IS_ENTITY_PLAYING_ANIM(g_selectedPed, anim_dict.c_str(), anim_name.c_str(), 3), pressed, pressed, TICKOL::MANWON); if (pressed)
 		{
-			GTAped ped = Static_241;
+			GTAped ped = g_selectedPed;
 			GTAentity att;
 			auto spi = sub::Spooner::EntityManagement::GetEntityIndexInDb(ped);
 			if (spi >= 0)
@@ -389,7 +389,7 @@ namespace sub
 
 	void AnimationSub_StopAnimationCallback()
 	{
-		GTAped ped = Static_241;
+		GTAped ped = g_selectedPed;
 		GTAentity att;
 		auto spi = sub::Spooner::EntityManagement::GetEntityIndexInDb(ped);
 		if (spi >= 0)
@@ -431,18 +431,18 @@ namespace sub
 	void AnimationSub_()
 	{
 		//sub::Spooner::SpoonerEntity uselessSpoonerEntity;
-		//sub::Spooner::SpoonerEntity* spoonerCurrentPed = Static_241 == sub::Spooner::SelectedEntity.Handle.Handle() ? &sub::Spooner::SelectedEntity : &uselessSpoonerEntity;
+		//sub::Spooner::SpoonerEntity* spoonerCurrentPed = g_selectedPed == sub::Spooner::SelectedEntity.Handle.Handle() ? &sub::Spooner::SelectedEntity : &uselessSpoonerEntity;
 		auto& _searchStr = dict;
 		dict.clear();
 
 		bool dictset_deer = 0, dictset_cow = 0, dictset_shark = 0, dictset_guard_reac = 0, dictset_randarrests = 0,
 			dictset_swat = 0, dictset_missrappel = 0, dictset_gestures_sitting = 0;
 
-		SET_PED_CAN_PLAY_AMBIENT_ANIMS(Static_241, TRUE);
-		SET_PED_CAN_PLAY_AMBIENT_BASE_ANIMS(Static_241, TRUE);
-		SET_PED_CAN_PLAY_GESTURE_ANIMS(Static_241, TRUE);
-		SET_PED_CAN_PLAY_VISEME_ANIMS(Static_241, TRUE, TRUE);
-		SET_PED_IS_IGNORED_BY_AUTO_OPEN_DOORS(Static_241, TRUE);
+		SET_PED_CAN_PLAY_AMBIENT_ANIMS(g_selectedPed, TRUE);
+		SET_PED_CAN_PLAY_AMBIENT_BASE_ANIMS(g_selectedPed, TRUE);
+		SET_PED_CAN_PLAY_GESTURE_ANIMS(g_selectedPed, TRUE);
+		SET_PED_CAN_PLAY_VISEME_ANIMS(g_selectedPed, TRUE, TRUE);
+		SET_PED_IS_IGNORED_BY_AUTO_OPEN_DOORS(g_selectedPed, TRUE);
 
 		AddTitle("Animations");
 		AddTickol("Stop Animation", true, AnimationSub_StopAnimationCallback, AnimationSub_StopAnimationCallback, TICKOL::CROSS);
@@ -681,7 +681,7 @@ namespace sub
 
 		if (apply)
 		{
-			GTAped ped = Static_241;
+			GTAped ped = g_selectedPed;
 			GTAentity att;
 			auto spi = sub::Spooner::EntityManagement::GetEntityIndexInDb(ped);
 			if (spi >= 0)
@@ -714,7 +714,7 @@ namespace sub
 
 		if (stop)
 		{
-			GTAped ped = Static_241;
+			GTAped ped = g_selectedPed;
 			GTAentity att;
 			auto spi = sub::Spooner::EntityManagement::GetEntityIndexInDb(ped);
 			if (spi >= 0)
@@ -1087,10 +1087,10 @@ namespace sub
 		void __AddOption(const std::string& text, const std::string& scenarioLabel, int delay = -1, bool playEnterAnim = true)
 		{
 			bool pressed = false;
-			AddTickol(text, IS_PED_USING_SCENARIO(Static_241, scenarioLabel.c_str()), pressed, pressed, TICKOL::MANWON);
+			AddTickol(text, IS_PED_USING_SCENARIO(g_selectedPed, scenarioLabel.c_str()), pressed, pressed, TICKOL::MANWON);
 			if (pressed)
 			{
-				GTAped ped = Static_241;
+				GTAped ped = g_selectedPed;
 				GTAentity att;
 				auto spi = sub::Spooner::EntityManagement::GetEntityIndexInDb(ped);
 				if (spi >= 0)
@@ -1104,13 +1104,13 @@ namespace sub
 				if (!ped.Task().IsUsingScenario(scenarioLabel))
 				{
 					//ped.Task().StartScenario(scenarioLabel, delay, playEnterAnim);
-					TASK_START_SCENARIO_IN_PLACE(Static_241, scenarioLabel.c_str(), delay, playEnterAnim);
+					TASK_START_SCENARIO_IN_PLACE(g_selectedPed, scenarioLabel.c_str(), delay, playEnterAnim);
 				}
 
 				if (scenarioLabel.find("MUSICIAN") != std::string::npos)
 				{
 					ped.Task().ClearAllImmediately();
-					TASK_START_SCENARIO_IN_PLACE(Static_241, "WORLD_HUMAN_MUSICIAN", delay, playEnterAnim);
+					TASK_START_SCENARIO_IN_PLACE(g_selectedPed, "WORLD_HUMAN_MUSICIAN", delay, playEnterAnim);
 				}
 
 				if (spi >= 0)
@@ -1133,7 +1133,7 @@ namespace sub
 		}
 		void stopScenarioPls()
 		{
-			GTAped ped = Static_241;
+			GTAped ped = g_selectedPed;
 			GTAentity att;
 			auto spi = sub::Spooner::EntityManagement::GetEntityIndexInDb(ped);
 			if (spi >= 0)
@@ -1233,7 +1233,7 @@ namespace sub
 		SET_PED_MOVEMENT_CLIPSET(ped.Handle(), setName.c_str(), 0x3E800000);
 		WAIT(30);
 		Vector3 coord = GET_ENTITY_COORDS(ped.Handle(), 1);
-		SET_ENTITY_COORDS(Static_241, coord.x, coord.y, coord.z + 0.05f, 0, 0, 0, 1);
+		SET_ENTITY_COORDS(g_selectedPed, coord.x, coord.y, coord.z + 0.05f, 0, 0, 0, 1);
 		FREEZE_ENTITY_POSITION(ped.Handle(), 0);
 		g_pedList_movGrp[ped.Handle()] = setName;
 	}
@@ -1252,7 +1252,7 @@ namespace sub
 		SET_PED_WEAPON_MOVEMENT_CLIPSET(ped.Handle(), setName.c_str());
 		WAIT(30);
 		const Vector3& coord = GET_ENTITY_COORDS(ped.Handle(), 1);
-		SET_ENTITY_COORDS(Static_241, coord.x, coord.y, coord.z + 0.05f, 0, 0, 0, 1);
+		SET_ENTITY_COORDS(g_selectedPed, coord.x, coord.y, coord.z + 0.05f, 0, 0, 0, 1);
 		FREEZE_ENTITY_POSITION(ped.Handle(), 0);
 		g_pedList_wmovGrp[ped.Handle()] = setName;
 	}
@@ -1262,12 +1262,12 @@ namespace sub
 		if (movgrp.length() == 0)
 			movgrp = text;
 
-		bool bMovGrpIsActive = get_ped_movement_clipset(Static_241) == movgrp;
+		bool bMovGrpIsActive = get_ped_movement_clipset(g_selectedPed) == movgrp;
 
 		bool pressed = false;
 		AddTickol(text, bMovGrpIsActive, pressed, pressed); if (pressed)
 		{
-			set_ped_movement_clipset(Static_241, movgrp);
+			set_ped_movement_clipset(g_selectedPed, movgrp);
 			extra_option_code = true;
 		}
 	}
@@ -1276,21 +1276,21 @@ namespace sub
 		if (movgrp.length() == 0)
 			movgrp = text;
 
-		bool bMovGrpIsActive = get_ped_weapon_movement_clipset(Static_241) == movgrp;
+		bool bMovGrpIsActive = get_ped_weapon_movement_clipset(g_selectedPed) == movgrp;
 
 		bool pressed = false;
 		AddTickol(text, bMovGrpIsActive, pressed, pressed); if (pressed)
 		{
-			set_ped_weapon_movement_clipset(Static_241, movgrp);
+			set_ped_weapon_movement_clipset(g_selectedPed, movgrp);
 			extra_option_code = true;
 		}
 	}
 	void MovementGroup_()
 	{
-		auto mgit = g_pedList_movGrp.find(Static_241);
+		auto mgit = g_pedList_movGrp.find(g_selectedPed);
 		bool mgitIsValid = mgit != g_pedList_movGrp.end();
 
-		auto wmgit = g_pedList_wmovGrp.find(Static_241);
+		auto wmgit = g_pedList_wmovGrp.find(g_selectedPed);
 		bool wmgitIsValid = mgit != g_pedList_wmovGrp.end();
 
 		bool MovementGroupReset_ = 0, MovementGroupResetW_ = 0;
@@ -1419,27 +1419,27 @@ namespace sub
 			bool bWeaponAnimPressed = false;
 			AddOption(wa.first, bWeaponAnimPressed); if (bWeaponAnimPressed)
 			{
-				WEAPON::SET_WEAPON_ANIMATION_OVERRIDE(Static_241, wa.second);
+				WEAPON::SET_WEAPON_ANIMATION_OVERRIDE(g_selectedPed, wa.second);
 			}
 		}
 
 
 		if (MovementGroupReset_)
 		{
-			RESET_PED_MOVEMENT_CLIPSET(Static_241, 0x3E800000);
+			RESET_PED_MOVEMENT_CLIPSET(g_selectedPed, 0x3E800000);
 			WAIT(10);
-			Vector3 Coord = GET_ENTITY_COORDS(Static_241, 1);
-			SET_ENTITY_COORDS_NO_OFFSET(Static_241, Coord.x, Coord.y, Coord.z + 0.05f, 1, 1, 0);
-			FREEZE_ENTITY_POSITION(Static_241, 0);
+			Vector3 Coord = GET_ENTITY_COORDS(g_selectedPed, 1);
+			SET_ENTITY_COORDS_NO_OFFSET(g_selectedPed, Coord.x, Coord.y, Coord.z + 0.05f, 1, 1, 0);
+			FREEZE_ENTITY_POSITION(g_selectedPed, 0);
 			if (mgitIsValid) g_pedList_movGrp.erase(mgit);
 		}
 		if (MovementGroupResetW_)
 		{
-			RESET_PED_WEAPON_MOVEMENT_CLIPSET(Static_241);
+			RESET_PED_WEAPON_MOVEMENT_CLIPSET(g_selectedPed);
 			WAIT(10);
-			Vector3 Coord = GET_ENTITY_COORDS(Static_241, 1);
-			SET_ENTITY_COORDS_NO_OFFSET(Static_241, Coord.x, Coord.y, Coord.z + 0.05f, 1, 1, 0);
-			FREEZE_ENTITY_POSITION(Static_241, 0);
+			Vector3 Coord = GET_ENTITY_COORDS(g_selectedPed, 1);
+			SET_ENTITY_COORDS_NO_OFFSET(g_selectedPed, Coord.x, Coord.y, Coord.z + 0.05f, 1, 1, 0);
+			FREEZE_ENTITY_POSITION(g_selectedPed, 0);
 			if (wmgitIsValid) g_pedList_wmovGrp.erase(wmgit);
 		}
 
@@ -1468,7 +1468,7 @@ namespace sub
 
 		void Sub_FacialMood()
 		{
-			GTAentity ped = Static_241;
+			GTAentity ped = g_selectedPed;
 			auto current = get_ped_facial_mood(ped);
 
 			AddTitle("Mood");

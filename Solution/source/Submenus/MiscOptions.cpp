@@ -44,7 +44,7 @@ namespace sub
 {
 	void MiscOps()
 	{
-		Static_241 = PLAYER_PED_ID();
+		g_selectedPed = PLAYER_PED_ID();
 
 		const std::vector<std::string> explosions_wp_names{ "Off", "Visible & Shaky", "Visible", "Invisible" };
 
@@ -373,19 +373,19 @@ namespace sub
 
 		AddNumber("Range To Clear", _globalClearArea_radius, 2, cleararea_radius_input, cleararea_radius_plus, cleararea_radius_minus);
 		if (*Menu::currentopATM == Menu::printingop)
-			sub::Spooner::EntityManagement::DrawRadiusDisplayingMarker(GET_ENTITY_COORDS(Static_241, 1), _globalClearArea_radius);
+			sub::Spooner::EntityManagement::DrawRadiusDisplayingMarker(GET_ENTITY_COORDS(g_selectedPed, 1), _globalClearArea_radius);
 
 		AddOption("Vehicles", cleararea_vehicles);
 		AddOption("Peds", cleararea_peds);
 		AddOption("Objects", cleararea_objects);
 		AddOption("All", cleararea_all);
 
-		//if (cleararea_vehicles){ clear_area_of_vehicles_around_entity(Static_241, _globalClearArea_radius); return; }
-		//if (cleararea_peds){ clear_area_of_peds_around_entity(Static_241, _globalClearArea_radius); return; }
-		if (cleararea_vehicles) { clear_area_of_entities(EntityType::VEHICLE, GET_ENTITY_COORDS(Static_241, 1), _globalClearArea_radius, { GET_VEHICLE_PED_IS_IN(Static_241, 0) }); return; }
-		if (cleararea_peds) { clear_area_of_entities(EntityType::PED, GET_ENTITY_COORDS(Static_241, 1), _globalClearArea_radius, { Static_241 }); return; }
-		if (cleararea_objects) { clear_area_of_entities(EntityType::PROP, GET_ENTITY_COORDS(Static_241, 1), _globalClearArea_radius, {}); return; }
-		if (cleararea_all) { clear_area_of_entities(EntityType::ALL, GET_ENTITY_COORDS(Static_241, 1), _globalClearArea_radius, { Static_241, GET_VEHICLE_PED_IS_IN(Static_241, 0) }); return; }
+		//if (cleararea_vehicles){ clear_area_of_vehicles_around_entity(g_selectedPed, _globalClearArea_radius); return; }
+		//if (cleararea_peds){ clear_area_of_peds_around_entity(g_selectedPed, _globalClearArea_radius); return; }
+		if (cleararea_vehicles) { clear_area_of_entities(EntityType::VEHICLE, GET_ENTITY_COORDS(g_selectedPed, 1), _globalClearArea_radius, { GET_VEHICLE_PED_IS_IN(g_selectedPed, 0) }); return; }
+		if (cleararea_peds) { clear_area_of_entities(EntityType::PED, GET_ENTITY_COORDS(g_selectedPed, 1), _globalClearArea_radius, { g_selectedPed }); return; }
+		if (cleararea_objects) { clear_area_of_entities(EntityType::PROP, GET_ENTITY_COORDS(g_selectedPed, 1), _globalClearArea_radius, {}); return; }
+		if (cleararea_all) { clear_area_of_entities(EntityType::ALL, GET_ENTITY_COORDS(g_selectedPed, 1), _globalClearArea_radius, { g_selectedPed, GET_VEHICLE_PED_IS_IN(g_selectedPed, 0) }); return; }
 
 		if (cleararea_radius_input)
 		{
@@ -466,7 +466,7 @@ namespace sub
 
 	void RadioSub_()
 	{
-		GTAped ped = Static_241;
+		GTAped ped = g_selectedPed;
 		GTAvehicle vehicle = ped.CurrentVehicle();
 		bool mobile_radio_on = 0, mobile_radio_off = 0,
 			radio_forward = 0;
@@ -552,13 +552,13 @@ namespace sub
 			SET_FRONTEND_RADIO_ACTIVE(true);
 			SET_MOBILE_RADIO_ENABLED_DURING_GAMEPLAY(true);
 			SET_MOBILE_PHONE_RADIO_STATE(1);
-			PLAY_SOUND_FROM_ENTITY(-1, "Radio_On", Static_241, "TAXI_SOUNDS", 0, 0);
+			PLAY_SOUND_FROM_ENTITY(-1, "Radio_On", g_selectedPed, "TAXI_SOUNDS", 0, 0);
 		}
 		if (mobile_radio_off) {
 			//SET_FRONTEND_RADIO_ACTIVE(false);
 			SET_MOBILE_RADIO_ENABLED_DURING_GAMEPLAY(false);
 			SET_MOBILE_PHONE_RADIO_STATE(0);
-			PLAY_SOUND_FROM_ENTITY(-1, "Radio_Off", Static_241, "TAXI_SOUNDS", 0, 0);
+			PLAY_SOUND_FROM_ENTITY(-1, "Radio_Off", g_selectedPed, "TAXI_SOUNDS", 0, 0);
 		}
 
 		if (radio_forward) {
@@ -811,7 +811,7 @@ namespace sub
 				bool bCompSelected = false;
 				AddOption(h.second, bCompSelected, nullFunc, SUB::MSPAINTS_RGB); if (bCompSelected)
 				{
-					Static_12 = h.first;
+					g_selectedIndex = h.first;
 					bit_MSPaints_RGB_mode = 10;
 				}
 			}
@@ -822,7 +822,7 @@ namespace sub
 				bool bCompSelected = false;
 				AddOption(HudColour::vHudColours[i], bCompSelected, nullFunc, SUB::MSPAINTS_RGB); if (bCompSelected)
 				{
-					Static_12 = i;
+					g_selectedIndex = i;
 					bit_MSPaints_RGB_mode = 10;
 				}
 			}

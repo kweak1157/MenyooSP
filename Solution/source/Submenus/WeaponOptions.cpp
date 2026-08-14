@@ -58,8 +58,8 @@ namespace sub
 		dict2.clear();
 		dict3.clear();
 
-		Static_241 = PLAYER_PED_ID();
-		Static_240 = PLAYER_ID();
+		g_selectedPed = PLAYER_PED_ID();
+		g_selectedPlayer = PLAYER_ID();
 
 		std::stringstream wdmg_ss;
 		wdmg_ss << std::fixed << std::setprecision(2) << (loop_weapon_damage_increase / 0.72f);
@@ -96,7 +96,7 @@ namespace sub
 		AddToggle("Soul-Switch Gun (SP)", loop_soulswitch_gun, Weaponops_soulswitch_on);
 		AddLocal("Rope Gun (Glitchy)", _RopeGun_::g_ropeGun.Enabled(), _RopeGun_::ToggleOnOff, _RopeGun_::ToggleOnOff);
 		AddLocal("Magnet Gun", _MagnetGun_::g_magnetGun.Enabled(), _MagnetGun_::ToggleOnOff, _MagnetGun_::ToggleOnOff);
-		AddLocal("Flamethrower " + get_weapon_label(_FlameThrower_::_whash, true), _FlameThrower_::IsPlayerAdded(Static_240), _FlameThrower_::AddSelf, _FlameThrower_::RemoveSelf);
+		AddLocal("Flamethrower " + get_weapon_label(_FlameThrower_::_whash, true), _FlameThrower_::IsPlayerAdded(g_selectedPlayer), _FlameThrower_::AddSelf, _FlameThrower_::RemoveSelf);
 		AddToggle("Teleport Gun", loop_teleport_gun, bTeleportGunOn);
 		AddToggle("Ped Revival Gun", loop_self_resurrectionGun, bSelfResurrectionGunOn);
 		AddToggle("Entity Removal Gun", loop_self_deleteGun, bSelfDeleteGunOn);
@@ -117,57 +117,57 @@ namespace sub
 		if (bSelfDeleteGunOn) { Game::Print::PrintBottomLeft("Shoot ~b~anything*~s~ with the ~b~SNS pistol~s~ to delete it."); return; }
 		if (bSelfResurrectionGunOn) { Game::Print::PrintBottomLeft("Shoot ~b~dead people~s~ with the ~b~stun gun~s~ to bring them back from the other side."); return; }
 
-		if (ped_weaps_all) { give_all_weapons_to_ped(Static_241); WAIT(15); give_ped_max_ammo(Static_241); return; }
-		if (bGiveMaxAmmoPressed) { give_ped_max_ammo(Static_241); return; }
-		if (WeaponopsRemoveWeaps_) { REMOVE_ALL_PED_WEAPONS(Static_241, 1); return; }
+		if (ped_weaps_all) { give_all_weapons_to_ped(g_selectedPed); WAIT(15); give_ped_max_ammo(g_selectedPed); return; }
+		if (bGiveMaxAmmoPressed) { give_ped_max_ammo(g_selectedPed); return; }
+		if (WeaponopsRemoveWeaps_) { REMOVE_ALL_PED_WEAPONS(g_selectedPed, 1); return; }
 
 
-		if (ped_weaps_garbage) { GIVE_WEAPON_TO_PED(Static_241, WEAPON_GARBAGEBAG, 1, true, true); SET_CURRENT_PED_WEAPON(Static_241, WEAPON_GARBAGEBAG, true); SET_PED_CURRENT_WEAPON_VISIBLE(Static_241, 1, 1, 1, 0); return; }
-		if (ped_weaps_handcuffs) { GIVE_WEAPON_TO_PED(Static_241, WEAPON_HANDCUFFS, 1, true, true); SET_CURRENT_PED_WEAPON(Static_241, WEAPON_HANDCUFFS, true); SET_PED_CURRENT_WEAPON_VISIBLE(Static_241, 1, 1, 1, 0); return; }
-		if (ped_weaps_digiscanner) { GIVE_WEAPON_TO_PED(Static_241, WEAPON_DIGISCANNER, 1, true, true); SET_CURRENT_PED_WEAPON(Static_241, WEAPON_DIGISCANNER, true); SET_PED_CURRENT_WEAPON_VISIBLE(Static_241, 1, 1, 1, 0); return; }
-		if (ped_weaps_briefcase) { GIVE_WEAPON_TO_PED(Static_241, WEAPON_BRIEFCASE, 1, true, true); SET_CURRENT_PED_WEAPON(Static_241, WEAPON_BRIEFCASE, true); SET_PED_CURRENT_WEAPON_VISIBLE(Static_241, 1, 1, 1, 0); return; }
+		if (ped_weaps_garbage) { GIVE_WEAPON_TO_PED(g_selectedPed, WEAPON_GARBAGEBAG, 1, true, true); SET_CURRENT_PED_WEAPON(g_selectedPed, WEAPON_GARBAGEBAG, true); SET_PED_CURRENT_WEAPON_VISIBLE(g_selectedPed, 1, 1, 1, 0); return; }
+		if (ped_weaps_handcuffs) { GIVE_WEAPON_TO_PED(g_selectedPed, WEAPON_HANDCUFFS, 1, true, true); SET_CURRENT_PED_WEAPON(g_selectedPed, WEAPON_HANDCUFFS, true); SET_PED_CURRENT_WEAPON_VISIBLE(g_selectedPed, 1, 1, 1, 0); return; }
+		if (ped_weaps_digiscanner) { GIVE_WEAPON_TO_PED(g_selectedPed, WEAPON_DIGISCANNER, 1, true, true); SET_CURRENT_PED_WEAPON(g_selectedPed, WEAPON_DIGISCANNER, true); SET_PED_CURRENT_WEAPON_VISIBLE(g_selectedPed, 1, 1, 1, 0); return; }
+		if (ped_weaps_briefcase) { GIVE_WEAPON_TO_PED(g_selectedPed, WEAPON_BRIEFCASE, 1, true, true); SET_CURRENT_PED_WEAPON(g_selectedPed, WEAPON_BRIEFCASE, true); SET_PED_CURRENT_WEAPON_VISIBLE(g_selectedPed, 1, 1, 1, 0); return; }
 
 		if (wdmg_jump)
 		{
 			loop_weapon_damage_increase = (loop_weapon_damage_increase == 1.0f ? 100.0f : 1.0f) * 0.72f;
-			SET_PLAYER_WEAPON_DAMAGE_MODIFIER(Static_240, loop_weapon_damage_increase);
-			//SET_PLAYER_WEAPON_DEFENSE_MODIFIER(Static_240, loop_weapon_damage_increase);
-			SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(Static_240, loop_weapon_damage_increase, true);
-			//SET_PLAYER_MELEE_WEAPON_DEFENSE_MODIFIER(Static_240, loop_weapon_damage_increase);
+			SET_PLAYER_WEAPON_DAMAGE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase);
+			//SET_PLAYER_WEAPON_DEFENSE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase);
+			SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase, true);
+			//SET_PLAYER_MELEE_WEAPON_DEFENSE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase);
 		}
 		if (wdmg_plus)
 		{
 			if (loop_weapon_damage_increase / 0.72f < 100.0f) loop_weapon_damage_increase += (0.1f * 0.72f);
-			SET_PLAYER_WEAPON_DAMAGE_MODIFIER(Static_240, loop_weapon_damage_increase);
-			SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(Static_240, loop_weapon_damage_increase, true);
+			SET_PLAYER_WEAPON_DAMAGE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase);
+			SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase, true);
 		}
 		if (wdmg_minus)
 		{
 			if (loop_weapon_damage_increase / 0.72f > -100.0f) loop_weapon_damage_increase -= (0.1f * 0.72f);
-			SET_PLAYER_WEAPON_DAMAGE_MODIFIER(Static_240, loop_weapon_damage_increase);
-			SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(Static_240, loop_weapon_damage_increase, true);
+			SET_PLAYER_WEAPON_DAMAGE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase);
+			SET_PLAYER_MELEE_WEAPON_DAMAGE_MODIFIER(g_selectedPlayer, loop_weapon_damage_increase, true);
 		}
 
 		if (WeaponopsBulletTimeOff_) { SET_TIME_SCALE(current_timescale); return; }
 
 		if (WeaponopsInfiniteAmmoOn_) {
-			give_ped_max_ammo(Static_241);
-			SET_PED_INFINITE_AMMO_CLIP(Static_241, true);
+			give_ped_max_ammo(g_selectedPed);
+			SET_PED_INFINITE_AMMO_CLIP(g_selectedPed, true);
 			return;
 		}
 		if (WeaponopsInfiniteAmmoOff_) {
-			SET_PED_INFINITE_AMMO_CLIP(Static_241, false);
+			SET_PED_INFINITE_AMMO_CLIP(g_selectedPed, false);
 			return;
 		}
 		/*if (WeaponopsInfiniteAmmo_){
 		if (!bit_infinite_ammo)
 		{
-		SET_PED_INFINITE_AMMO_CLIP(Static_241, 1);
+		SET_PED_INFINITE_AMMO_CLIP(g_selectedPed, 1);
 		bit_infinite_ammo = true;
 		}
 		else
 		{
-		SET_PED_INFINITE_AMMO_CLIP(Static_241, 0);
+		SET_PED_INFINITE_AMMO_CLIP(g_selectedPed, 0);
 		bit_infinite_ammo = false;
 		}
 		return;
@@ -537,14 +537,14 @@ namespace sub
 		AddTickol(text, (bullet_gun_hash == hash), pressed, pressed); if (pressed)
 		{
 			Hash currentWeapon;
-			BOOL bCurrentWeapon = GET_CURRENT_PED_WEAPON(Static_241, &currentWeapon, 1);
+			BOOL bCurrentWeapon = GET_CURRENT_PED_WEAPON(g_selectedPed, &currentWeapon, 1);
 
 			if (!HAS_WEAPON_ASSET_LOADED(hash))
 				REQUEST_WEAPON_ASSET(hash, 31, 0);
-			GIVE_WEAPON_TO_PED(Static_241, hash, 120, 1, 1);
+			GIVE_WEAPON_TO_PED(g_selectedPed, hash, 120, 1, 1);
 
 			if (bCurrentWeapon)
-				SET_CURRENT_PED_WEAPON(Static_241, currentWeapon, true);
+				SET_CURRENT_PED_WEAPON(g_selectedPed, currentWeapon, true);
 
 			bullet_gun_hash = hash;
 
@@ -885,7 +885,7 @@ namespace sub
 
 		void Sub_WeaponFavourites()
 		{
-			GTAped ped = Static_241;
+			GTAped ped = g_selectedPed;
 			Hash currentPedWeapon = ped.Weapon_get();
 
 			AddTitle("Favourites");
@@ -979,7 +979,7 @@ namespace sub
 					bool bWeapPressed = false;
 					AddOption(customName, bWeapPressed); if (bWeapPressed)
 					{
-						INT& selectedCategoryForInItem = Static_12;
+						INT& selectedCategoryForInItem = g_selectedIndex;
 						INT& selectedWeaponForInItem = ms_curr_paint_index;
 						auto& vAllAddedWeaponsArr = *WeaponIndivs::vAllWeapons.back();
 						for (UINT i = 0; i < vAllAddedWeaponsArr.size(); i++)
@@ -1036,7 +1036,7 @@ namespace sub
 		using WeaponIndivs::get_weapon;
 		using WeaponIndivs::vCaptions_ChuteTints;
 
-		INT& selectedCategory = Static_12;
+		INT& selectedCategory = g_selectedIndex;
 		INT& selectedWeapon = ms_curr_paint_index;
 
 
@@ -1044,7 +1044,7 @@ namespace sub
 		void Sub_CategoriesList()
 		{
 			int i;
-			auto& ped = Static_241;
+			auto& ped = g_selectedPed;
 			Hash pedCurrentWeapon; GET_CURRENT_PED_WEAPON(ped, &pedCurrentWeapon, 1);
 
 			AddTitle("Individual Weapons");
@@ -1064,7 +1064,7 @@ namespace sub
 				}
 			}
 
-			if (GET_PLAYER_PED(Static_240) == ped)
+			if (GET_PLAYER_PED(g_selectedPlayer) == ped)
 				AddOption("Parachutes", null, nullFunc, SUB::WEAPONOPS_PARACHUTE);
 
 			bool pressed = false;
@@ -1145,7 +1145,7 @@ namespace sub
 		}
 		void Sub_InItem()
 		{
-			auto& ped = Static_241;
+			auto& ped = g_selectedPed;
 			NETWORK_REQUEST_CONTROL_OF_ENTITY(ped);
 
 			Hash pedCurrentWeapon; GET_CURRENT_PED_WEAPON(ped, &pedCurrentWeapon, 1);
@@ -1230,7 +1230,7 @@ namespace sub
 		}
 		void Sub_InItem_Mods()
 		{
-			auto& ped = Static_241;
+			auto& ped = g_selectedPed;
 			NETWORK_REQUEST_CONTROL_OF_ENTITY(ped);
 
 			Hash pedCurrentWeapon; GET_CURRENT_PED_WEAPON(ped, &pedCurrentWeapon, 1);
@@ -1308,9 +1308,9 @@ namespace sub
 		}
 		void Sub_Parachute()
 		{
-			auto& ped = Static_241;
+			auto& ped = g_selectedPed;
 			NETWORK_REQUEST_CONTROL_OF_ENTITY(ped);
-			auto& player = Static_240;
+			auto& player = g_selectedPlayer;
 			UINT i;
 			int currentChuteTint; GET_PLAYER_PARACHUTE_TINT_INDEX(player, &currentChuteTint);
 
@@ -1327,7 +1327,7 @@ namespace sub
 				if (DOES_ENTITY_EXIST(ped))
 				{
 					give_ped_parachute(ped);
-					//SET_PLAYER_PARACHUTE_TINT_INDEX(Static_240, numChute);
+					//SET_PLAYER_PARACHUTE_TINT_INDEX(g_selectedPlayer, numChute);
 				}
 			}
 
@@ -1337,8 +1337,8 @@ namespace sub
 				if (DOES_ENTITY_EXIST(ped))
 				{
 					give_ped_parachute(ped);
-					SET_PLAYER_HAS_RESERVE_PARACHUTE(Static_240);
-					//_0xAF04C87F5DC1DF38(Static_240, numChute2);
+					SET_PLAYER_HAS_RESERVE_PARACHUTE(g_selectedPlayer);
+					//_0xAF04C87F5DC1DF38(g_selectedPlayer, numChute2);
 				}
 			}
 
@@ -1388,7 +1388,7 @@ namespace sub
 		std::string& _searchStr = dict2;
 		std::string& _name = dict;
 		std::string& _dir = dict3;
-		auto& _ped = Static_241;
+		auto& _ped = g_selectedPed;
 
 		bool Create(GTAped ped, const std::string& filePath)
 		{

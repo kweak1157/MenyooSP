@@ -32,6 +32,7 @@ namespace sub
 	{
 		void ToggleOnOff();
 		void Tick();
+		bool& Enabled();
 
 		void Sub_AutoDrive();
 	}

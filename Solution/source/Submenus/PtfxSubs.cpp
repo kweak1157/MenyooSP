@@ -228,7 +228,7 @@ namespace sub
 				AddOption("Clear On All Entities", bPressedClear); if (bPressedClear)
 					_fxlops.clear();
 				PtfxS nonefx = { "None", "", "" };
-				__AddOption_loopOnEntity(nonefx, Static_241);
+				__AddOption_loopOnEntity(nonefx, g_selectedPed);
 				break; // subception
 			}
 			}
@@ -239,10 +239,10 @@ namespace sub
 				switch (Menu::currentsub_ar[Menu::currentsub_ar_index])
 				{
 				case SUB::PLAYEROPS: case SUB::SPOONER_SELECTEDENTITYOPS:
-					__AddOption_entity(current, Static_241);
+					__AddOption_entity(current, g_selectedPed);
 					break;
 				case SUB::PTFXSUB:
-					__AddOption_loopOnEntity(current, Static_241);
+					__AddOption_loopOnEntity(current, g_selectedPed);
 					break; // Subception
 				case SUB::TRIGGERFXGUN:
 					TriggerFxGun_catind::__AddOption_GunFx(current);

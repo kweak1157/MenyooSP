@@ -60,6 +60,8 @@
 #include <tuple>
 #include <vector>
 #include <array>
+#include <unordered_set>
+#include <algorithm>
 #include <pugixml/src/pugixml.hpp>
 #include <dirent\include\dirent.h>
 
@@ -73,8 +75,8 @@ namespace sub
 		float _fSaveRangeRadius = 5.0f;
 		UINT8 _copyEntTexterValue = 0;
 		UINT8 _entTypeToShowTexterValue = 0;
-		void SetEnt241() { Static_241 = SelectedEntity.Handle.Handle(); }
-		void SetEnt12() { Static_12 = SelectedEntity.Handle.Handle(); }
+		void SetEnt241() { g_selectedPed = SelectedEntity.Handle.Handle(); }
+		void SetEnt12() { g_selectedIndex = SelectedEntity.Handle.Handle(); }
 
 		void Sub_SpoonerMain()
 		{
@@ -2105,18 +2107,28 @@ namespace sub
 					vGroup.clear();
 			}
 
+			std::unordered_set<Entity> selectedHandles;
+			selectedHandles.reserve(vGroup.size());
+			for (const auto& ge : vGroup)
+				selectedHandles.insert(ge.Handle.GetHandle());
+
 			for (auto& e : Databases::EntityDb)
 			{
-				auto grpIt = std::find(vGroup.begin(), vGroup.end(), e);
-				bool bEntityIsInGroup = grpIt != vGroup.end();
+				const Entity h = e.Handle.GetHandle();
+				const bool bEntityIsInGroup = selectedHandles.find(h) != selectedHandles.end();
 				bool bEntityPressed = false;
-				AddTickol(e.HashName + (e.Handle.Exists() ? "" : " (Invalid)"), bEntityIsInGroup, bEntityPressed, bEntityPressed, TICKOL::BOXTICK, TICKOL::BOXBLANK);
+				if (e.Handle.Exists())
+					AddTickol(e.HashName, bEntityIsInGroup, bEntityPressed, bEntityPressed, TICKOL::BOXTICK, TICKOL::BOXBLANK);
+				else
+					AddTickol(e.HashName + " (Invalid)", bEntityIsInGroup, bEntityPressed, bEntityPressed, TICKOL::BOXTICK, TICKOL::BOXBLANK);
 				if (*Menu::currentopATM == Menu::printingop) EntityManagement::ShowArrowAboveEntity(e.Handle, RGBA(127, 0, 255, 200));
 				if (bEntityPressed)
 				{
 					if (bEntityIsInGroup)
 					{
-						vGroup.erase(grpIt);
+						auto grpIt = std::find(vGroup.begin(), vGroup.end(), e);
+						if (grpIt != vGroup.end())
+							vGroup.erase(grpIt);
 					}
 					else
 					{
@@ -3115,7 +3127,7 @@ namespace sub
 			using SpawnVehicle_catind::AddvcatOption_;
 			typedef SpawnVehicle_catind::Indices Indices;
 
-			Static_241 = PLAYER_PED_ID();
+			g_selectedPed = PLAYER_PED_ID();
 
 			AddTitle("Spawn Vehicle");
 			AddOption("Favourites", null, nullFunc, SUB::SPAWNVEHICLE_FAVOURITES);
@@ -3159,7 +3171,7 @@ namespace sub
 
 	void EntityAlphaLevelSub_()
 	{
-		GTAentity entity = Static_12;
+		GTAentity entity = g_selectedIndex;
 		auto alphaLevel = entity.Alpha_get();
 
 		AddTitle("Opacity");
@@ -3215,7 +3227,7 @@ namespace sub
 
 	void PedExplosionSub()
 	{
-		GTAped thisPed = Static_241;
+		GTAped thisPed = g_selectedPed;
 
 		if (!thisPed.Exists())
 		{
@@ -3359,9 +3371,9 @@ namespace sub
 			float att_ry = 181.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3376,9 +3388,9 @@ namespace sub
 			float att_ry = -92.0f;
 			float att_rz = 176.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3393,9 +3405,9 @@ namespace sub
 			float att_ry = 0.0f;
 			float att_rz = 283.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3410,9 +3422,9 @@ namespace sub
 			float att_ry = 0.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			//tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			//tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3427,9 +3439,9 @@ namespace sub
 			float att_ry = 90.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3444,9 +3456,9 @@ namespace sub
 			float att_ry = 90.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3461,9 +3473,9 @@ namespace sub
 			float att_ry = 90.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3478,9 +3490,9 @@ namespace sub
 			float att_ry = 0.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3495,9 +3507,9 @@ namespace sub
 			float att_ry = 92.7292f;
 			float att_rz = -0.39f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3512,9 +3524,9 @@ namespace sub
 			float att_ry = 86.0f;
 			float att_rz = 2.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3529,9 +3541,9 @@ namespace sub
 			float att_ry = 90.0f;
 			float att_rz = -11.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3546,9 +3558,9 @@ namespace sub
 			float att_ry = 85.0f;
 			float att_rz = -11.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3563,9 +3575,9 @@ namespace sub
 			float att_ry = 0.0f;
 			float att_rz = -32.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3580,9 +3592,9 @@ namespace sub
 			float att_ry = 90.0f;
 			float att_rz = -11.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3597,9 +3609,9 @@ namespace sub
 			float att_ry = 90.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3614,9 +3626,9 @@ namespace sub
 			float att_ry = 90.0f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			tempBone = Bone::LeftHand;
 			att_x = -0.05f;
@@ -3626,9 +3638,9 @@ namespace sub
 			att_ry = 90.0f;
 			att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			SET_MODEL_AS_NO_LONGER_NEEDED(tempHash);
 			return;
@@ -3644,9 +3656,9 @@ namespace sub
 			float att_ry = 10.6f;
 			float att_rz = 0.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			tempHash = 3803840879;
 			tempBone = 60309;
@@ -3657,9 +3669,9 @@ namespace sub
 			att_ry = 0.0000f;
 			att_rz = 0.0000f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3676,9 +3688,9 @@ namespace sub
 				float att_ry = 90.0f;
 				float att_rz = 0.0f;
 				Model(tempHash).Load(2000);
-				tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+				tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 				int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-				ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+				ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 				SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			}
 			return;
@@ -3694,9 +3706,9 @@ namespace sub
 			float att_ry = 93.0001f;
 			float att_rz = -3.0011f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3711,9 +3723,9 @@ namespace sub
 			float att_ry = 88.4692f;
 			float att_rz = 6.7001f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3728,9 +3740,9 @@ namespace sub
 			float att_ry = 92.0799f;
 			float att_rz = -10.92f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3745,9 +3757,9 @@ namespace sub
 			float att_ry = 85.0f;
 			float att_rz = -11.0f;
 			Model(tempHash).Load(2000);
-			tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+			tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 			int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-			ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+			ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 			SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			return;
 		}
@@ -3764,9 +3776,9 @@ namespace sub
 				float att_ry = 0.0f;
 				float att_rz = 0.0f;
 				Model(tempHash).Load(2000);
-				tempBone = GET_PED_BONE_INDEX(Static_241, tempBone);
+				tempBone = GET_PED_BONE_INDEX(g_selectedPed, tempBone);
 				int tempObject = CREATE_OBJECT(tempHash, 0.0f, 0.0f, 0.0f, 1, 1, 0);
-				ATTACH_ENTITY_TO_ENTITY(tempObject, Static_241, tempBone, att_x, att_y, att_z - 0.26f, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
+				ATTACH_ENTITY_TO_ENTITY(tempObject, g_selectedPed, tempBone, att_x, att_y, att_z - 0.26f, att_rx, att_ry, att_rz, 1, 1, 0, 0, 2, 1, 0);
 				SET_OBJECT_AS_NO_LONGER_NEEDED(&tempObject);
 			}
 			return;
@@ -3776,12 +3788,12 @@ namespace sub
 			std::string inputStr = Game::InputBox("", 64U, "Enter prop name:");
 			if (inputStr.length() > 0)
 			{
-				Entity tempEntity = Static_241;
+				Entity tempEntity = g_selectedPed;
 				Hash tempHash = GET_HASH_KEY(inputStr);
 				if (!IS_MODEL_IN_CDIMAGE(tempHash)) Game::Print::PrintError_InvalidModel();
 				else
 				{
-					if (IS_PED_IN_ANY_VEHICLE(Static_241, 0)) tempEntity = GET_VEHICLE_PED_IS_IN(Static_241, 0);
+					if (IS_PED_IN_ANY_VEHICLE(g_selectedPed, 0)) tempEntity = GET_VEHICLE_PED_IS_IN(g_selectedPed, 0);
 
 					float att_x = 0.0f;
 					float att_y = 0.0f;
@@ -3802,29 +3814,29 @@ namespace sub
 		}
 
 		if (Network_ObjectSub_Clear) {
-			Vector3 temp = GET_ENTITY_COORDS(Static_241, 1);
-			clear_attachments_off_entity(Static_241, EntityType::PROP);
+			Vector3 temp = GET_ENTITY_COORDS(g_selectedPed, 1);
+			clear_attachments_off_entity(g_selectedPed, EntityType::PROP);
 			CLEAR_AREA_OF_OBJECTS(temp.x, temp.y, temp.z, 2.5f, 0);
 			return;
 		}
 
 		if (Network_ObjectSub_Mani) {
-			att_ped_to_veh(PedHash::Mani, Static_241, Vector3(), Vector3(), false, true);
+			att_ped_to_veh(PedHash::Mani, g_selectedPed, Vector3(), Vector3(), false, true);
 			return;
 		}
 
 		if (Network_ObjectSub_Chop) {
-			att_ped_to_veh(PedHash::Chop, Static_241, Vector3(), Vector3(), false, true);
+			att_ped_to_veh(PedHash::Chop, g_selectedPed, Vector3(), Vector3(), false, true);
 			return;
 		}
 
 		if (Network_ObjectSub_Alien) {
-			att_ped_to_veh(PedHash::MovAlien01, Static_241, Vector3(), Vector3(), false, true);
+			att_ped_to_veh(PedHash::MovAlien01, g_selectedPed, Vector3(), Vector3(), false, true);
 			return;
 		}
 
 		if (Network_ObjectSub_Cow) {
-			att_ped_to_veh(PedHash::Cow, Static_241, Vector3(), Vector3(), false, false);
+			att_ped_to_veh(PedHash::Cow, g_selectedPed, Vector3(), Vector3(), false, false);
 			return;
 		}
 
@@ -3836,8 +3848,8 @@ namespace sub
 				if (!IS_MODEL_IN_CDIMAGE(tempHash)) Game::Print::PrintError_InvalidModel();
 				else
 				{
-					Entity tempEntity = Static_241;
-					if (IS_PED_IN_ANY_VEHICLE(Static_241, 0)) tempEntity = GET_VEHICLE_PED_IS_IN(Static_241, 0);
+					Entity tempEntity = g_selectedPed;
+					if (IS_PED_IN_ANY_VEHICLE(g_selectedPed, 0)) tempEntity = GET_VEHICLE_PED_IS_IN(g_selectedPed, 0);
 					att_ped_to_veh(tempHash, tempEntity, Vector3(), Vector3(), false, true);
 				}
 			}
@@ -3846,15 +3858,15 @@ namespace sub
 		}
 
 		if (Network_ObjectSub_ClearPeds) {
-			Vector3 temp = GET_ENTITY_COORDS(Static_241, 1);
-			clear_attachments_off_entity(Static_241, EntityType::PED);
+			Vector3 temp = GET_ENTITY_COORDS(g_selectedPed, 1);
+			clear_attachments_off_entity(g_selectedPed, EntityType::PED);
 			CLEAR_AREA_OF_PEDS(temp.x, temp.y, temp.z, 2.5f, 0);
 			return;
 		}
 
 		if (Network_ObjectSub_ClearVehicles) {
-			Vector3 temp = GET_ENTITY_COORDS(Static_241, 1);
-			clear_attachments_off_entity(Static_241, EntityType::VEHICLE);
+			Vector3 temp = GET_ENTITY_COORDS(g_selectedPed, 1);
+			clear_attachments_off_entity(g_selectedPed, EntityType::VEHICLE);
 			CLEAR_AREA_OF_PEDS(temp.x, temp.y, temp.z, 2.5f, 0);
 			return;
 		}

@@ -1,7 +1,14 @@
 Always talk in ASD-STE100 Simplified Technical English
 
-When you commit, write one short line. Use a clear technical subject. Then add a simple in-game note in parentheses. A person must understand it in one read.
+After every fix in the folder @fixes when you complete the number fix add ✔ - Completed beside the first header line
 
-❌ Bad: `Use SET_ROCKET_BOOST_FILL / SET_ROCKET_BOOST_ACTIVE instead of 2372 CVehicle memory offsets`
+When you commit, write one short line.
 
-✅ Good: `Fix unlimited rocket boost on 3725 (On a rocket bike, boost does not run out when you hold horn.)`
+1. Start with a clear technical subject.
+2. Then add what a player can see or do in game. Put that in parentheses.
+3. Use simple words. A person who does not write code must understand it in one read.
+4. Do not put native names, memory offsets, tool names, or build steps in the parentheses.
+
+❌ Bad: `Fix rocket boost (Switched fill to a native call and dropped the old memory offset.)`
+
+✅ Good: `Fix unlimited rocket boost (On a rocket bike, boost does not run out when you hold horn.)`

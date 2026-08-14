@@ -93,6 +93,7 @@ std::vector<std::pair<std::string, std::string>> g_pedModels_Others;
 #pragma endregion
 
 std::vector<std::string> objectModels;
+static std::unordered_map<Hash, UINT> objectModelHashMap;
 
 void PopulatePedModelsArray()
 {
@@ -361,6 +362,13 @@ void PopulateObjectModelsArray()
 
 	std::sort(objectModels.begin(), objectModels.end());
 
+	objectModelHashMap.clear();
+	objectModelHashMap.reserve(objectModels.size());
+	for (UINT i = 0; i < objectModels.size(); i++)
+	{
+		objectModelHashMap[GET_HASH_KEY(objectModels[i])] = i;
+	}
+
 	fin.close();
 }
 void PopulateGlobalEntityModelsArrays()
@@ -388,12 +396,10 @@ std::string get_vehicle_model_label(const GTAmodel::Model& model, bool properNam
 }
 std::string get_prop_model_label(const GTAmodel::Model& model)
 {
-	for (UINT i = 0; i < objectModels.size(); i++)
+	auto it = objectModelHashMap.find(model.hash);
+	if (it != objectModelHashMap.end())
 	{
-		if (GET_HASH_KEY(objectModels[i]) == model.hash)
-		{
-			return objectModels[i];
-		}
+		return objectModels[it->second];
 	}
 	return std::string();
 }
