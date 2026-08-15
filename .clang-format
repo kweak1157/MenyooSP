@@ -1,0 +1,18 @@
+---
+Language: Cpp
+Standard: c++20
+BasedOnStyle: Microsoft
+UseTab: Always
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 0
+BreakBeforeBraces: Allman
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+QualifierAlignment: Left
+SortIncludes: false
+Refactoring: false
+...

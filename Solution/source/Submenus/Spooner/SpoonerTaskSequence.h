@@ -11,6 +11,8 @@
 
 #include "STSTask.h"
 
+#include <cstdint>
+#include <memory>
 #include <vector>
 
 typedef short INT16;
@@ -19,21 +21,23 @@ typedef unsigned long DWORD;
 
 namespace sub::Spooner
 {
-	class SpoonerTaskSequence final // Dtor deallocates used memory blocks
+	class SpoonerTaskSequence final
 	{
 	private:
 		bool bJustJumpedToNext;
-		std::vector<STSTask*> tasks;
+		std::vector<std::unique_ptr<STSTask>> tasks;
 		INT16 progress;
-		DWORD timer;
+		std::uint64_t timer;
 	public:
 		SpoonerTaskSequence();
-
-		void operator = (const SpoonerTaskSequence& right);
+		SpoonerTaskSequence(const SpoonerTaskSequence& right);
+		SpoonerTaskSequence(SpoonerTaskSequence&& right) noexcept = default;
+		SpoonerTaskSequence& operator=(const SpoonerTaskSequence& right);
+		SpoonerTaskSequence& operator=(SpoonerTaskSequence&& right) noexcept = default;
 
 		template<typename R = STSTask> inline R* GetTask(UINT16 index)
 		{
-			return reinterpret_cast<R*>(this->tasks[index]); // Note: no outofbounds check
+			return reinterpret_cast<R*>(this->tasks[index].get());
 		}
 
 		bool ContainsType(const STSTaskType& value);
@@ -41,15 +45,14 @@ namespace sub::Spooner
 		UINT16 TaskCount() const;
 		bool empty() const;
 
-		inline void AddTask(STSTask* tskPtr);
+		void AddTask(std::unique_ptr<STSTask> tskPtr);
 		STSTask* AddTask(const STSTaskType& ofType);
 
-		static void DeallocTask(STSTask* tskPtr);
 		void RemoveTask(UINT16 index);
 
 		void SwapTasks(UINT16 index1, UINT16 index2);
 
-		std::vector<STSTask*>& AllTasks();
+		std::vector<std::unique_ptr<STSTask>>& AllTasks();
 
 		bool IsActive() const;
 		void Start();

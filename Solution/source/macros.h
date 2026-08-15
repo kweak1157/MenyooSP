@@ -9,21 +9,6 @@
 */
 #pragma once
 
-//#pragma comment(lib, "$(SolutionDir)\external\ScriptHookV.lib")
-
-#pragma warning(disable : 4244 4305) // double <-> float conversions
-
-#define _CRT_SECURE_NO_WARNINGS
-
-// version
 #define MENYOO_CURRENT_VER_ "1.9.0"
 
 #define GAME_PLAYERCOUNT 30
-
-
-
-
-
-
-
-

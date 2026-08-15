@@ -61,7 +61,7 @@ namespace _VehicleTow_
 		if (myPed.IsInVehicle())
 		{
 			currentPair.e1 = myPed.CurrentVehicle();
-			currentPair.e2 = NULL;
+			currentPair.e2 = 0;
 			for (auto& rav : ropeArr)
 			{
 				if (rav.e1.Handle() == currentPair.e1.Handle())
@@ -76,7 +76,7 @@ namespace _VehicleTow_
 	{
 		GTAvehicle vehBehindFirst = GetVehicleBehindFirst();
 
-		if (vehBehindFirst.Handle() != NULL && vehBehindFirst.Handle() != currentPair.e2.Handle())
+		if (vehBehindFirst.Handle() != 0 && vehBehindFirst.Handle() != currentPair.e2.Handle())
 		{
 			DisplayHelpText_Extend(vehBehindFirst);
 
@@ -134,7 +134,7 @@ namespace _VehicleTow_
 		GTAentity& last = currentPair.e1;
 
 		if (!last.Exists())
-			return NULL;
+			return 0;
 
 		Vector3 newCoord;
 
@@ -153,7 +153,7 @@ namespace _VehicleTow_
 
 		}
 
-		return NULL;
+		return 0;
 	}
 
 	void VehicleTow::ExtendTow(GTAvehicle& newVeh)

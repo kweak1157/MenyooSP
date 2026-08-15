@@ -13,6 +13,7 @@
 
 #include "..\Natives\types.h" // RGBA, RgbS
 #include "..\Util\GTAmath.h"
+#include "..\Util\Clock.h"
 #include "..\Natives\natives2.h"
 #include "GTAentity.h"
 
@@ -260,7 +261,7 @@ namespace PTFX
 		{
 			REQUEST_NAMED_PTFX_ASSET(asset.c_str());
 
-			for (timeOut += GetTickCount(); GetTickCount() < timeOut;)
+			for (const std::uint64_t deadline = GetTickMs() + timeOut; GetTickMs() < deadline;)
 			{
 				if (HAS_NAMED_PTFX_ASSET_LOADED(asset.c_str())) return true;
 				WAIT(0);

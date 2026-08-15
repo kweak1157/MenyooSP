@@ -17,6 +17,7 @@
 #include "..\Natives\natives2.h"
 #include "..\Util\GTAmath.h"
 #include "..\Util\StringManip.h"
+#include "..\Util\Random.h"
 #include "..\Scripting\enums.h"
 #include "..\main.h"
 #include "..\Scripting\GTAvehicle.h"
@@ -842,7 +843,7 @@ namespace sub
 		if (MSPaints_RIndex) {
 			if (vehicle.IsVehicle())
 			{
-				int randindex = rand() % paintIndex_maxValue;
+				int randindex = RandomInt(paintIndex_maxValue);
 				paintCarUsing_index(g_selectedIndex, ms_curr_paint_index, randindex, -1);
 				getpaint = true;
 			}
@@ -851,9 +852,9 @@ namespace sub
 		if (MSPaints_RColour) {
 			if (vehicle.IsVehicle())
 			{
-				int randr = rand() % 255;
-				int randg = rand() % 255;
-				int randb = rand() % 255;
+				int randr = RandomInt(255);
+				int randg = RandomInt(255);
+				int randb = RandomInt(255);
 				paintCarUsing_index(g_selectedIndex, ms_curr_paint_index, 0, -1);
 				if (ms_curr_paint_index == 1)
 					vehicle.CustomPrimaryColour_set(randr, randg, randb);
@@ -1590,7 +1591,6 @@ namespace sub
 	{
 		if (!DOES_ENTITY_EXIST(vehicle) || !IS_ENTITY_A_VEHICLE(vehicle))
 			return;
-		srand(time(0));
 		int i;
 		//const Vector3& Pos = GET_ENTITY_COORDS(vehicle, 1);
 
@@ -1628,7 +1628,7 @@ namespace sub
 				}
 				UINT8 modIndex = GET_NUM_VEHICLE_MODS(vehicle, i) - 1;
 				if (modIndex > -1)
-					modIndex = std::rand() % (modIndex + 2) - 1;
+					modIndex = RandomInt(modIndex + 2) - 1;
 				if (i == VehicleMod::Horns)
 					modIndex = 44; // Liberty City Loop
 				SET_VEHICLE_MOD(vehicle, i, modIndex, 0);

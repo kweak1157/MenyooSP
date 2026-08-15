@@ -24,6 +24,7 @@
 
 #include "enums.h"
 #include "..\Natives\natives2.h"
+#include "..\Util\Clock.h"
 
 //#include <stdarg.h>
 
@@ -246,7 +247,7 @@ void Tasks::PlayAnimation(const std::string& animDict, const std::string& animNa
 void Tasks::PlayAnimation(const std::string& animDict, const std::string& animName, float speed, float speedMultiplier, int duration, int flag, float playbackRate, bool lockPos)
 {
 	REQUEST_ANIM_DICT(animDict.c_str());
-	for (DWORD timeOut = GetTickCount() + 1650; GetTickCount() < timeOut;)
+	for (std::uint64_t timeOut = GetTickMs() + 1650; GetTickMs() < timeOut;)
 	{
 		if (HAS_ANIM_DICT_LOADED(animDict.c_str())) break;
 		WAIT(0);

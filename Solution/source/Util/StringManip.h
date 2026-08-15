@@ -9,10 +9,14 @@
 */
 #pragma once
 
+#include <optional>
 #include <string>
+#include <string_view>
 
-// Integer/String manipulation
 std::string int_to_hexstring(unsigned long i, bool zerox);
+
+std::optional<int> TryParseInt(std::string_view text);
+std::optional<float> TryParseFloat(std::string_view text);
 
 namespace boost
 {

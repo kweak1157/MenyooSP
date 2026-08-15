@@ -49,7 +49,25 @@
 #include <unordered_set>
 #include <vector>
 #include <pugixml/src/pugixml.hpp>
+#ifdef max
+#pragma push_macro("max")
+#undef max
+#define MENYOO_RESTORE_MAX
+#endif
+#ifdef min
+#pragma push_macro("min")
+#undef min
+#define MENYOO_RESTORE_MIN
+#endif
 #include <simpleini\SimpleIni.h>
+#ifdef MENYOO_RESTORE_MIN
+#pragma pop_macro("min")
+#undef MENYOO_RESTORE_MIN
+#endif
+#ifdef MENYOO_RESTORE_MAX
+#pragma pop_macro("max")
+#undef MENYOO_RESTORE_MAX
+#endif
 
 namespace sub::Spooner
 {
@@ -1995,7 +2013,7 @@ namespace sub::Spooner
 				Game::Print::PrintBottomLeft("~b~Note:~s~ " + noteStr);
 			}
 
-			mciSendStringA(("close " + _oldAudioAlias).c_str(), NULL, 0, 0);
+			mciSendStringA(("close " + _oldAudioAlias).c_str(), nullptr, 0, 0);
 			auto nodeAudioFile = nodeRoot.child("AudioFile");
 			if (nodeAudioFile)
 			{
@@ -2008,13 +2026,13 @@ namespace sub::Spooner
 						std::string audioCommand, audioAlias = fileName;
 						_oldAudioAlias = fileName;
 						audioCommand = "open \"" + audioFilePath + "\" type MPEGVideo" + " alias " + audioAlias;
-						mciSendStringA(audioCommand.c_str(), NULL, 0, 0);
+						mciSendStringA(audioCommand.c_str(), nullptr, 0, 0);
 
 						audioCommand = "play " + audioAlias + " from 0";
-						mciSendStringA(audioCommand.c_str(), NULL, 0, 0);
+						mciSendStringA(audioCommand.c_str(), nullptr, 0, 0);
 
 						audioCommand = "setaudio " + audioAlias + " volume to " + (std::string)nodeAudioFile.attribute("volume").as_string("400");
-						mciSendStringA(audioCommand.c_str(), NULL, 0, 0);
+						mciSendStringA(audioCommand.c_str(), nullptr, 0, 0);
 					}
 				}
 			}
@@ -2029,7 +2047,7 @@ namespace sub::Spooner
 		bool LoadPlacementsFromSP00NFile(const std::string& filePath)
 		{
 			CSimpleIniA ini;
-			if (ini.LoadFile(filePath.c_str()) != SI_Error::SI_OK)
+			if (ini.LoadFile(filePath.c_str()) != SI_OK)
 				return false;
 
 			std::unordered_set<Hash> vModelHashes;
@@ -2045,7 +2063,7 @@ namespace sub::Spooner
 				e.Type = (EntityType)ini.GetLongValue(section.pItem, "Type", 0);
 				if (e.Type == EntityType(0))
 					continue;
-				Model eModel = strtoul(ini.GetValue(section.pItem, "Hash"), NULL, 16);
+				Model eModel = strtoul(ini.GetValue(section.pItem, "Hash"), nullptr, 16);
 				e.HashName = e.Type == EntityType::PROP ? get_prop_model_label(eModel)
 					: (e.Type == EntityType::PED ? get_ped_model_label(eModel, true)
 						: get_vehicle_model_label(eModel, true));

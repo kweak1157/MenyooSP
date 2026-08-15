@@ -35,6 +35,7 @@ namespace sub::Spooner
 		int GetEntityIndexInDb(const GTAentity& entity);
 		int GetEntityIndexInDb(const SpoonerEntity& ent);
 		void AddEntityToDb(SpoonerEntity ent, bool missionEnt = Settings::bAddToDbAsMissionEntities);
+		void AddPlayerToDb();
 		void RemoveEntityFromDb(const SpoonerEntity& ent);
 
 		void ClearDb();

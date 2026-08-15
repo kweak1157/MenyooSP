@@ -12,6 +12,7 @@
 #include "..\macros.h"
 
 #include "..\Util\GTAmath.h"
+#include "..\Util\Clock.h"
 //#include "..\Scripting\enums.h"
 #include "..\Natives\natives2.h"
 #include "..\Memory\GTAmemory.h"
@@ -43,7 +44,7 @@ namespace Game
 	bool RequestControlOfId(int netid)
 	{
 		NETWORK_REQUEST_CONTROL_OF_NETWORK_ID(netid);
-		for (DWORD timeOut = GetTickCount() + 200; GetTickCount() < timeOut;)
+		for (std::uint64_t timeOut = GetTickMs() + 200; GetTickMs() < timeOut;)
 		{
 			if (NETWORK_HAS_CONTROL_OF_NETWORK_ID(netid))
 				return true;
@@ -54,7 +55,7 @@ namespace Game
 	bool RequestAnimDict(const std::string& anim_dict, DWORD timeOutms)
 	{
 		REQUEST_ANIM_DICT(anim_dict.c_str());
-		for (DWORD timeOut = GetTickCount() + timeOutms; GetTickCount() < timeOut;)
+		for (std::uint64_t timeOut = GetTickMs() + timeOutms; GetTickMs() < timeOut;)
 		{
 			if (HAS_ANIM_DICT_LOADED(anim_dict.c_str()))
 				return true;
@@ -65,7 +66,7 @@ namespace Game
 	bool RequestAnimSet(const std::string& anim_set, DWORD timeOutms)
 	{
 		REQUEST_ANIM_SET(anim_set.c_str());
-		for (DWORD timeOut = GetTickCount() + timeOutms; GetTickCount() < timeOut;)
+		for (std::uint64_t timeOut = GetTickMs() + timeOutms; GetTickMs() < timeOut;)
 		{
 			if (HAS_ANIM_SET_LOADED(anim_set.c_str()))
 				return true;
@@ -79,7 +80,7 @@ namespace Game
 		{
 			REQUEST_SCRIPT(scriptName.c_str());
 
-			for (DWORD timeOut = GetTickCount() + 5000; GetTickCount() < timeOut;)
+			for (std::uint64_t timeOut = GetTickMs() + 5000; GetTickMs() < timeOut;)
 			{
 				if (HAS_SCRIPT_LOADED(scriptName.c_str()))
 					break;
@@ -170,6 +171,8 @@ namespace Game
 
 	namespace Print
 	{
+		bool bNotifications = true;
+
 		// Game - Print/draw
 		void setupdraw()
 		{
@@ -325,6 +328,9 @@ namespace Game
 		}
 		Notification PrintBottomLeft(std::string s, bool gxt)
 		{
+			if (!bNotifications)
+				return Notification(0);
+
 			s = Language::TranslateToSelected(s);
 			const char* text = s.c_str();
 
@@ -360,6 +366,9 @@ namespace Game
 		}
 		Notification PrintBottomLeft(std::string s, const std::string& sender, const std::string& subject, const std::string& picName, int iconType, bool flash, bool gxt)
 		{
+			if (!bNotifications)
+				return Notification(0);
+
 			const char* text = s.c_str();
 
 			if (gxt && DOES_TEXT_LABEL_EXIST(text))

@@ -77,6 +77,8 @@ namespace Game
 
 	namespace Print
 	{
+		extern bool bNotifications;
+
 		// Game - Print/draw
 		void setupdraw();
 		void setupdraw(INT8 font, const Vector2& scale, bool centred, bool right_justified, bool outline, RGBA colour = { 255, 255, 255, 255 }, Vector2 wrap = { 0, 1 });

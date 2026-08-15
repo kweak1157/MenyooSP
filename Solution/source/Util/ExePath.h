@@ -47,6 +47,7 @@ std::string GetPathffA(Pathff type, bool lastSlash = false);
 
 bool does_file_exist(const std::string& path);
 
+void get_all_filenames(const std::string& directory, std::vector<std::string>& results);
 void get_all_filenames_with_extension(const std::string& directory, const std::string& extension, std::vector<std::string> &results, bool withExtension);
 
 std::string GetClipboardTextA();

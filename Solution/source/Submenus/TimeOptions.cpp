@@ -22,7 +22,7 @@
 
 #include <string>
 #include <time.h>
-#include <stdio.h>
+#include <format>
 
 namespace sub
 {
@@ -136,11 +136,8 @@ namespace sub
 			tm t;
 			localtime_s(&t, &now);
 
-			char mintBuff[3];
-			sprintf_s(mintBuff, "%02d", t.tm_min);
-
 			Game::Print::setupdraw(GTAfont::Arial, Vector2(0.3f, 0.3f), true, false, true, RGBA(255, 255, 255, 210));
-			Game::Print::drawstring(oss_ << vWeekDayNames[t.tm_wday] << " - " << (t.tm_hour < 13 ? t.tm_hour : t.tm_hour - 12) << ':' << mintBuff << (t.tm_hour < 12 ? " am" : " pm"), 0.5f, 0.007f);//0.01f, 0.8f);
+			Game::Print::drawstring(std::format("{} - {}:{:02d}{}", vWeekDayNames[t.tm_wday], (t.tm_hour < 13 ? t.tm_hour : t.tm_hour - 12), t.tm_min, (t.tm_hour < 12 ? " am" : " pm")), 0.5f, 0.007f);
 		}
 
 		//struct sClockImage { std::string name; DxHookIMG::DxTexture faceId, hourId, minuteId; };

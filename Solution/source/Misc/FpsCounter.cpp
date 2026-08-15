@@ -14,14 +14,14 @@
 #include "..\Scripting\enums.h"
 #include "..\Scripting\Game.h"
 #include "..\Util\GTAmath.h"
+#include "..\Util\Clock.h"
 
-#include <Windows.h> // GetTickCount
 #include <string>
 
 namespace _FpsCounter_
 {
 	FpsCounter::FpsCounter()
-		: fpsValue(0), frameCounter(0), timer(GetTickCount())
+		: fpsValue(0), frameCounter(0), timer(GetTickMs())
 	{
 	}
 
@@ -39,14 +39,14 @@ namespace _FpsCounter_
 	{
 		frameCounter++;
 
-		if (GetTickCount() - timer > 500) //0.5sec
+		if (GetTickMs() - timer > 500) //0.5sec
 		{
 			// store frame count to fpsValue
 			fpsValue = frameCounter * 2;
 
 			// reset
 			frameCounter = 0;
-			timer = GetTickCount();
+			timer = GetTickMs();
 		}
 	}
 

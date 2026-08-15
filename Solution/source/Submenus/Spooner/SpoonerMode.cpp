@@ -874,6 +874,14 @@ namespace sub::Spooner
 		}
 		void Tick()
 		{
+			static int lastAutoAddedPlayerHandle = 0;
+			GTAentity myPed = PLAYER_PED_ID();
+			if (myPed.Exists() && myPed.Handle() != lastAutoAddedPlayerHandle)
+			{
+				EntityManagement::AddPlayerToDb();
+				lastAutoAddedPlayerHandle = myPed.Handle();
+			}
+
 			if (SpoonerMode::IsHotkeyPressed())
 				SpoonerMode::Toggle(); // Hotkey (when mayo closed)
 

@@ -18,6 +18,7 @@
 
 #include "..\Natives\natives2.h"
 #include "..\Util\GTAmath.h"
+#include "..\Util\StringManip.h"
 #include "..\Natives\types.h" // RGBA
 #include "..\Scripting\enums.h"
 #include "..\Scripting\Game.h"
@@ -157,10 +158,10 @@ namespace sub
 
 		if (settings_r_input) {
 			int tempHash = *settings_rgba2;
-			try {
-				tempHash = abs(std::stoi(Game::InputBox(std::to_string(*settings_rgba2), 4U, "", std::to_string(*settings_rgba2))));
-			}
-			catch (...) { Game::Print::PrintError_InvalidInput(); }
+			if (const auto parsed = TryParseInt(Game::InputBox(std::to_string(*settings_rgba2), 4U, "", std::to_string(*settings_rgba2))))
+				tempHash = abs(*parsed);
+			else
+				Game::Print::PrintError_InvalidInput();
 			if (!(tempHash >= 0 && tempHash <= 255)) Game::Print::PrintError_InvalidInput();
 			else *settings_rgba2 = tempHash;
 			//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SettingsRgba, std::to_string(*settings_rgba2), 3U, "", std::to_string(*settings_rgba2));
@@ -234,8 +235,10 @@ namespace sub
 			std::string inputStr = Game::InputBox(std::to_string(*settings_font), 7U, "", std::to_string(*settings_font));
 			auto& settings_font = _g_settings_font;
 			int tempHash = *settings_font;
-			try { tempHash = abs(stoi(inputStr)); }
-			catch (...) { Game::Print::PrintError_InvalidInput(); }
+			if (const auto parsed = TryParseInt(inputStr))
+				tempHash = abs(*parsed);
+			else
+				Game::Print::PrintError_InvalidInput();
 			*settings_font = tempHash;
 			//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SettingsFont, std::to_string(*settings_font), 6U, "", std::to_string(*settings_font));
 		}

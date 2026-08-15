@@ -9,7 +9,25 @@
 */
 #pragma once
 
+#ifdef max
+#pragma push_macro("max")
+#undef max
+#define MENYOO_RESTORE_MAX
+#endif
+#ifdef min
+#pragma push_macro("min")
+#undef min
+#define MENYOO_RESTORE_MIN
+#endif
 #include <simpleini\SimpleIni.h>
+#ifdef MENYOO_RESTORE_MIN
+#pragma pop_macro("min")
+#undef MENYOO_RESTORE_MIN
+#endif
+#ifdef MENYOO_RESTORE_MAX
+#pragma pop_macro("max")
+#undef MENYOO_RESTORE_MAX
+#endif
 
 namespace MenuConfig
 {

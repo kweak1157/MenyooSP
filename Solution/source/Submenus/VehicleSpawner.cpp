@@ -43,7 +43,6 @@
 #include <string>
 #include <vector>
 #include <pugixml\src\pugixml.hpp>
-#include <dirent\include\dirent.h>
 
 namespace sub
 {
@@ -832,7 +831,7 @@ namespace sub
 
 		void AddvcatOption_(const std::string& text, UINT8 index, bool *extra_option_code)
 		{
-			std::vector<Model>* tempvecp;
+			std::vector<Model>* tempvecp = nullptr;
 			switch (index)
 			{
 			case SUPER:			tempvecp = &g_vehHashes_SUPER; break;
@@ -857,8 +856,9 @@ namespace sub
 			case HELICOPTER:	tempvecp = &g_vehHashes_HELICOPTER; break;
 			case BOAT:			tempvecp = &g_vehHashes_BOAT; break;
 			case OTHER:			tempvecp = &g_vehHashes_OTHER; break;
+			default:			return;
 			}
-			if (tempvecp->empty())
+			if (tempvecp == nullptr || tempvecp->empty())
 				return;
 
 			bool pressed = false;
@@ -1121,7 +1121,7 @@ namespace sub
 	void SpawnVehicle_AllCatsSub()
 	{
 		using namespace SpawnVehicle_catind;
-		const std::vector<Model> *tempvecp;
+		const std::vector<Model> *tempvecp = nullptr;
 
 		/*for (auto& vimg : vVehicleBmps)
 		{
@@ -1159,11 +1159,12 @@ namespace sub
 		case HELICOPTER:	tempvecp = &g_vehHashes_HELICOPTER; break;
 		case BOAT:			tempvecp = &g_vehHashes_BOAT; break;
 		case OTHER:			tempvecp = &g_vehHashes_OTHER; break;
+		default:
+			Menu::SetSub_previous();
+			return;
 		}
 
-		//std::vector<std::string>&tempvecp2 = *tempvecp;
-
-		if (tempvecp->empty())
+		if (tempvecp == nullptr || tempvecp->empty())
 		{
 			Menu::SetSub_previous();
 			return;
@@ -2005,6 +2006,16 @@ namespace sub
 				}
 			}
 
+			if (sub::Spooner::EntityManagement::GetEntityIndexInDb(ev) < 0)
+			{
+				sub::Spooner::SpoonerEntity vehEnt;
+				vehEnt.Handle = ev;
+				vehEnt.Dynamic = true;
+				vehEnt.Type = EntityType::VEHICLE;
+				vehEnt.HashName = get_vehicle_model_label(ev.Model(), true);
+				sub::Spooner::EntityManagement::AddEntityToDb(vehEnt);
+			}
+
 			for (auto& amh : vModelHashes) Model(amh).Unload();
 			eModel.Unload();
 
@@ -2074,16 +2085,8 @@ namespace sub
 
 			AddOption("Create New Folder", bCreateFolderPressed);
 
-			//get_all_filenames_with_extension(GetPathffA(Pathff::Vehicle, false), ".xml", vfilnames, false);
 			if (_dir.empty()) _dir = GetPathffA(Pathff::Vehicle, false);
-			DIR* dir_point = opendir(_dir.c_str());
-			dirent* entry = readdir(dir_point);
-			while (entry)
-			{
-				vfilnames.push_back(entry->d_name);
-				entry = readdir(dir_point);
-			}
-			closedir(dir_point);
+			get_all_filenames(_dir, vfilnames);
 
 			AddBreak("---Found Files---");
 
@@ -2173,7 +2176,7 @@ namespace sub
 				std::string inputStr = Game::InputBox("", 28U, "Enter folder name:");
 				if (inputStr.length() > 0)
 				{
-					if (CreateDirectoryA((_dir + "\\" + inputStr).c_str(), NULL) ||
+					if (CreateDirectoryA((_dir + "\\" + inputStr).c_str(), nullptr) ||
 						GetLastError() == ERROR_ALREADY_EXISTS)
 					{
 						_dir = _dir + "\\" + inputStr;

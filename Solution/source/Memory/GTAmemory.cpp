@@ -26,6 +26,7 @@
 #include "..\main.h"
 #include "..\Natives\natives2.h"
 #include "..\Util\FileLogger.h"
+#include "..\Util\Clock.h"
 
 #include <Windows.h>
 #include <Psapi.h>
@@ -46,14 +47,14 @@ template<typename R> R GetMultilayerPointer(void* base, const std::vector<DWORD>
 {
 	DWORD64 addr = (UINT64)base;
 	if (!addr)
-		return NULL;
+		return nullptr;
 	auto numOffsets = offsets.size();
 
 	for (auto i = 0; i < numOffsets - 1; i++)
 	{
 		addr = *(UINT64*)(addr + offsets[i]);
 		if (!addr)
-			return NULL;
+			return nullptr;
 	}
 	addr += offsets[numOffsets - 1];
 	return (R)addr;
@@ -103,7 +104,7 @@ namespace MemryScan
 			}
 			else
 			{
-				return NULL; // Bad
+				return 0; // Bad
 			}
 		}
 
@@ -128,7 +129,7 @@ namespace MemryScan
 			}
 		}
 
-		return NULL;
+		return 0;
 	}
 	DWORD64 Pattern::Scan(MODULEINFO mi, const std::string& s)
 	{
@@ -144,7 +145,7 @@ namespace MemryScan
 				return false;
 			}
 		}
-		return (*mask) == NULL;
+		return (*mask) == '\0';
 	}
 
 	DWORD64 PatternScanner::FindPattern(std::vector<unsigned short> pattern)
@@ -684,7 +685,7 @@ struct EntityPoolTask
 struct GenericTask
 {
 public:
-	typedef UINT64(*func)(UINT64);
+	using func = UINT64(*)(UINT64);
 	GenericTask(func pFunc, UINT64 Arg) : _toRun(pFunc), _arg(Arg)
 	{
 	}
@@ -1391,8 +1392,8 @@ bool GTAmemory::FindScript(int hash)
 	scriptTable = reinterpret_cast<ScriptTable*>(patternAddr + *reinterpret_cast<int*>(patternAddr + 3) + 7);
 
 	ScriptTableItem* Item = scriptTable->FindScript(hash);
-	DWORD timeout = GetTickCount() + 10000;
-	while (!Item && GetTickCount() < timeout)
+	const std::uint64_t timeout = GetTickMs() + 10000;
+	while (!Item && GetTickMs() < timeout)
 	{
 		WAIT(100);
 		Item = scriptTable->FindScript(hash);
@@ -1403,7 +1404,7 @@ bool GTAmemory::FindScript(int hash)
 		return false;
 	}
 
-	while (!Item->IsLoaded() && GetTickCount() < timeout)
+	while (!Item->IsLoaded() && GetTickMs() < timeout)
 		WAIT(100);
 	if (!Item->IsLoaded())
 	{
@@ -1490,16 +1491,16 @@ void SpSnow::EnableSnow(bool bEnable)
 		memcpy(&original2, (void*)addr2, 14);
 
 		this->traxv_call = MemryScan::PatternScanner::FindPattern("\x40\x38\x3D\x00\x00\x00\x00\x48\x8B\x42\x20", "xxx????xxxx");
-		if (this->traxv_call == NULL) this->tracks_available = false;
+		if (this->traxv_call == 0) this->tracks_available = false;
 
 		this->traxvt = MemryScan::PatternScanner::FindPattern("\xB9\x00\x00\x00\x00\x84\xC0\x44\x0F\x44\xF1", "x????xxxxxx");
-		if (this->traxvt == NULL) this->tracks_available = false;
+		if (this->traxvt == 0) this->tracks_available = false;
 
 		this->traxp_call = MemryScan::PatternScanner::FindPattern("\x80\x3D\x00\x00\x00\x00\x00\x48\x8B\xD9\x74\x37", "xx?????xxxxx");
-		if (this->traxp_call == NULL) this->tracks_available = false;
+		if (this->traxp_call == 0) this->tracks_available = false;
 
 		this->traxpt = MemryScan::PatternScanner::FindPattern("\xB9\x00\x00\x00\x00\x84\xC0\x0F\x44\xD9\x48\x8B\x4F\x30", "x????xxxxxxxxx");
-		if (this->traxpt == NULL) this->tracks_available = false;
+		if (this->traxpt == 0) this->tracks_available = false;
 
 		if (this->tracks_available)
 		{
@@ -1623,12 +1624,12 @@ SpSnow::SpSnow()
 	: bDisabled(true), loop_spsnow(false), bInitialized(false), bPatchApplied(false),
 	bUseAddr13(false), bUseAddr22(false),
 	tracks_available(true),
-	traxp(NULL),
-	traxp_call(NULL),
-	traxpt(NULL),
-	traxv(NULL),
-	traxv_call(NULL),
-	traxvt(NULL)
+	traxp(0),
+	traxp_call(0),
+	traxpt(0),
+	traxv(0),
+	traxv_call(0),
+	traxvt(0)
 {
 }
 bool SpSnow::IsSnow()

@@ -17,6 +17,8 @@
 #include "..\Util\FileLogger.h"
 #include "..\Util\ExePath.h"
 #include "..\Util\keyboard.h"
+#include "..\Util\Clock.h"
+#include "..\Util\Random.h"
 #include "..\Scripting\enums.h"
 #include "..\Natives\types.h" // RGBA/RgbS & types
 #include "..\Natives\natives2.h"
@@ -87,8 +89,8 @@
 
 //--------------------------------Threads--------------------------------------------------------
 
-DWORD g_MenyooConfigTick = 0UL;
-DWORD g_FaderTick = 0UL;
+std::uint64_t g_MenyooConfigTick = 0;
+std::uint64_t g_FaderTick = 0;
 
 void Menu::justopened()
 {
@@ -119,13 +121,12 @@ inline void MenyooMain()
 	PopulateGlobalEntityModelsArrays();
 	sub::CutscenePlayer_catind::PopulateCutsceneLabels();
 
-	srand(GetTickCount());
-	SET_RANDOM_SEED(GetTickCount());
+	SET_RANDOM_SEED(static_cast<int>(GetTickMs()));
 	//_initialProgramTick = GetTickCount();
 
 	MenuConfig::ConfigInit();
-	g_MenyooConfigTick = GetTickCount();
-	g_FaderTick = GetTickCount();
+	g_MenyooConfigTick = GetTickMs();
+	g_FaderTick = GetTickMs();
 
 	if (GTAmemory::FindShopController())
 		GeneralGlobalHax::EnableBlockedMpVehiclesInSp();
@@ -149,19 +150,19 @@ void ThreadMenyooMain()
 void TickMenyooConfig()
 {
 	//if (GetTickCount() > g_MenyooConfigOnceTick + 9000U)
-		if (GetTickCount() > g_MenyooConfigTick + 30000U)
+		if (GetTickMs() > g_MenyooConfigTick + 30000U)
 		{
 			if (MenuConfig::bSaveAtIntervals)
 			{
 				MenuConfig::ConfigSave();
 			}
-			g_MenyooConfigTick = GetTickCount();
+			g_MenyooConfigTick = GetTickMs();
 		}
 }
 
 void TickRainbowFader()
 {
-	if (GetTickCount() > g_FaderTick + 20U) {
+	if (GetTickMs() > g_FaderTick + 20U) {
 		auto& colour = g_fadedRGB;
 		if (colour.R > 0 && colour.B == 0)
 		{
@@ -179,7 +180,7 @@ void TickRainbowFader()
 			colour.B--;
 		}
 
-		g_FaderTick = GetTickCount();
+		g_FaderTick = GetTickMs();
 	}
 }
 
@@ -461,7 +462,7 @@ void set_Ptfxlop_tick()
 			{
 			case EntityType::PED:
 				if (IS_PED_A_PLAYER(it->entity.Handle()) && it->entity.Handle() != PLAYER_PED_ID())
-					PTFX::trigger_ptfx_1(it->asset, it->fx, NULL, GET_PED_BONE_COORDS(it->entity.Handle(), Bone::SKEL_Head, 0.0f, 0.0f, 0.0f), it->entity.Rotation_get(), GET_RANDOM_FLOAT_IN_RANGE(0.76f, 1.4f));
+					PTFX::trigger_ptfx_1(it->asset, it->fx, 0, GET_PED_BONE_COORDS(it->entity.Handle(), Bone::SKEL_Head, 0.0f, 0.0f, 0.0f), it->entity.Rotation_get(), GET_RANDOM_FLOAT_IN_RANGE(0.76f, 1.4f));
 				else
 					PTFX::trigger_ptfx_1(it->asset, it->fx, it->entity, Vector3(), Vector3(), GET_RANDOM_FLOAT_IN_RANGE(0.76f, 1.4f), Bone::SKEL_Head);
 				break;
@@ -519,7 +520,7 @@ void set_massacre_mode_tick()
 	}
 
 	// Water hydrants and explosions
-	if (rand() % 2)
+	if (RandomInt(2))
 	{
 		Vector3(GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(tempPed, GET_RANDOM_FLOAT_IN_RANGE(25.0f, 50.0f), GET_RANDOM_FLOAT_IN_RANGE(25.0f, 50.0f), GET_RANDOM_FLOAT_IN_RANGE(0.4f, 20.0f))).ToArray(tempCoords1);
 		ADD_EXPLOSION(tempCoords1[0], tempCoords1[1], tempCoords1[2], EXPLOSION::TRAIN, 0.2f, 0, 0, 0.05f, false);
@@ -652,7 +653,7 @@ void start_fireworks_at_coord(const Vector3& pos, const Vector3& rot, float scal
 		//_9C720B61("scr_indep_fireworks");
 		USE_PARTICLE_FX_ASSET("scr_indep_fireworks");
 		SET_PARTICLE_FX_NON_LOOPED_COLOUR(GET_RANDOM_FLOAT_IN_RANGE(0.0f, 1.0f), GET_RANDOM_FLOAT_IN_RANGE(0.0f, 1.0f), GET_RANDOM_FLOAT_IN_RANGE(0.0f, 1.0f));
-		START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD(fw[rand() % 4].c_str(), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, scale, 0, 0, 0, false);
+		START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD(fw[RandomInt(4)].c_str(), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, scale, 0, 0, 0, false);
 	}
 }
 
@@ -758,7 +759,7 @@ void set_player_triggerbot(GTAplayer player)
 							Bone::SKEL_L_Foot,
 							Bone::SKEL_R_Foot*/
 						} };
-					const Vector3& targetPos = GET_PED_BONE_COORDS(target.Handle(), _triggerbot_bonelist[rand() % _triggerbot_bonelist.size()], 0.0f, 0.0f, 0.0f);
+					const Vector3& targetPos = GET_PED_BONE_COORDS(target.Handle(), _triggerbot_bonelist[RandomInt(static_cast<int>(_triggerbot_bonelist.size()))], 0.0f, 0.0f, 0.0f);
 					if (player.Handle() == PLAYER_ID())
 					{
 						// Raycast or nah?
@@ -912,7 +913,7 @@ void set_self_resurrectionGun()
 
 				targPed.Task().ClearAllImmediately();
 				TaskSequence seq;
-				seq.AddTask().PlayAnimation("get_up@directional@movement@from_knees@standard", rand() % 3 == 1 ? "getup_r_90" : "getup_l_90", 8.0f, -8.0f, -1, AnimFlag::SecondTask, 0, false);
+				seq.AddTask().PlayAnimation("get_up@directional@movement@from_knees@standard", RandomInt(3) == 1 ? "getup_r_90" : "getup_l_90", 8.0f, -8.0f, -1, AnimFlag::SecondTask, 0, false);
 				seq.AddTask().WanderAround();
 				seq.Close();
 				seq.MakePedPerform(targPed);
@@ -989,7 +990,7 @@ void set_bullet_gun()
 }
 void set_ped_gun()
 {
-	if (ped_gun_rand_bit) { ped_gun_hash = GET_HASH_KEY(g_pedModels[rand() % (INT)g_pedModels.size()].first); ped_gun_hash.Load(200); }
+	if (ped_gun_rand_bit) { ped_gun_hash = GET_HASH_KEY(g_pedModels[RandomInt(static_cast<int>(g_pedModels.size()))].first); ped_gun_hash.Load(200); }
 
 	if (ped_gun_hash.IsLoaded())
 	{
@@ -1014,8 +1015,8 @@ void set_object_gun()
 	Entity tempPed = PLAYER_PED_ID();
 	Entity tempEntity;
 
-	if (object_gun_rand_bit_o) { object_gun_hash = GET_HASH_KEY(objectModels[rand() % (INT)objectModels.size()]); }
-	else if (object_gun_rand_bit_v) { object_gun_hash = g_vehHashes[rand() % (INT)g_vehHashes.size()]; }
+	if (object_gun_rand_bit_o) { object_gun_hash = GET_HASH_KEY(objectModels[RandomInt(static_cast<int>(objectModels.size()))]); }
+	else if (object_gun_rand_bit_v) { object_gun_hash = g_vehHashes[RandomInt(static_cast<int>(g_vehHashes.size()))]; }
 
 	if (object_gun_hash.IsInCdImage())
 	{
@@ -2030,7 +2031,7 @@ void set_multiplat_neons()
 	{
 		//colour = g_fadedRGB;
 		if (GET_GAME_TIMER() >= Menu::delayedTimer - 200)
-			colour = RgbS(rand() % 256, rand() % 256, rand() % 256);
+			colour = RgbS::Random();
 	}
 
 	if (IS_PED_IN_ANY_VEHICLE(PLAYER_PED_ID(), 0))
@@ -2202,8 +2203,8 @@ void set_vehicle_rainbow_mode_tick(GTAvehicle vehicle, bool useFader)
 			vehicle.ClearCustomPrimaryColour();
 		if (vehicle.IsSecondaryColorCustom())
 			vehicle.ClearCustomSecondaryColour();
-		vehicle.PrimaryColour_set(rand() % 160);
-		vehicle.SecondaryColour_set(rand() % 160);
+		vehicle.PrimaryColour_set(RandomInt(160));
+		vehicle.SecondaryColour_set(RandomInt(160));
 	}
 }
 void set_vehicle_heavy_mass_tick(GTAvehicle vehicle)
@@ -2714,6 +2715,9 @@ void Menu::loops()
 	if (loop_Check_self_death_model)
 		_ManualRespawn_::Check_self_death_model();
 
+	if (!Game::Print::bNotifications)
+		THEFEED_HIDE_THIS_FRAME();
+
 	if (!IS_PLAYER_SWITCH_IN_PROGRESS())
 	{
 		if (loop_pause_clock)
@@ -2791,7 +2795,7 @@ void Menu::loops()
 		if (loop_fireworksDisplay)
 		{
 			start_fireworks_at_coord(GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(player2.GetPed().Handle(), GET_RANDOM_FLOAT_IN_RANGE(-10.0f, 10.0f), GET_RANDOM_FLOAT_IN_RANGE(-6.0f, 27.0f), GET_RANDOM_FLOAT_IN_RANGE(-9.0f, 3.5f)), Vector3(0, 0, GET_RANDOM_FLOAT_IN_RANGE(-90.0f, 90.0f)), GET_RANDOM_FLOAT_IN_RANGE(0.4f, 2.45f));
-			if (rand() % (INT)2)
+			if (RandomInt(2))
 			{
 				set_explosion_at_coords(iped, Vector3(GET_RANDOM_FLOAT_IN_RANGE(9.0f, 25.0f), GET_RANDOM_FLOAT_IN_RANGE(5.0f, 25.0f), GET_RANDOM_FLOAT_IN_RANGE(0.4f, 20.0f)), EXPLOSION::DIR_WATER_HYDRANT, 8.0f, 0.0f, true, false, 0);
 			}

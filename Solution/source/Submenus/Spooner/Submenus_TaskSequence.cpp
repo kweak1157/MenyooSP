@@ -1600,7 +1600,7 @@ namespace sub::Spooner
 				{
 					if (taskList[i]->duration != -1) // Has settings
 					{
-						_selectedSTST = taskList[i];
+						_selectedSTST = taskList[i].get();
 						Menu::SetSub_delayed = SUB::SPOONER_TASKSEQUENCE_INTASK;
 					}
 				}

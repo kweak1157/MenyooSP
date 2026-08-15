@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -11,7 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\external\pugixml\src\pugixml.cpp" />
+    <ClCompile Include="..\external\pugixml\src\pugixml.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+    </ClCompile>
     <ClCompile Include="Menu\FolderPreviewBmps.cpp" />
     <ClCompile Include="Menu\Language.cpp" />
     <ClCompile Include="Menu\MenuConfig.cpp" />
@@ -89,8 +93,10 @@
     <ClCompile Include="Submenus\VehicleSpawner.cpp" />
     <ClCompile Include="Submenus\WeaponOptions.cpp" />
     <ClCompile Include="Submenus\WeatherOptions.cpp" />
+    <ClCompile Include="Util\Clock.cpp" />
     <ClCompile Include="Util\ExePath.cpp" />
     <ClCompile Include="Util\FileLogger.cpp" />
+    <ClCompile Include="Util\Random.cpp" />
     <ClCompile Include="Scripting\Game.cpp" />
     <ClCompile Include="Scripting\GameplayCamera.cpp" />
     <ClCompile Include="Scripting\GTAblip.cpp" />
@@ -201,8 +207,10 @@
     <ClInclude Include="Submenus\VehicleSpawner.h" />
     <ClInclude Include="Submenus\WeaponOptions.h" />
     <ClInclude Include="Submenus\WeatherOptions.h" />
+    <ClInclude Include="Util\Clock.h" />
     <ClInclude Include="Util\ExePath.h" />
     <ClInclude Include="Util\FileLogger.h" />
+    <ClInclude Include="Util\Random.h" />
     <ClInclude Include="Scripting\Game.h" />
     <ClInclude Include="Scripting\GameplayCamera.h" />
     <ClInclude Include="Scripting\GTAblip.h" />
@@ -290,8 +298,11 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;NativeTrainer_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:__cplusplus /Zc:inline %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -311,8 +322,11 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:__cplusplus /Zc:inline %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -26,8 +26,8 @@
 
 #include "..\Spooner\SpoonerMode.h"
 #include "TeleLocation.h"
+#include "..\..\Util\Clock.h"
 
-#include <Windows.h> //GetTickCount
 #include <string>
 
 
@@ -264,7 +264,7 @@ namespace sub::TeleportLocations_catind
 					{
 						ACTIVATE_INTERIOR_ENTITY_SET(interior, (char*)propName.data());
 
-						for (DWORD timeOut = GetTickCount() + 250; GetTickCount() < timeOut;)
+						for (std::uint64_t timeOut = GetTickMs() + 250; GetTickMs() < timeOut;)
 						{
 							if (IS_INTERIOR_ENTITY_SET_ACTIVE(interior, (char*)propName.data()))
 									break;

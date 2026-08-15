@@ -27,20 +27,18 @@
 #include <array>
 #include <string>
 
-typedef unsigned long DWORD;
-
 #define MATH_PI 3.14159265
 
 #pragma pack(push, 1)
-typedef struct
+struct Vector3_t
 {
 	float x;
-	DWORD _paddingx;
+	unsigned long _paddingx;
 	float y;
-	DWORD _paddingy;
+	unsigned long _paddingy;
 	float z;
-	DWORD _paddingz;
-} Vector3_t;
+	unsigned long _paddingz;
+};
 #pragma pack(pop)
 
 class Vector3

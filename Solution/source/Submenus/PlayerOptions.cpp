@@ -16,6 +16,7 @@
 
 #include "..\Natives\natives2.h"
 #include "..\Util\GTAmath.h"
+#include "..\Util\StringManip.h"
 #include "..\Scripting\GTAplayer.h"
 #include "..\Scripting\GTAped.h"
 #include "..\Scripting\Game.h"
@@ -348,8 +349,10 @@ namespace sub
 				std::string inputStr = Game::InputBox("", 10U);
 				if (inputStr.length() > 0)
 				{
-					try { flagID = stoi(inputStr); }
-					catch (...) { Game::Print::PrintError_InvalidInput(); }
+					if (const auto parsed = TryParseInt(inputStr))
+						flagID = *parsed;
+					else
+						Game::Print::PrintError_InvalidInput();
 				}
 				//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::PedFlagIdInput, "", 9U);
 			}

@@ -16,6 +16,7 @@
 
 #include "..\..\Natives\natives2.h"
 #include "..\..\Util\GTAmath.h"
+#include "..\..\Util\Clock.h"
 #include "..\..\Scripting\GTAped.h"
 
 #include "TeleLocation.h"
@@ -227,7 +228,7 @@ namespace sub::TeleportLocations_catind
 						ACTIVATE_INTERIOR_ENTITY_SET(interior, o.value.c_str());
 						if (o.maxTints > 0)
 						{
-							for (DWORD timeOut = GetTickCount() + 250; GetTickCount() < timeOut;)
+							for (std::uint64_t timeOut = GetTickMs() + 250; GetTickMs() < timeOut;)
 							{
 								if (IS_INTERIOR_ENTITY_SET_ACTIVE(interior, o.value.c_str())) break;
 								WAIT(0);
@@ -257,7 +258,7 @@ namespace sub::TeleportLocations_catind
 					ACTIVATE_INTERIOR_ENTITY_SET(interior, propName.c_str());
 					if (p.maxTints > 0)
 					{
-						for (DWORD timeOut = GetTickCount() + 250; GetTickCount() < timeOut;)
+						for (std::uint64_t timeOut = GetTickMs() + 250; GetTickMs() < timeOut;)
 						{
 							if (IS_INTERIOR_ENTITY_SET_ACTIVE(interior, propName.c_str()))
 								break;

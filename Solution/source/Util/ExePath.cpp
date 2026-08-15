@@ -12,8 +12,8 @@
 #include <Windows.h>
 #include <string>
 #include <vector>
+#include <filesystem>
 #include <sys\stat.h>
-#include <dirent\include\dirent.h>
 
 /*std::string ExePathA(bool lastSlash)
 {
@@ -103,25 +103,32 @@ bool does_file_exist(const std::string& path)
 	return (stat(path.c_str(), &buffer) == 0);
 }
 
+void get_all_filenames(const std::string& directory, std::vector<std::string>& results)
+{
+	std::error_code ec;
+	if (!std::filesystem::is_directory(directory, ec))
+		return;
+	for (const auto& entry : std::filesystem::directory_iterator(directory, ec))
+	{
+		if (ec)
+			return;
+		results.push_back(entry.path().filename().string());
+	}
+}
+
 void get_all_filenames_with_extension(const std::string& directory, const std::string& extension, std::vector<std::string> &results, bool withExtension)
 {
-	struct stat stinfo;
-	if (stat(directory.c_str(), &stinfo) == 0)
+	std::error_code ec;
+	if (!std::filesystem::is_directory(directory, ec))
+		return;
+	for (const auto& entry : std::filesystem::directory_iterator(directory, ec))
 	{
-		if (stinfo.st_mode & S_IFDIR) // is folder
-		{
-			DIR* dir_point = opendir(directory.c_str());
-			dirent* entry = readdir(dir_point);
-			while (entry)
-			{
-				std::string fname = entry->d_name;
-				if (fname.rfind(extension, (fname.length() - extension.length())) != std::string::npos
-					&& fname != "." && fname != "..")
-					results.push_back(withExtension ? fname : fname.substr(0, fname.length() - extension.length()));
-				entry = readdir(dir_point);
-			}
-			closedir(dir_point);
-		}
+		if (ec)
+			return;
+		const std::string fname = entry.path().filename().string();
+		if (fname.size() >= extension.size()
+			&& fname.compare(fname.size() - extension.size(), extension.size(), extension) == 0)
+			results.push_back(withExtension ? fname : fname.substr(0, fname.size() - extension.size()));
 	}
 }
 

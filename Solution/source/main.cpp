@@ -26,7 +26,7 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved)
 	{
 	case DLL_PROCESS_ATTACH:
 		//g_MainModule = hInstance;
-		g_MainModule = GetModuleHandle(NULL);
+		g_MainModule = GetModuleHandle(nullptr);
 
 		if (!GetModuleInformation(GetCurrentProcess(), g_MainModule, &g_MainModuleInfo, sizeof(g_MainModuleInfo)))
 			ige::myLog << ige::LogType::LOG_ERROR << "Unable to get MODULEINFO from GTA5.exe";

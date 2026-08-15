@@ -1,0 +1,20 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cpp,h,hpp,c}]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
+[*.{yml,yaml,json,props,targets}]
+indent_style = space
+indent_size = 2
+
+[*.{vcxproj,sln,filters}]
+indent_style = space
+indent_size = 2

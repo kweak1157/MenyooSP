@@ -24,7 +24,25 @@
 #include <array>
 #include <vector>
 #include <set>
+#ifdef max
+#pragma push_macro("max")
+#undef max
+#define MENYOO_RESTORE_MAX
+#endif
+#ifdef min
+#pragma push_macro("min")
+#undef min
+#define MENYOO_RESTORE_MIN
+#endif
 #include <simpleini\SimpleIni.h>
+#ifdef MENYOO_RESTORE_MIN
+#pragma pop_macro("min")
+#undef MENYOO_RESTORE_MIN
+#endif
+#ifdef MENYOO_RESTORE_MAX
+#pragma pop_macro("max")
+#undef MENYOO_RESTORE_MAX
+#endif
 
 namespace sub
 {
@@ -328,7 +346,7 @@ namespace sub
 		{
 			CSimpleIniA ini;
 			ini.SetMultiKey(true);
-			if (ini.LoadFile((GetPathffA(Pathff::Main, true) + "PedSpeechList.txt").c_str()) != SI_Error::SI_OK)
+			if (ini.LoadFile((GetPathffA(Pathff::Main, true) + "PedSpeechList.txt").c_str()) != SI_OK)
 				return false;
 
 			CSimpleIniA::TNamesDepend keys;

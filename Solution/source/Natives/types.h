@@ -9,7 +9,7 @@
 */
 #pragma once
 
-#include <stdlib.h> //rand()
+#include "..\Util\Random.h"
 
 typedef int BOOL, INT;
 typedef unsigned long DWORD;
@@ -110,7 +110,7 @@ public:
 	}
 	static RgbS Random()
 	{
-		return RgbS (rand() % (int)256, (rand() % (int)256), (rand() % (int)256));
+		return RgbS(RandomInt(256), RandomInt(256), RandomInt(256));
 	}
 
 	RGBA ToRGBA(__int16 alpha = 255)

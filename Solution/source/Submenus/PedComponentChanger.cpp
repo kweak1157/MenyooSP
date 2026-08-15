@@ -41,7 +41,6 @@
 //#include <utility>
 #include <array>
 #include <pugixml\src\pugixml.hpp>
-#include <dirent\include\dirent.h>
 
 namespace sub
 {
@@ -1465,16 +1464,8 @@ namespace sub
 
 		AddOption("Create New Folder", bCreateFolderPressed);
 
-		//get_all_filenames_with_extension(GetPathffA(Pathff::Outfit, false), ".xml", vfilnames, false);
 		if (_dir.empty()) _dir = GetPathffA(Pathff::Outfit, false);
-		DIR* dir_point = opendir(_dir.c_str());
-		dirent* entry = readdir(dir_point);
-		while (entry)
-		{
-			vfilnames.push_back(entry->d_name);
-			entry = readdir(dir_point);
-		}
-		closedir(dir_point);
+		get_all_filenames(_dir, vfilnames);
 
 		AddBreak("---Found Files---");
 
@@ -1553,7 +1544,7 @@ namespace sub
 			std::string inputStr = Game::InputBox("", 28U, "Enter folder name:");
 			if (inputStr.length() > 0)
 			{
-				if (CreateDirectoryA((_dir + "\\" + inputStr).c_str(), NULL) ||
+				if (CreateDirectoryA((_dir + "\\" + inputStr).c_str(), nullptr) ||
 					GetLastError() == ERROR_ALREADY_EXISTS)
 				{
 					_dir = _dir + "\\" + inputStr;

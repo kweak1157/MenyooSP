@@ -111,6 +111,7 @@ namespace sub::Spooner
 		bool isLoopedTask;
 
 		STSTask();
+		virtual ~STSTask() = default;
 
 		template<typename R> inline R* GetTypeTask()
 		{

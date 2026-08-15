@@ -9,6 +9,7 @@
 */
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <sstream>
 
@@ -23,7 +24,7 @@ namespace Game
 	class CustomHelpText final
 	{
 	private:
-		static DWORD _timer;
+		static std::uint64_t _timer;
 		static std::string _tag;
 		static std::string _text;
 

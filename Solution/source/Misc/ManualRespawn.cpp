@@ -62,7 +62,7 @@ namespace _ManualRespawn_
 		catch (...) {}
 
 		Game::Print::setupdraw(GTAfont::Arial, Vector2(0, 0.4f), false, true, false, RGBA(255, 255, 255, 190));
-		Game::Print::drawstring("Press ~b~[" + bindsname + "]~s~ to respawn.", NULL, 0.1f);
+		Game::Print::drawstring("Press ~b~[" + bindsname + "]~s~ to respawn.", 0.0f, 0.1f);
 		//Game::CustomHelpText::ShowTimedText(oss_ << "Press " << "~INPUT_LOOK_BEHIND~" << " to respawn.", 100);
 	}
 

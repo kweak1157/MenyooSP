@@ -13,6 +13,7 @@
 
 #include "..\Util\GTAmath.h"
 #include "..\Util\keyboard.h"
+#include "..\Util\Clock.h"
 #include "..\Natives\natives2.h"
 #include "..\Natives\types.h" // RGBA/RgbS
 #include "..\Scripting\Scaleform.h"
@@ -51,7 +52,7 @@ float get_xcoord_at_menu_leftEdge(float width, bool centered)
 namespace MenuPressTimer
 {
 	MenuPressTimer::Button currentButton = { MenuPressTimer::Button::None };
-	DWORD offsettedTime = 0;
+	std::uint64_t offsettedTime = 0;
 
 	void Update()
 	{
@@ -59,7 +60,7 @@ namespace MenuPressTimer
 
 		if (currentButton == Button::None)
 		{
-			offsettedTime = GetTickCount() + 630;
+			offsettedTime = GetTickMs() + 630;
 		}
 
 		if (IS_DISABLED_CONTROL_PRESSED(2, INPUT_FRONTEND_RIGHT) || IsKeyDown(VirtualKey::Numpad6))
@@ -86,7 +87,7 @@ namespace MenuPressTimer
 	}
 	bool IsButtonHeld(const MenuPressTimer::Button& button)
 	{
-		DWORD tickCount = GetTickCount();
+		const std::uint64_t tickCount = GetTickMs();
 		return (currentButton == button && offsettedTime < tickCount);
 	}
 	bool IsButtonTapped(const MenuPressTimer::Button& button)

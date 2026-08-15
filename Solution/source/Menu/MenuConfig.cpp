@@ -15,6 +15,8 @@
 #include "Routine.h"
 #include "Language.h"
 
+#include "..\Scripting\Game.h"
+
 #include "..\Util\ExePath.h"
 #include "..\Natives\types.h" // RGBA/RgbS
 #include "..\Util\GTAmath.h"
@@ -178,6 +180,7 @@ void MenuConfig::ConfigRead()
 
 
 	 //loop_hide_hud = ini.GetBoolValue(section_haxValues.c_str(), "hide_hud", loop_hide_hud);
+	Game::Print::bNotifications = ini.GetBoolValue(section_haxValues.c_str(), "notifications", Game::Print::bNotifications);
 	loop_showFullHud = ini.GetBoolValue(section_haxValues.c_str(), "show_full_hud", loop_showFullHud);
 	_ManualRespawn_::g_manualRespawn.Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "manual_respawn", _ManualRespawn_::g_manualRespawn.Enabled());
 	loop_no_clip = ini.GetBoolValue(section_haxValues.c_str(), "freecam", loop_no_clip);
@@ -428,6 +431,7 @@ void MenuConfig::ConfigSave()
 
 
 										   //ini.SetBoolValue(section_haxValues.c_str(), "hide_hud", loop_hide_hud);
+	ini.SetBoolValue(section_haxValues.c_str(), "notifications", Game::Print::bNotifications);
 	ini.SetBoolValue(section_haxValues.c_str(), "show_full_hud", loop_showFullHud);
 	ini.SetBoolValue(section_haxValues.c_str(), "manual_respawn", _ManualRespawn_::g_manualRespawn.Enabled());
 	ini.SetBoolValue(section_haxValues.c_str(), "freecam", loop_no_clip);
@@ -580,6 +584,7 @@ void MenuConfig::ConfigResetHaxValues()
 	}
 
 	ini.SetLongValue(section_haxValues.c_str(), "frozen_radio_station", -1);
+	ini.SetLongValue(section_haxValues.c_str(), "notifications", 1);
 
 	ini.SetLongValue(section_haxValues.c_str(), "laser_sight_R", sub::LaserSight_catind::_colour.R);
 	ini.SetLongValue(section_haxValues.c_str(), "laser_sight_G", sub::LaserSight_catind::_colour.G);

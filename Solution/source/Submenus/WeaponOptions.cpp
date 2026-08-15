@@ -49,7 +49,6 @@
 #include <vector>
 #include <set>
 #include <pugixml\src\pugixml.hpp>
-#include <dirent\include\dirent.h>
 
 namespace sub
 {
@@ -194,8 +193,10 @@ namespace sub
 			std::string inputStr = Game::InputBox("", 11U, "", std::to_string(_globalForgeGun_shootForce));
 			if (inputStr.length() > 0)
 			{
-				try { _globalForgeGun_shootForce = stof(inputStr); }
-				catch (...) { Game::Print::PrintError_InvalidInput(); }
+				if (const auto parsed = TryParseFloat(inputStr))
+					_globalForgeGun_shootForce = *parsed;
+				else
+					Game::Print::PrintError_InvalidInput();
 			}
 			//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SetArg1Float, std::string(), 10U, std::to_string(_globalForgeGun_shootForce));
 			//OnscreenKeyboard::State::arg1._ptr = reinterpret_cast<void*>(&_globalForgeGun_shootForce);
@@ -434,8 +435,10 @@ namespace sub
 				std::string inputStr = Game::InputBox("", 11U, "", std::to_string(shootForce));
 				if (inputStr.length() > 0)
 				{
-					try { shootForce = stof(inputStr); }
-					catch (...) { Game::Print::PrintError_InvalidInput(); }
+					if (const auto parsed = TryParseFloat(inputStr))
+						shootForce = *parsed;
+					else
+						Game::Print::PrintError_InvalidInput();
 				}
 				//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SetArg1Float, std::string(), 10U, std::to_string(shootForce));
 				//OnscreenKeyboard::State::arg1._ptr = reinterpret_cast<void*>(&shootForce);
@@ -816,7 +819,7 @@ namespace sub
 			if (doc.load_file((const char*)(GetPathffA(Pathff::Main, true) + xmlFavouriteWeapons).c_str()).status != pugi::status_ok)
 				return false;
 			pugi::xml_node nodeRoot = doc.document_element();
-			return nodeRoot.find_child_by_attribute("hash", int_to_hexstring(whash, true).c_str()) != NULL;
+			return nodeRoot.find_child_by_attribute("hash", int_to_hexstring(whash, true).c_str());
 		}
 		bool AddWeaponToFavourites(Hash whash, const std::string& customName)
 		{
@@ -1463,16 +1466,8 @@ namespace sub
 
 			AddOption("Create New Folder", bCreateFolderPressed);
 
-			//get_all_filenames_with_extension(GetPathffA(Pathff::WeaponsLoadout, false), ".xml", vfilnames, false);
 			if (_dir.empty()) _dir = GetPathffA(Pathff::WeaponsLoadout, false);
-			DIR* dir_point = opendir(_dir.c_str());
-			dirent* entry = readdir(dir_point);
-			while (entry)
-			{
-				vfilnames.push_back(entry->d_name);
-				entry = readdir(dir_point);
-			}
-			closedir(dir_point);
+			get_all_filenames(_dir, vfilnames);
 
 			AddBreak("---Found Files---");
 
@@ -1555,7 +1550,7 @@ namespace sub
 				std::string inputStr = Game::InputBox("", 28U, "Enter folder name:");
 				if (inputStr.length() > 0)
 				{
-					if (CreateDirectoryA((_dir + "\\" + inputStr).c_str(), NULL) ||
+					if (CreateDirectoryA((_dir + "\\" + inputStr).c_str(), nullptr) ||
 						GetLastError() == ERROR_ALREADY_EXISTS)
 					{
 						_dir = _dir + "\\" + inputStr;
@@ -1665,7 +1660,7 @@ namespace sub
 			Vector3 hitCoord;
 			GTAentity gun = WEAPON::GET_CURRENT_PED_WEAPON_ENTITY_INDEX(myPed.Handle(), 0);
 
-			if (gun.Handle() != NULL)
+			if (gun.Handle() != 0)
 			{
 				if (!myPed.IsReloading() && (myPlayer.IsFreeAiming() || myPlayer.IsTargetingAnything()))
 				{

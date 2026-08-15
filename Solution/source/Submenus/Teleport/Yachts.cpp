@@ -35,13 +35,14 @@
 #include "Locations.h"
 #include "..\Settings.h"
 
-#include <Windows.h> //GetTickCount
+#include "..\..\Util\Clock.h"
+
 #include <string>
 #include <vector>
 #include <map>
 //#include <utility>
 #include <array>
-#include <stdio.h>
+#include <format>
 
 namespace sub::TeleportLocations_catind
 {
@@ -235,18 +236,13 @@ namespace sub::TeleportLocations_catind
 			{
 				auto& posh = yachtInfo.location->second.poses[yachtInfo.internalLocationIndex - 1];
 
-				char buffer[64];// = new char[64];
-
 				//Game::Print::PrintBottomLeft("Building Yacht.");
 
 				SET_INSTANCE_PRIORITY_MODE(true);
 				ON_ENTER_MP();
 
-				sprintf_s(buffer, "%02d", yachtInfo.location->first);
-				std::string groupIdStr = buffer;
-
-				sprintf_s(buffer, "apa_yacht_grp%s_%i", groupIdStr.c_str(), yachtInfo.internalLocationIndex);
-				std::string iplInitials = buffer;
+				const std::string groupIdStr = std::format("{:02d}", yachtInfo.location->first);
+				const std::string iplInitials = std::format("apa_yacht_grp{}_{}", groupIdStr, yachtInfo.internalLocationIndex);
 
 				REQUEST_IPL((iplInitials).c_str());
 				REQUEST_IPL((iplInitials + "_int").c_str());
@@ -255,7 +251,7 @@ namespace sub::TeleportLocations_catind
 
 				WAIT(200);
 
-				for (DWORD timeOut = GetTickCount() + 6500; GetTickCount() < timeOut;)
+				for (std::uint64_t timeOut = GetTickMs() + 6500; GetTickMs() < timeOut;)
 				{
 					if (World::GetClosestPropOfType(posh.pos, 3.0f, 0x4FCAD2E0).Exists()) break; // apa_mp_apa_yacht
 				}
@@ -282,8 +278,8 @@ namespace sub::TeleportLocations_catind
 											   //if (!propYachtWin.Exists()) propYachtWin = propYacht;
 
 
-				sprintf_s(buffer, "apa_mp_apa_yacht_o%u_rail_%c", optionNumber, yachtInfo.railingColour);
-				GTAprop propRailings = World::CreateProp(std::string(buffer), Vector3(), false, false);
+				const std::string railingsModel = std::format("apa_mp_apa_yacht_o{}_rail_{}", optionNumber, yachtInfo.railingColour);
+				GTAprop propRailings = World::CreateProp(railingsModel, Vector3(), false, false);
 				propRailings.IsCollisionEnabled_set(true);
 				propRailings.AttachTo(propYachtWin, 0, false, Vector3(0.0032f, 0.0028f, 14.5700f), Vector3());
 				SET_ENTITY_LIGHTS(propRailings.Handle(), 0);
@@ -314,15 +310,17 @@ namespace sub::TeleportLocations_catind
 					yachtInfo.vSpawnedEntities.push_back(p);
 				}
 
-				sprintf_s(buffer, "apa_mp_apa_y%u_l%u%c", optionNumber, yachtInfo.lightingType, yachtInfo.lightingColour);
-				GTAprop propLights = World::CreateProp(std::string(buffer), propYachtPos, false, false);
+				const std::string lightsModel = std::format("apa_mp_apa_y{}_l{}{}", optionNumber, yachtInfo.lightingType, yachtInfo.lightingColour);
+				GTAprop propLights = World::CreateProp(lightsModel, propYachtPos, false, false);
 				propLights.AttachTo(propYachtWin, 0, false, Vector3(0.0032f, 0.0028f, 14.5700f), Vector3());
 				propLights.IsCollisionEnabled_set(true);
 				SET_ENTITY_LIGHTS(propLights.Handle(), 0);
 				propLights.MissionEntity_set(true);
 				yachtInfo.vSpawnedEntities.push_back(propLights);
 
-				sprintf_s(buffer, "apa_mp_apa_yacht_door%c", yachtInfo.doorColour);
+				const std::string doorModel = yachtInfo.doorColour == '\0'
+					? std::string("apa_mp_apa_yacht_door")
+					: std::format("apa_mp_apa_yacht_door{}", yachtInfo.doorColour);
 				for (auto& doorOffset : std::vector<std::pair<Vector3, Vector3>>
 				{
 					{ { 0.01894f, -3.3871f, 6.6600f },{ 0.0000f, 0.0000f, 90.2950f } },
@@ -330,7 +328,7 @@ namespace sub::TeleportLocations_catind
 					{ { -36.8202f, -1.2778f, 0.6500f },{ 0.0000f, 0.0000f, -89.9550f } }
 				})
 				{
-					GTAprop propDoor = World::CreateProp(std::string(buffer), Vector3(), true, false);
+					GTAprop propDoor = World::CreateProp(doorModel, Vector3(), true, false);
 					propDoor.AttachTo(propYachtWin, 0, false, doorOffset.first, doorOffset.second);
 					propDoor.IsCollisionEnabled_set(true);
 					SET_OBJECT_TINT_INDEX(propDoor.Handle(), yachtInfo.yachtPropTextureVariation);

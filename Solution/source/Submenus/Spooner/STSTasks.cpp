@@ -20,6 +20,7 @@
 #include "..\..\Scripting\GTAblip.h"
 #include "..\..\Scripting\Game.h"
 #include "..\..\Util\StringManip.h"
+#include "..\..\Util\Clock.h"
 #include "..\..\Scripting\enums.h"
 #include "..\..\Scripting\World.h"
 #include "..\..\Scripting\GTAvehicle.h"
@@ -34,7 +35,7 @@
 #include <pugixml\src\pugixml.hpp>
 #include <vector>
 #include <string>
-#include <Windows.h> //GetTickCount
+
 
 namespace sub::Spooner
 {
@@ -1995,10 +1996,10 @@ namespace sub::Spooner
 			{
 				if (this->fx.IsAssetLoaded())
 				{
-					if (GetTickCount() > timer)
+					if (GetTickMs() > timer)
 					{
 						this->fx.Start(ep, this->scale, this->posOffset, this->rotOffset, this->colour);
-						this->timer = GetTickCount() + delay;
+						this->timer = GetTickMs() + delay;
 					}
 				}
 				else

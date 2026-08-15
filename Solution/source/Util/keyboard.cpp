@@ -9,6 +9,7 @@ http://dev-c.com
 * Copyright (C) 2019  MAFINS
 */
 #include "keyboard.h"
+#include "Clock.h"
 
 #include <Windows.h>
 
@@ -24,7 +25,7 @@ bool get_key_pressed(DWORD key)
 
 
 struct {
-	DWORD time;
+	std::uint64_t time;
 	BOOL isWithAlt;
 	BOOL wasDownBefore;
 	BOOL isUpNow;
@@ -35,7 +36,9 @@ void OnKeyboardMessage(DWORD key, WORD repeats, BYTE scanCode, BOOL isExtended, 
 {
 	if (key < KEYS_SIZE)
 	{
-		keyStates[key].time = GetTickCount();
+		keyStates[key].time = GetTickMs();
+		if (keyStates[key].time == 0)
+			keyStates[key].time = 1;
 		keyStates[key].isWithAlt = isWithAlt;
 		keyStates[key].wasDownBefore = wasDownBefore;
 		keyStates[key].isUpNow = isUpNow;
@@ -45,12 +48,12 @@ void OnKeyboardMessage(DWORD key, WORD repeats, BYTE scanCode, BOOL isExtended, 
 
 bool IsKeyDown(DWORD key)
 {
-	return (key < KEYS_SIZE) ? ((GetTickCount() < keyStates[key].time + MAX_DOWN) && !keyStates[key].isUpNow) : false;
+	return (key < KEYS_SIZE) ? ((keyStates[key].time != 0) && (GetTickMs() < keyStates[key].time + MAX_DOWN) && !keyStates[key].isUpNow) : false;
 }
 
 bool IsKeyJustUp(DWORD key, bool exclusive)
 {
-	bool b = (key < KEYS_SIZE) ? (GetTickCount() < keyStates[key].time + NOW_PERIOD && keyStates[key].isUpNow) : false;
+	bool b = (key < KEYS_SIZE) ? ((keyStates[key].time != 0) && GetTickMs() < keyStates[key].time + NOW_PERIOD && keyStates[key].isUpNow) : false;
 	if (b && exclusive)
 		ResetKeyState(key);
 	return b;

@@ -13,6 +13,7 @@
 
 #include "..\Scripting\Game.h" //GameSound
 
+#include <cstdint>
 #include <vector>
 
 typedef unsigned long DWORD;
@@ -27,8 +28,8 @@ namespace _MeteorShower_
 	class MeteorShower final : public GenericLoopedMode
 	{
 	private:
-		DWORD timer1;
-		DWORD timer2;
+		std::uint64_t timer1;
+		std::uint64_t timer2;
 		std::vector<GTAprop> rockArray;
 		std::vector<GTAmodel::Model> rockModels;
 		static const std::vector<std::string> rockModelNames;

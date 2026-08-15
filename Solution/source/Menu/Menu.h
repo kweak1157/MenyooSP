@@ -14,6 +14,7 @@
 #include "..\Scripting\enums.h"
 #include "..\Scripting\Scaleform.h"
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 //#include <array>
@@ -57,7 +58,7 @@ namespace MenuPressTimer
 		None, Up, Down, Left, Right, Back, Accept
 	};
 	extern MenuPressTimer::Button currentButton;
-	extern DWORD offsettedTime;
+	extern std::uint64_t offsettedTime;
 
 	void Update();
 	bool IsButtonHeld(const MenuPressTimer::Button& button);

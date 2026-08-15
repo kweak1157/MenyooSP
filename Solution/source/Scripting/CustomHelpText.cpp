@@ -13,14 +13,14 @@
 
 #include "..\Natives\natives2.h"
 #include "..\Menu\Language.h"
+#include "..\Util\Clock.h"
 
-#include <Windows.h> // PCHAR, GetTickCount
 #include <string>
 #include <sstream>
 
 namespace Game
 {
-	DWORD CustomHelpText::_timer = 0;
+	std::uint64_t CustomHelpText::_timer = 0;
 	std::string CustomHelpText::_tag = "Menyoo Help:~n~";
 	std::string CustomHelpText::_text;
 
@@ -89,7 +89,7 @@ namespace Game
 	{
 		if (_timer)
 		{
-			DWORD time_now = GetTickCount();
+			const std::uint64_t time_now = GetTickMs();
 			if (time_now <= _timer)
 			{
 				ShowThisFrame();
@@ -105,7 +105,7 @@ namespace Game
 	{
 		if (!_timer) PLAY_SOUND_FRONTEND(-1, "WEAPON_SELECT_ARMOR", "HUD_AMMO_SHOP_SOUNDSET", 0);
 		SetText(text);
-		_timer = GetTickCount() + how_many_ms;
+		_timer = GetTickMs() + how_many_ms;
 	}
 	void CustomHelpText::ShowTimedText(std::ostream& s, DWORD how_many_ms)
 	{

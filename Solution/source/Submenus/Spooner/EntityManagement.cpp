@@ -87,6 +87,22 @@ namespace sub::Spooner
 				Databases::EntityDb.push_back(ent);
 			}
 		}
+		void AddPlayerToDb()
+		{
+			GTAentity myPed = PLAYER_PED_ID();
+			if (!myPed.Exists() || GetEntityIndexInDb(myPed) >= 0)
+				return;
+
+			SpoonerEntity ent;
+			ent.Dynamic = true;
+			ent.Handle = myPed;
+			ent.HashName = get_ped_model_label(myPed.Model(), true);
+			if (ent.HashName.length() == 0)
+				ent.HashName = "Player (Unk Model)";
+			ent.IsStill = true;
+			ent.Type = EntityType::PED;
+			AddEntityToDb(ent, false);
+		}
 		void RemoveEntityFromDb(const SpoonerEntity& ent)
 		{
 			GTAentity handle = ent.Handle;
@@ -611,14 +627,14 @@ namespace sub::Spooner
 
 				if (!bTaskSeqIsEmpty)
 				{
-					for (STSTask* tskPtr : oldTaskSeqTasks)
+					for (auto& tskPtr : oldTaskSeqTasks)
 					{
 						if (tskPtr != nullptr)
 						{
 							STSTask* newtskPtr = newEntity.TaskSequence.AddTask(tskPtr->type);
 							if (newtskPtr != nullptr)
 							{
-								newtskPtr->Assign(tskPtr);
+								newtskPtr->Assign(tskPtr.get());
 							}
 						}
 					}

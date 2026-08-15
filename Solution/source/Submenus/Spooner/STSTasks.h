@@ -17,6 +17,7 @@
 #include "..\..\Natives\types.h" //RGBA
 #include "..\..\Scripting\PTFX.h"
 
+#include <cstdint>
 #include <vector>
 #include <string>
 
@@ -665,7 +666,7 @@ namespace sub::Spooner
 			void ImportXmlNodeTaskSpecific(pugi::xml_node& nodeTask) override;
 			void ImportTaskDataSpecific(STSTask* otherTsk) override;
 		public:
-			DWORD timer;
+			std::uint64_t timer;
 			UINT delay;
 			PTFX::NonLoopedPTFX fx;
 			Vector3 posOffset, rotOffset;

@@ -16,9 +16,9 @@
 #include "..\Scripting\enums.h"
 #include "..\Memory\GTAmemory.h"
 #include "..\Util\StringManip.h"
+#include "..\Util\Clock.h"
 
 #include <string>
-#include <Windows.h> //GetTickCount
 
 namespace GTAmodel
 {
@@ -72,7 +72,7 @@ namespace GTAmodel
 			int data = 0xFFFF;
 			return _gtaModelGetInfo(this->hash, (__int64)&data);
 		}
-		return NULL;
+		return 0;
 	}
 
 	std::string Model::VehicleDisplayName(bool properName) const
@@ -359,7 +359,7 @@ namespace GTAmodel
 	{
 		REQUEST_COLLISION_FOR_MODEL(this->hash);
 
-		for (timeOut += GetTickCount(); GetTickCount() < timeOut;)
+		for (const std::uint64_t deadline = GetTickMs() + timeOut; GetTickMs() < deadline;)
 		{
 			if (HAS_COLLISION_FOR_MODEL_LOADED(this->hash)) return true;
 			WAIT(0);

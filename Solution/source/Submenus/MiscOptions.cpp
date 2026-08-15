@@ -39,6 +39,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <format>
 
 namespace sub
 {
@@ -62,6 +63,10 @@ namespace sub
 			misc_vehPopu_off = 0;
 
 		AddTitle("Misc Options");
+		bool notifications_off = false;
+		AddToggle("Notification Toggler", Game::Print::bNotifications, null, notifications_off);
+		if (notifications_off)
+			THEFEED_FLUSH_QUEUE();
 		//	AddToggle("First Person View", loop_fps_cam_rot, fps_mode_on, fps_mode_on);
 		AddToggle("FreeCam (No-Clip)", loop_no_clip, misc_freecam_on, misc_freecam_off);
 		AddLocal("Top-Down View", _Gta2Cam_::g_gta2Cam.Enabled(), _Gta2Cam_::ToggleOnOff, _Gta2Cam_::ToggleOnOff);
@@ -392,11 +397,10 @@ namespace sub
 			std::string inputStr = Game::InputBox("", 6U, "", std::to_string(_globalClearArea_radius).substr(0, 5));
 			if (inputStr.length() > 0)
 			{
-				try
-				{
-					_globalClearArea_radius = stof(inputStr);
-				}
-				catch (...) { Game::Print::PrintError_InvalidInput(); }
+				if (const auto parsed = TryParseFloat(inputStr))
+					_globalClearArea_radius = *parsed;
+				else
+					Game::Print::PrintError_InvalidInput();
 			}
 			//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SetArg1Float, std::string(), 5U, std::string(), std::to_string(_globalClearArea_radius).substr(0, 5));
 			//OnscreenKeyboard::State::arg1._ptr = reinterpret_cast<void*>(&_globalClearArea_radius);
@@ -439,23 +443,17 @@ namespace sub
 			Game::Print::setupdraw(7, Vector2(0.4, 0.4), true, false, false);
 			Game::Print::drawstring("Details", 0.90, 0.0675);
 
-			char str[30];
+			Game::Print::setupdraw(0, Vector2(0, 0.33), true, false, false);
+			Game::Print::drawstring(std::format("X - {:f}", startPos.x + sizePos.x), 0.90, 0.0975);
 
 			Game::Print::setupdraw(0, Vector2(0, 0.33), true, false, false);
-			sprintf_s(str, "X - %f", startPos.x + sizePos.x);
-			Game::Print::drawstring(str, 0.90, 0.0975);
+			Game::Print::drawstring(std::format("Y - {:f}", startPos.y + sizePos.y), 0.90, 0.1275);
 
 			Game::Print::setupdraw(0, Vector2(0, 0.33), true, false, false);
-			sprintf_s(str, "Y - %f", startPos.y + sizePos.y);
-			Game::Print::drawstring(str, 0.90, 0.1275);
+			Game::Print::drawstring(std::format("SizeX - {:f}", sizePos.x), 0.90, 0.1575);
 
 			Game::Print::setupdraw(0, Vector2(0, 0.33), true, false, false);
-			sprintf_s(str, "SizeX - %f", sizePos.x);
-			Game::Print::drawstring(str, 0.90, 0.1575);
-
-			Game::Print::setupdraw(0, Vector2(0, 0.33), true, false, false);
-			sprintf_s(str, "SizeY - %f", sizePos.y);
-			Game::Print::drawstring(str, 0.90, 0.1875);
+			Game::Print::drawstring(std::format("SizeY - {:f}", sizePos.y), 0.90, 0.1875);
 
 			if (IS_DISABLED_CONTROL_JUST_PRESSED(2, INPUT_FRONTEND_CANCEL))
 				break;
@@ -642,16 +640,14 @@ namespace sub
 				std::string inputStr = Game::InputBox("", 10U, "", std::to_string(radius).substr(0, 9));
 				if (inputStr.length() > 0)
 				{
-					float oldVal = radius;
-					try
+					if (const auto parsed = TryParseFloat(inputStr))
 					{
-						radius = stof(inputStr);
+						radius = *parsed;
 						if (radius > 650.0f)
 							radius = 650.0f;
 						else if (radius < 0.0f)
 							radius = 0.0f;
 					}
-					catch (...) { radius = oldVal; }
 				}
 				//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::WaterHackRadius, std::string(), 9U, std::string(), std::to_string(radius).substr(0, 9));
 				return;
@@ -671,12 +667,11 @@ namespace sub
 				std::string inputStr = Game::InputBox("", 10U, "", std::to_string(height).substr(0, 9));
 				if (inputStr.length() > 0)
 				{
-					try
+					if (const auto parsed = TryParseFloat(inputStr))
 					{
-						height = stof(inputStr);
+						height = *parsed;
 						height = (std::min)(800.0f, (std::max)(-800.0f, height));
 					}
-					catch (...) {  }
 				}
 				//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::WaterHackHeight, std::string(), 9U, std::string(), std::to_string(height).substr(0, 9));
 				return;

@@ -53,7 +53,7 @@ namespace sub
 			if (doc.load_file((const char*)(GetPathffA(Pathff::Main, true) + xmlFavouritePeds).c_str()).status != pugi::status_ok)
 				return false;
 			pugi::xml_node nodeRoot = doc.document_element();
-			return nodeRoot.find_child_by_attribute("hash", int_to_hexstring(model.hash, true).c_str()) != NULL;
+			return nodeRoot.find_child_by_attribute("hash", int_to_hexstring(model.hash, true).c_str());
 		}
 		bool AddPedToFavourites(GTAmodel::Model model, const std::string& customName)
 		{

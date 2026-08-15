@@ -16,6 +16,7 @@
 
 #include "..\Natives\natives2.h"
 #include "..\Scripting\Game.h"
+#include "..\Util\StringManip.h"
 
 #include <string>
 #include <vector>
@@ -144,12 +145,13 @@ namespace sub
 					std::string inputStr = Game::InputBox(std::string(), (int)std::to_string((int)stat.max).length() + 1, "Enter integer value:", std::to_string(statValue));
 					if (inputStr.length() > 0)
 					{
-						try
+						if (const auto parsed = TryParseInt(inputStr))
 						{
-							statValue = stoi(inputStr);
+							statValue = *parsed;
 							StatSetInt(statName, statValue);
 						}
-						catch (...) { Game::Print::PrintError_InvalidInput(); }
+						else
+							Game::Print::PrintError_InvalidInput();
 					}
 					//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SpStatManagerInputInt, std::string(), (int)std::to_string((int)stat.max).length(), "Enter integer value:", std::to_string(statValue));
 					//OnscreenKeyboard::State::arg1._uint = GET_HASH_KEY(statName);
@@ -167,12 +169,13 @@ namespace sub
 					std::string inputStr = Game::InputBox(std::string(), 13U, "Enter floating point value:", std::to_string(statValue));
 					if (inputStr.length() > 0)
 					{
-						try
+						if (const auto parsed = TryParseFloat(inputStr))
 						{
-							statValue = stof(inputStr);
+							statValue = *parsed;
 							StatSetFloat(statName, statValue);
 						}
-						catch (...) { Game::Print::PrintError_InvalidInput(); }
+						else
+							Game::Print::PrintError_InvalidInput();
 					}
 					//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SpStatManagerInputFloat, std::string(), 13U, "Enter floating point value:", std::to_string(statValue));
 					//OnscreenKeyboard::State::arg1._uint = GET_HASH_KEY(statName);

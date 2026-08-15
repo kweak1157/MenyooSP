@@ -19,8 +19,9 @@
 #include "..\Scripting\GTAped.h"
 #include "..\Scripting\Raycast.h"
 #include "..\Scripting\PTFX.h"
+#include "..\Util\Clock.h"
+#include "..\Util\Random.h"
 
-#include <Windows.h> // GetTickCount
 #include <string>
 #include <vector>
 
@@ -91,7 +92,7 @@ namespace _MeteorShower_
 		if (!myPed.Exists())
 			return;
 
-		if (GetTickCount() > timer1)
+		if (GetTickMs() > timer1)
 		{
 			const Vector3& myPos = myPed.Position_get();
 
@@ -100,7 +101,7 @@ namespace _MeteorShower_
 
 			Vector3 pos = myPos.PointOnCircle(radius, angle) + Vector3(0, 0, 65.0f);
 
-			Model model = rockModels[rand() % (int)rockModels.size()];
+			Model model = rockModels[RandomInt(static_cast<int>(rockModels.size()))];
 
 
 			GTAprop rock = CREATE_OBJECT(model.hash, pos.x, pos.y, pos.z, 1, 1, 1);
@@ -114,7 +115,7 @@ namespace _MeteorShower_
 
 			rockArray.push_back(rock);
 
-			timer1 = GetTickCount() + 840;
+			timer1 = GetTickMs() + 840;
 		}
 
 		for (auto& r : rockArray)
@@ -169,14 +170,14 @@ namespace _MeteorShower_
 			}
 		}
 
-		if (GetTickCount() > timer2)
+		if (GetTickMs() > timer2)
 		{
 			for (auto& r : rockArray)
 			{
 				r.NoLongerNeeded();
 			} rockArray.clear();
 
-			timer2 = GetTickCount() + 10500;
+			timer2 = GetTickMs() + 10500;
 		}
 
 		/*for (auto& r : rockArray)

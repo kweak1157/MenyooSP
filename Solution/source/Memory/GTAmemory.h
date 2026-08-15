@@ -29,13 +29,6 @@
 #include <Psapi.h>
 #include <string>
 
-typedef unsigned char UINT8, BYTE;
-typedef signed int INT32;
-typedef unsigned long DWORD;
-typedef unsigned long long size_t;
-typedef unsigned __int64 DWORD64, UINT64;
-typedef void *LPVOID;
-typedef const char *LPCSTR;
 typedef int Entity;
 
 ////psapi.h
@@ -82,7 +75,7 @@ struct ScriptTableItem {
 	int hash;
 
 	inline bool IsLoaded() const {
-		return Header != NULL;
+		return Header != nullptr;
 	}
 };
 
@@ -91,15 +84,15 @@ struct ScriptTable {
 	char padding[16];
 	int count;
 	ScriptTableItem* FindScript(int hash) {
-		if (TablePtr == NULL) {
-			return NULL;
+		if (TablePtr == nullptr) {
+			return nullptr;
 		}
 		for (int i = 0; i < count; i++) {
 			if (TablePtr[i].hash == hash) {
 				return &TablePtr[i];
 			}
 		}
-		return NULL;
+		return nullptr;
 	}
 };
 

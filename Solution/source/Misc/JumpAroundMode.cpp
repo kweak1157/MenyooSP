@@ -130,21 +130,21 @@ namespace _JumpAroundMode_
 			if (enable)
 			{
 				szCommand = "open \"" + GetPathffA(Pathff::Main, true) + szAlias + ".mp3" + "\" type MPEGVideo" + " alias " + szAlias;
-				mciSendStringA(szCommand.c_str(), NULL, 0, 0);
+				mciSendStringA(szCommand.c_str(), nullptr, 0, 0);
 
 				szCommand = "play " + szAlias + " from 0 repeat";
-				mciSendStringA(szCommand.c_str(), NULL, 0, 0);
+				mciSendStringA(szCommand.c_str(), nullptr, 0, 0);
 
 				szCommand = "setaudio " + szAlias + " volume to 400";
-				mciSendStringA(szCommand.c_str(), NULL, 0, 0);
+				mciSendStringA(szCommand.c_str(), nullptr, 0, 0);
 			}
 			else
 			{
 				szCommand = "stop " + szAlias;
-				mciSendStringA(szCommand.c_str(), NULL, 0, 0);
+				mciSendStringA(szCommand.c_str(), nullptr, 0, 0);
 
 				szCommand = "close " + szAlias;
-				mciSendStringA(szCommand.c_str(), NULL, 0, 0);
+				mciSendStringA(szCommand.c_str(), nullptr, 0, 0);
 			}
 		}
 		catch (std::exception& e)
@@ -160,7 +160,7 @@ namespace _JumpAroundMode_
 		int i;
 		for (i = 0; i < discoLights.size(); i++)
 		{
-			discoLights[i].colour = RgbS(rand() % 256, rand() % 256, rand() % 256);
+			discoLights[i].colour = RgbS::Random();
 		}
 	}
 

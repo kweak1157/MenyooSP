@@ -11,6 +11,7 @@
 
 //#include "GenericLoopedMode.h"
 
+#include <cstdint>
 #include <string>
 
 typedef unsigned long DWORD;
@@ -22,7 +23,7 @@ namespace _FpsCounter_
 	protected:
 		DWORD fpsValue;
 		DWORD frameCounter;
-		DWORD timer;
+		std::uint64_t timer;
 
 	public:
 		FpsCounter();

@@ -19,8 +19,8 @@
 #include "..\Scripting\Game.h"
 #include "..\Util\ExePath.h"
 #include "..\Util\FileLogger.h"
+#include "..\Util\Clock.h"
 
-#include <Windows.h> //GetTickCount
 #include <string>
 #include <vector>
 
@@ -81,8 +81,8 @@ namespace sub
 
 			REQUEST_CUTSCENE(label.c_str(), 8);
 
-			DWORD timeOut = GetTickCount() + 1500;
-			while (GetTickCount() < timeOut)
+			const std::uint64_t timeOut = GetTickMs() + 1500;
+			while (GetTickMs() < timeOut)
 			{
 				WAIT(0);
 				if (!HAS_CUTSCENE_LOADED())

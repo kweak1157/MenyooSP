@@ -10,12 +10,8 @@ http://dev-c.com
 */
 #pragma once
 
+#include <Windows.h>
 #include <string>
-
-typedef unsigned long DWORD;
-typedef unsigned short WORD;
-typedef unsigned __int8 UINT8, BYTE;
-typedef int BOOL;
 
 
 namespace VirtualKey {

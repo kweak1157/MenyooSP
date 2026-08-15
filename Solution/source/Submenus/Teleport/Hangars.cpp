@@ -19,8 +19,8 @@
 #include "..\..\Scripting\GTAped.h"
 
 #include "TeleMethods.h"
+#include "..\..\Util\Clock.h"
 
-#include <Windows.h> //GetTickCount
 #include <string>
 #include <vector>
 
@@ -231,7 +231,7 @@ namespace sub::TeleportLocations_catind
 						ACTIVATE_INTERIOR_ENTITY_SET(interior, o.value.c_str());
 						if (o.maxTints > 0)
 						{
-							for (DWORD timeOut = GetTickCount() + 250; GetTickCount() < timeOut;)
+							for (std::uint64_t timeOut = GetTickMs() + 250; GetTickMs() < timeOut;)
 							{
 								if (IS_INTERIOR_ENTITY_SET_ACTIVE(interior, o.value.c_str()))
 									break;
@@ -261,7 +261,7 @@ namespace sub::TeleportLocations_catind
 					ACTIVATE_INTERIOR_ENTITY_SET(interior, propName.c_str());
 					if (p.maxTints > 0)
 					{
-						for (DWORD timeOut = GetTickCount() + 250; GetTickCount() < timeOut;)
+						for (std::uint64_t timeOut = GetTickMs() + 250; GetTickMs() < timeOut;)
 						{
 							if (IS_INTERIOR_ENTITY_SET_ACTIVE(interior, propName.c_str()))
 								break;
