@@ -630,7 +630,7 @@ namespace sub
 
 		float paintFade = GET_VEHICLE_ENVEFF_SCALE(g_selectedIndex);
 		float dirtLevel = GET_VEHICLE_DIRT_LEVEL(g_selectedIndex);
-		float carvarcol = GET_VEHICLE_COLOUR_COMBINATION(g_selectedIndex) + 1;
+		int carvarcol = GET_VEHICLE_COLOUR_COMBINATION(g_selectedIndex) + 1;
 		bool set_mspaints_index_4 = 0, set_mspaints_index_3 = 0,
 			set_mspaints_index_5 = 0, set_mspaints_index_6 = 0,
 			paintFade_plus = 0, paintFade_minus = 0,
@@ -1587,7 +1587,7 @@ namespace sub
 
 	// vehicle - upgrades
 	void set_vehicle_max_upgrades(Vehicle vehicle, bool upgradeIt, bool invincible, INT8 plateType, std::string plateText,
-		bool neonIt, UINT8 NeonR, UINT8 NeonG, UINT8 NeonB, INT16 prim_col_index, INT16 sec_col_index)
+		bool neonIt, int NeonR, int NeonG, int NeonB, INT16 prim_col_index, INT16 sec_col_index)
 	{
 		if (!DOES_ENTITY_EXIST(vehicle) || !IS_ENTITY_A_VEHICLE(vehicle))
 			return;

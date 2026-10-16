@@ -243,6 +243,8 @@ void AddLocal(const std::string& text, BOOL condition, bool &option_code_ON, boo
 void AddLocal(const std::string& text, BOOL condition, void(&callback_ON)(), void(&callback_OFF)(), bool gxt = 0);
 void AddBreak(std::string text);
 void AddNumber(const std::string& text, float value, __int8 decimal_places, bool &A_PRESS = null, bool &RIGHT_PRESS = null, bool &LEFT_PRESS = null, bool gxt = 0);
+void AddNumber(const std::string& text, int value, __int8 decimal_places, bool &A_PRESS = null, bool &RIGHT_PRESS = null, bool &LEFT_PRESS = null, bool gxt = 0);
+void AddNumber(const std::string& text, double value, __int8 decimal_places, bool &A_PRESS = null, bool &RIGHT_PRESS = null, bool &LEFT_PRESS = null, bool gxt = 0);
 void draw_tickol_tick_BNW(const std::string& textureDict, const std::string& normal, const std::string& selected, const RGBA& colour);
 inline void draw_tickol_tick(TICKOL tickType);
 void AddTickol(const std::string& text, BOOL condition, bool &option_code_ON, bool &option_code_OFF, TICKOL tickTrue = TICKOL::TICK, TICKOL tickFalse = TICKOL::NONE, bool gxt = false);
@@ -250,7 +252,7 @@ void AddTickol(const std::string& text, BOOL condition, void(&callback_ON)(), vo
 void AddTexter(const std::string& text, int selectedindex, const std::vector<std::string>& textarray, bool &A_PRESS = null, bool &RIGHT_PRESS = null, bool &LEFT_PRESS = null, bool gxt = 0);
 
 
-void Add_preset_colour_options_previews(UINT8 const r, UINT8 const g, UINT8 const b);
+void Add_preset_colour_options_previews(int const r, int const g, int const b);
 void Add_preset_colour_options_previews(const RgbS& rgb);
 void Add_preset_colour_options_previews(const RGBA& rgb);
 bool Add_preset_colour_options(INT& r, INT& g, INT& b);

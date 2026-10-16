@@ -90,6 +90,7 @@ namespace sub
 		AddTitle("Player Options");
 		AddOption("Basic Stats", null, nullFunc, SUB::SPSTATMANAGER);
 		AddOption("Model Changer", null, nullFunc, SUB::MODELCHANGER);
+		AddOption("Addon Ped Selector", null, nullFunc, SUB::PEDSELECTOR);
 
 		AddOption("Wardrobe", null, nullFunc, SUB::COMPONENTS);
 		if (g_cam_componentChanger.Exists())

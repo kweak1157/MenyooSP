@@ -57,6 +57,7 @@
 #include "..\Misc\VehicleTow.h"
 
 #include "..\Submenus\PedAnimation.h"
+#include "..\Submenus\PedSelector.h"
 #include "..\Submenus\WeaponOptions.h"
 #include "..\Submenus\PedComponentChanger.h"
 #include "..\Submenus\AnimalRiding.h"
@@ -109,6 +110,7 @@ void Menu::justopened()
 }
 inline void MenyooMain()
 {
+	sub::StartPedSelector();
 	DxHookIMG::LoadAllMenyooTexturesInit();
 	sub::AnimationSub_catind::PopulateAllPedAnimsList();
 	sub::WeaponFavourites_catind::PopulateFavouritesInfo();
@@ -125,6 +127,7 @@ inline void MenyooMain()
 	//_initialProgramTick = GetTickCount();
 
 	MenuConfig::ConfigInit();
+	GameplayCamera::Shake(static_cast<CameraShake>(sub::GameCamOptions_catind::_shakeId), sub::GameCamOptions_catind::_shakeAmplitude);
 	g_MenyooConfigTick = GetTickMs();
 	g_FaderTick = GetTickMs();
 
@@ -136,6 +139,7 @@ inline void MenyooMain()
 		DxHookIMG::DxTexture::GlobalDrawOrderRef() = -9999;
 
 		Menu::Tick();
+		sub::TickPedSelector();
 		TickMenyooConfig();
 		TickRainbowFader();
 		WAIT(0);
@@ -1720,10 +1724,10 @@ void set_vehicle_nos_ptfx_this_frame(GTAvehicle vehicle)
 		vehicle.ModelDimensions(dim1, dim2);
 		USE_PARTICLE_FX_ASSET(ptfx1.label.c_str());
 		SET_PARTICLE_FX_NON_LOOPED_COLOUR(float(titlebox.R) / 255.0f, float(titlebox.G) / 255.0f, float(titlebox.B) / 255.0f);
-		START_NETWORKED_PARTICLE_FX_NON_LOOPED_ON_ENTITY(ptfx1.name.c_str(), vehicle.Handle(), dim1.x - 0.2f, 0.4 - dim2.y, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0, 0, 0);
+		START_NETWORKED_PARTICLE_FX_NON_LOOPED_ON_ENTITY(ptfx1.name.c_str(), vehicle.Handle(), dim1.x - 0.2f, 0.4f - dim2.y, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0, 0, 0);
 		USE_PARTICLE_FX_ASSET(ptfx1.label.c_str());
 		SET_PARTICLE_FX_NON_LOOPED_COLOUR(float(titlebox.R) / 255.0f, float(titlebox.G) / 255.0f, float(titlebox.B) / 255.0f);
-		START_NETWORKED_PARTICLE_FX_NON_LOOPED_ON_ENTITY(ptfx1.name.c_str(), vehicle.Handle(), 0.2f - dim2.x, 0.4 - dim2.y, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0, 0, 0);
+		START_NETWORKED_PARTICLE_FX_NON_LOOPED_ON_ENTITY(ptfx1.name.c_str(), vehicle.Handle(), 0.2f - dim2.x, 0.4f - dim2.y, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0, 0, 0);
 	}
 
 	PTFX::NonLoopedPTFX muzzleFlash("scr_carsteal4", "scr_carsteal5_car_muzzle_flash");
@@ -2134,9 +2138,9 @@ inline void set_Handling_Mult69_7()
 	if (!Menu::bit_controller)
 	{
 		if (IS_DISABLED_CONTROL_PRESSED(2, INPUT_SCRIPT_PAD_RIGHT) || IsKeyDown('D'))
-			APPLY_FORCE_TO_ENTITY(g_myVeh, 1, mult69_7 / 220, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 1, 1, 1, 0, 1);
+			APPLY_FORCE_TO_ENTITY(g_myVeh, 1, static_cast<float>(mult69_7 / 220), 0.0, 0.0, 0.0, 0.0, 0.0, 0, 1, 1, 1, 0, 1);
 		if (IS_DISABLED_CONTROL_PRESSED(2, INPUT_SCRIPT_PAD_LEFT) || IsKeyDown('A'))
-			APPLY_FORCE_TO_ENTITY(g_myVeh, 1, (0 - mult69_7) / 220, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 1, 1, 1, 0, 1);
+			APPLY_FORCE_TO_ENTITY(g_myVeh, 1, static_cast<float>((0 - mult69_7) / 220), 0.0, 0.0, 0.0, 0.0, 0.0, 0, 1, 1, 1, 0, 1);
 	}
 	else
 	{
@@ -2307,8 +2311,8 @@ void set_vehicle_weapons()
 	if (loop_vehweap_lines)
 		set_vehicle_weapon_lines();
 
-	// Left stick / numplus press
-	if (Menu::bit_controller ? IS_CONTROL_PRESSED(2, INPUT_FRONTEND_LS) : IsKeyDown(VirtualKey::Add))
+	// Left stick / left mouse button press
+	if (Menu::bit_controller ? IS_CONTROL_PRESSED(2, INPUT_FRONTEND_LS) : get_key_pressed(VK_LBUTTON))
 	{
 		if (loop_vehicle_RPG
 			|| loop_vehicle_fireworks

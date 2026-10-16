@@ -159,7 +159,7 @@ namespace World
 	void DrawPoly(const Vector3& pos1, const Vector3& pos2, const Vector3& pos3, const RGBA& colour);
 	void DrawLightWithRange(const Vector3& position, const RgbS& colour, float range, float intensity);
 	void DrawSpotLight(const Vector3& pos, const Vector3& dir, const RgbS& colour, float distance, float brightness, float roundness, float radius, float fadeout);
-	void DrawSpotLightWithShadow(const Vector3& pos, const Vector3& dir, const RgbS& colour, float distance, float brightness, float roundness, float radius, float fadeout, float shadowUnk);
+	void DrawSpotLightWithShadow(const Vector3& pos, const Vector3& dir, const RgbS& colour, float distance, float brightness, float roundness, float radius, float fadeout, int shadowUnk);
 
 
 	// World - Relationships - nearby

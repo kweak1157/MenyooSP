@@ -130,11 +130,13 @@ namespace sub::Spooner
 		case STSTaskType::ExitVehicle: tskPtr = std::make_unique<STSTasks::ExitVehicle>(); break;
 		case STSTaskType::DriveWander: tskPtr = std::make_unique<STSTasks::DriveWander>(); break;
 		case STSTaskType::DriveToCoord: tskPtr = std::make_unique<STSTasks::DriveToCoord>(); break;
+		case STSTaskType::DriveFollowRoute: tskPtr = std::make_unique<STSTasks::DriveFollowRoute>(); break;
 		case STSTaskType::DriveFollowEntity: tskPtr = std::make_unique<STSTasks::DriveFollowEntity>(); break;
 		case STSTaskType::DriveLandPlane: tskPtr = std::make_unique<STSTasks::DriveLandPlane>(); break;
 
 		case STSTaskType::AchieveVehicleForwardSpeed: tskPtr = std::make_unique<STSTasks::AchieveVehicleForwardSpeed>(); break;
 		case STSTaskType::EmptyVehicle: tskPtr = std::make_unique<STSTasks::EmptyVehicle>(); break;
+		case STSTaskType::VehicleBlowup: tskPtr = std::make_unique<STSTasks::VehicleBlowup>(); break;
 
 		case STSTaskType::ChangeTextureVariation: tskPtr = std::make_unique<STSTasks::ChangeTextureVariation>(); break;
 
@@ -244,6 +246,14 @@ namespace sub::Spooner
 				return;
 				//goto label_returnPls;
 			}
+		}
+
+		task->Tick(ev);
+		if (task->StopsSequence())
+		{
+			// Keep the completed task's parking action; only an explicit restart resumes it.
+			this->Reset(false);
+			return;
 		}
 
 		if (GetTickMs() > this->timer)

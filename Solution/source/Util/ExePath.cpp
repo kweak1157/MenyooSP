@@ -8,7 +8,9 @@
 * (at your option) any later version.
 */
 #include "ExePath.h"
+#include "StringManip.h"
 
+#include <algorithm>
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -132,36 +134,32 @@ void get_all_filenames_with_extension(const std::string& directory, const std::s
 	}
 }
 
-std::string GetClipboardTextA()
+std::string GetClipboardTextUtf8()
 {
-	// Try opening the clipboard
 	if (!OpenClipboard(nullptr))
+		return {};
+	struct ClipboardGuard
 	{
-		return std::string();
-	}
+		~ClipboardGuard() { CloseClipboard(); }
+	} clipboardGuard;
 
-	// Get handle of clipboard object for ANSI text
-	HANDLE hData = GetClipboardData(CF_TEXT);
+	HANDLE hData = GetClipboardData(CF_UNICODETEXT);
 	if (hData == nullptr)
+		return {};
+
+	const wchar_t* text = static_cast<const wchar_t*>(GlobalLock(hData));
+	if (text == nullptr)
+		return {};
+	struct DataGuard
 	{
-		return std::string();
-	}
+		HANDLE data;
+		~DataGuard() { GlobalUnlock(data); }
+	} dataGuard{ hData };
 
-	// Lock the handle to get the actual text pointer
-	char * pszText = static_cast<char*>(GlobalLock(hData));
-	if (pszText == nullptr)
-	{
-		return std::string();
-	}
+	const std::size_t length = GlobalSize(hData) / sizeof(wchar_t);
+	const wchar_t* end = std::find(text, text + length, L'\0');
+	if (end == text + length)
+		return {};
 
-	// Save text in a string class instance
-	std::string text(pszText);
-
-	// Release the lock
-	GlobalUnlock(hData);
-
-	// Release the clipboard
-	CloseClipboard();
-
-	return text;
+	return WideToUtf8(std::wstring_view(text, end - text));
 }

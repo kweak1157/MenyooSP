@@ -40,6 +40,8 @@
 
 #include <Shlwapi.h> //PathIsDirectory
 #pragma comment(lib, "Shlwapi.lib")
+#include <algorithm>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <pugixml\src\pugixml.hpp>
@@ -90,6 +92,11 @@ namespace sub
 			//PTFX::trigger_ptfx_1("scr_fbi5a", "scr_fbi5_ped_water_splash", 0, Pos1, Vector3(), 1.5f);
 
 			newcar = CREATE_VEHICLE(model.hash, Pos1.x, Pos1.y, Pos1.z, ped.Heading_get(), 1, 1, 0);
+			if (!DOES_ENTITY_EXIST(newcar))
+			{
+				model.Unload();
+				return 0;
+			}
 			//SET_VEHICLE_ENGINE_ON(newcar, oldCarOn, oldCarOn);
 				
 			//if (!IS_ENTITY_IN_AIR(ped) && !IS_ENTITY_IN_WATER(ped)) SET_VEHICLE_ON_GROUND_PROPERLY(newcar, 0.0f);
@@ -907,6 +914,7 @@ namespace sub
 		AddOption("Spawn Settings", null, nullFunc, SUB::SPAWNVEHICLE_OPTIONS);
 		AddOption("Saved Vehicles", null, nullFunc, SUB::VEHICLE_SAVER);
 		AddOption("Favourites", null, nullFunc, SUB::SPAWNVEHICLE_FAVOURITES);
+		AddOption("Addon Vehicles", null, nullFunc, SUB::SPAWNVEHICLE_ADDON);
 		AddOption("Funny Vehicles (Old)", null, nullFunc, SUB::FUNNYVEHICLES);
 
 		AddBreak("---Cars---");
@@ -988,6 +996,32 @@ namespace sub
 		SET_STREAMED_TEXTURE_DICT_AS_NO_LONGER_NEEDED(chartick);
 		}*/
 
+	}
+
+	void SpawnVehicle_Addon(bool spawnIntoWorld)
+	{
+		AddTitle("Addon Vehicles");
+		if (!spawnIntoWorld)
+			AddOption("Spawn Settings", null, nullFunc, SUB::SPAWNVEHICLE_OPTIONS);
+
+		bool hasVehicles = false;
+		for (const auto& model : g_vehHashes_ADDON)
+		{
+			if (!model.IsInCdImage() || !model.IsVehicle())
+				continue;
+			hasVehicles = true;
+			std::string name = get_addon_vehicle_model_name(model);
+			if (name.empty() || name == "NULL" || name == "CARNOTFOUND")
+				name = int_to_hexstring(model.hash, true);
+			if (spawnIntoWorld)
+				Spooner::MenuOptions::AddOption_AddVehicle(name, model);
+			else
+				SpawnVehicle_catind::AddVSpawnOption_(name, model, g_selectedPed);
+			if (_globalSpawnVehicle_drawBmps && Menu::printingop == *Menu::currentopATM)
+				SpawnVehicle_catind::DrawVehicleBmp(model);
+		}
+		if (!hasVehicles)
+			AddBreak("No addon vehicles found.");
 	}
 
 	void SpawnVehicle_Options()
@@ -1670,13 +1704,14 @@ namespace sub
 				ige::myLog << ige::LogType::LOG_ERROR << "Unable to save vehicle.";
 			}
 		}
-		void VehSaver_ReadFromFile(std::string filePath, GTAentity ped)
+		void VehSaver_ReadFromFile(std::string filePath, GTAentity ped, bool spawnIntoWorld)
 		{
 			pugi::xml_document doc;
 			if (doc.load_file((const char*)filePath.c_str()).status != pugi::status_ok)
 			{
 				ige::myLog << ige::LogType::LOG_ERROR << "Unable to load vehicle file " << filePath;
 				Game::Print::PrintBottomCentre("~r~Error:~s~ Unable to load file.");
+				return;
 			}
 
 			GTAentity myPed = PLAYER_PED_ID();
@@ -1692,8 +1727,15 @@ namespace sub
 			}
 			eModel.Load();
 
-			GTAvehicle ev = FuncSpawnVehicle_(eModel, ped.Handle(), _globalSpawnVehicle_deleteOld, _globalSpawnVehicle_autoSit); // spawn vehicle to commence customisation
-			if (ped.Handle() == myPed.Handle())
+			GTAvehicle ev = spawnIntoWorld
+				? GTAvehicle(Spooner::EntityManagement::AddVehicle(eModel, get_vehicle_model_label(eModel, true), false).Handle)
+				: GTAvehicle(FuncSpawnVehicle_(eModel, ped.Handle(), _globalSpawnVehicle_deleteOld, _globalSpawnVehicle_autoSit));
+			if (!ev.Exists())
+			{
+				Game::Print::PrintBottomCentre("~r~Error:~s~ Unable to spawn saved vehicle.");
+				return;
+			}
+			if (!spawnIntoWorld && ped.Handle() == myPed.Handle())
 			{
 				g_myVeh = ev.Handle();
 				g_myVeh_model = eModel;
@@ -1764,7 +1806,7 @@ namespace sub
 			ev.RoofState_set((VehicleRoofState)nodeVehicleStuff.child("RoofState").text().as_int());
 			ev.SirenActive_set(nodeVehicleStuff.child("SirenActive").text().as_bool());
 			if (nodeVehicleStuff.child("EngineOn")) ev.EngineRunning_set(nodeVehicleStuff.child("EngineOn").text().as_bool());
-			if (nodeVehicleStuff.child("EngineHealth")) ev.EngineHealth_set(nodeVehicleStuff.child("EngineHealth").text().as_int());
+			if (nodeVehicleStuff.child("EngineHealth")) ev.EngineHealth_set(nodeVehicleStuff.child("EngineHealth").text().as_float());
 			if (nodeVehicleStuff.child("LightsOn")) ev.LightsOn_set(nodeVehicleStuff.child("LightsOn").text().as_bool());
 			if (nodeVehicleStuff.child("IsRadioLoud").text().as_int(0))
 			{
@@ -1884,7 +1926,7 @@ namespace sub
 			bool bDriverIsVisible = ped.IsVisible();
 			bool bVehicleIsVisible = nodeVehicle.child("IsVisible").text().as_bool();
 			if (!bVehicleIsVisible) ev.SetVisible(false);
-			if (nodeVehicle.child("IsDriverVisible"))
+			if (!spawnIntoWorld && nodeVehicle.child("IsDriverVisible"))
 			{
 				bool bSetDriverVisible = nodeVehicle.child("IsDriverVisible").text().as_bool();
 				ped.RequestControl();
@@ -1931,6 +1973,7 @@ namespace sub
 			case 1: bAddAttachmentsToSpoonerDb = false; break; // ForceOff
 			case 2: bAddAttachmentsToSpoonerDb = true; break; // ForceOn
 			}
+			if (spawnIntoWorld) bAddAttachmentsToSpoonerDb = true;
 
 			for (auto nodeAttachment = nodeAttachments.first_child(); nodeAttachment; nodeAttachment = nodeAttachment.next_sibling())
 			{
@@ -1951,7 +1994,7 @@ namespace sub
 			{
 				sub::Spooner::SpoonerEntityWithInitHandle evwih;
 				evwih.e.Handle = ev;
-				evwih.e.Dynamic = true;
+				evwih.e.Dynamic = spawnIntoWorld ? Spooner::Settings::bSpawnDynamicVehicles : true;
 				evwih.e.Type = EntityType::VEHICLE;
 				evwih.e.HashName = get_vehicle_model_label(evwih.e.Handle.Model(), true);
 				evwih.initHandle = evInitHandle;
@@ -1991,7 +2034,10 @@ namespace sub
 						}
 						if (bStartTaskSeqsOnLoad) e.e.TaskSequence.Start();
 					}
-					sub::Spooner::Databases::EntityDb.push_back(e.e);
+					if (!spawnIntoWorld)
+						sub::Spooner::Databases::EntityDb.push_back(e.e);
+					else if (sub::Spooner::EntityManagement::GetEntityIndexInDb(e.e.Handle) < 0)
+						sub::Spooner::EntityManagement::AddEntityToDb(e.e);
 				}
 			}
 			else
@@ -2053,8 +2099,38 @@ namespace sub
 			return 0;
 		}
 
-		void Sub_VehSaver()
+		void Sub_VehSaver(bool spawnIntoWorld)
 		{
+			if (spawnIntoWorld)
+			{
+				AddTitle("Saved Vehicles");
+
+				std::vector<std::filesystem::path> files;
+				std::error_code error;
+				const std::filesystem::recursive_directory_iterator end;
+				for (std::filesystem::recursive_directory_iterator it(GetPathffA(Pathff::Vehicle, false),
+					std::filesystem::directory_options::skip_permission_denied, error);
+					!error && it != end; it.increment(error))
+				{
+					if (it->is_regular_file(error) && boost::to_lower_copy(it->path().extension().string()) == ".xml")
+						files.push_back(it->path());
+				}
+				std::sort(files.begin(), files.end());
+
+				for (const auto& file : files)
+				{
+					bool pressed = false;
+					AddOption(file.stem().string(), pressed);
+					if (pressed)
+					{
+						VehSaver_ReadFromFile(file.string(), PLAYER_PED_ID(), true);
+						return;
+					}
+				}
+				if (files.empty()) AddBreak("No saved vehicles found.");
+				return;
+			}
+
 			auto& _searchStr = dict2;
 			auto& _name = dict;
 			auto& _dir = dict3;

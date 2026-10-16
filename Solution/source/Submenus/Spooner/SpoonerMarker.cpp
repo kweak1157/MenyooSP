@@ -9,6 +9,8 @@
 */
 #include "SpoonerMarker.h"
 
+#include <cmath>
+
 #include "..\..\macros.h"
 
 //#include "..\..\Menu\Menu.h"
@@ -52,7 +54,7 @@ namespace sub::Spooner
 		this->m_colour = RGBA(102, 0, 204, 190);
 		this->m_position = pos;
 		this->m_rotation = rot;
-		this->m_destinationHeading = round(rot.z);
+		this->m_destinationHeading = std::round(rot.z);
 		this->m_destinationPtr = nullptr;
 	}
 

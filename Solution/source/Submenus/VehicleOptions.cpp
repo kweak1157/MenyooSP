@@ -88,7 +88,6 @@ namespace sub
 			VehicleOps_sub_modshop = 0,
 			VehicleOps_sub_alphaLevel = 0,
 			VehicleOpsRappelHeli = 0,
-			VehicleOpsTeleportClosestCar_ = 0,
 			VehicleOpsFixCar_ = 0,
 			damageAndDefense_plus = 0, damageAndDefense_minus = 0, damageAndDefense_custom = 0,
 			//VehicleOpsInvincibilityOn_ = 0,
@@ -146,8 +145,8 @@ namespace sub
 			AddToggle("Disable Vehicle Siren", loop_vehicle_disableSiren, null, disableSiren_off);
 		if (bMyPedIsInVehicle)
 			AddTexter("CMOD_MOD_MNT", fixCarTexterVal, fixCarTexter, VehicleOpsFixCar_, bFixCar_plus, bFixCar_minus, true); // Fix & Wash
-		AddOption("Teleport Into Closest Vehicle", VehicleOpsTeleportClosestCar_);
 		AddOption("Vehicle Spawner", obj_funny_veh_so_frz__off, nullFunc, SUB::SPAWNVEHICLE);
+		AddOption("Addon Vehicles", null, nullFunc, SUB::SPAWNVEHICLE_ADDON);
 		AddOption("Menyoo Customs", VehicleOps_sub_modshop, nullFunc, -1, true);
 		AddOption("Vehicle Weapons", null, nullFunc, SUB::VEHICLEWEAPONS);
 		AddOption("Vehicle Multipliers", null, nullFunc, SUB::VEHICLEMULTIPLIERS);
@@ -244,25 +243,6 @@ namespace sub
 					task_rappel(myPed.Handle(), myPed.CurrentVehicle());
 				return;
 			}
-		}
-
-		if (VehicleOpsTeleportClosestCar_) {
-			/*Vector3 myPos = GET_ENTITY_COORDS(g_selectedPed, 1);
-			int CarType = 64;
-			CarType |= 2710;
-			CarType |= 2048;
-			CarType |= 1;
-			CarType |= 2;
-			CarType |= 4;
-			CarType |= 32;
-			CarType |= 16;
-			CarType |= 8;
-			int tempVehicle = GET_CLOSEST_VEHICLE(myPos.x, myPos.y, myPos.z, 400.0f, 0, CarType);
-			if (DOES_ENTITY_EXIST(tempVehicle)) SET_PED_INTO_VEHICLE(g_selectedPed, tempVehicle, tempVehicle.FirstFreeSeat(SEAT_DRIVER));*/
-			const GTAvehicle& tempVehicle = World::GetClosestVehicle(myPed.Position_get(), FLT_MAX);
-			if (tempVehicle.Exists())
-				myPed.SetIntoVehicle(tempVehicle, tempVehicle.FirstFreeSeat(SEAT_DRIVER));
-			return;
 		}
 
 		if (bFixCar_plus && fixCarTexterVal < fixCarTexter.size() - 1)
@@ -1004,7 +984,7 @@ namespace sub
 			{
 				if (!HAS_WEAPON_ASSET_LOADED(Hash)) REQUEST_WEAPON_ASSET(Hash, 31, 0);
 				//	GIVE_WEAPON_TO_PED(g_selectedPed, Hash, 120, 1, 1);
-				Game::Print::PrintBottomLeft("Press ~b~LS/L1/NUM_PLUS~s~ for hax!");
+				Game::Print::PrintBottomLeft("Hold ~b~LS / Left Mouse Button~s~ to fire vehicle weapons.");
 			}
 		}
 	}
@@ -1195,7 +1175,7 @@ namespace sub
 			SetCurrentBgIdFromBgNameForConfig();
 		}
 
-		inline void DrawSpeedoImage(SpeedoImage& bg, SpeedoImage& needle, float speedf, float alpha)
+		inline void DrawSpeedoImage(SpeedoImage& bg, SpeedoImage& needle, float speedf, int alpha)
 		{
 			//size.x = 256.0f * 0.66f / Game::defaultScreenRes.first; size.y = 256.0f * 0.66f / Game::defaultScreenRes.second; // y is 0.2347f
 			Vector2 size = { 0.1540f, 0.164f };

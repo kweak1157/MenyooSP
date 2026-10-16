@@ -97,7 +97,7 @@ namespace _MeteorShower_
 			const Vector3& myPos = myPed.Position_get();
 
 			float radius = GET_RANDOM_FLOAT_IN_RANGE(22.0f, 78.0f);
-			float angle = GET_RANDOM_INT_IN_RANGE(0, 360);
+			float angle = static_cast<float>(GET_RANDOM_INT_IN_RANGE(0, 360));
 
 			Vector3 pos = myPos.PointOnCircle(radius, angle) + Vector3(0, 0, 65.0f);
 

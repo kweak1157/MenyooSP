@@ -50,6 +50,7 @@
     <ClCompile Include="Submenus\PedAnimation.cpp" />
     <ClCompile Include="Submenus\PedComponentChanger.cpp" />
     <ClCompile Include="Submenus\PedModelChanger.cpp" />
+    <ClCompile Include="Submenus\PedSelector.cpp" />
     <ClCompile Include="Submenus\PedSpeech.cpp" />
     <ClCompile Include="Submenus\PlayerOptions.cpp" />
     <ClCompile Include="Submenus\Players.cpp" />
@@ -110,6 +111,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">script.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Scripting\ModelNames.cpp" />
+    <ClCompile Include="Scripting\AddonVehicleModels.cpp" />
     <ClCompile Include="Natives\natives2.cpp" />
     <ClCompile Include="Scripting\PTFX.cpp" />
     <ClCompile Include="Scripting\Raycast.cpp" />
@@ -208,6 +210,7 @@
     <ClInclude Include="Submenus\WeaponOptions.h" />
     <ClInclude Include="Submenus\WeatherOptions.h" />
     <ClInclude Include="Util\Clock.h" />
+    <ClInclude Include="Util\ConfigValue.h" />
     <ClInclude Include="Util\ExePath.h" />
     <ClInclude Include="Util\FileLogger.h" />
     <ClInclude Include="Util\Random.h" />
@@ -227,6 +230,11 @@
     <ClInclude Include="Scripting\PTFX.h" />
     <ClInclude Include="Scripting\Tasks.h" />
     <ClInclude Include="Scripting\ModelNames.h" />
+    <ClInclude Include="Scripting\StockVehicleModels.h" />
+    <ClInclude Include="Scripting\AddonVehicleModels.h" />
+    <ClInclude Include="Scripting\StockPedModels.h" />
+    <ClInclude Include="Submenus\PedSelector.h" />
+    <ClInclude Include="Submenus\PedSelectorState.h" />
     <ClInclude Include="Scripting\Raycast.h" />
     <ClInclude Include="Scripting\GTAplayer.h" />
     <ClInclude Include="Scripting\GTAvehicle.h" />

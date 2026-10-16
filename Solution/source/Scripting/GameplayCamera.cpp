@@ -17,7 +17,7 @@
 #include "Raycast.h"
 #include "Camera.h"
 
-#include <math.h>
+#include <cmath>
 
 float GameplayCamera::FieldOfView_get()
 {
@@ -61,7 +61,7 @@ Vector3 GameplayCamera::GetOffsetInWorldCoords(const Vector3& offset)
 	double x = num1 * cos(-rotation.z  * D2R);
 	double y = num1 * sin(rotation.z  * D2R);
 	double z = sin(-rotation.y * D2R);
-	const Vector3& right = Vector3(x, y, z);
+	const Vector3& right = Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 	const Vector3& Up = Vector3::Cross(right, forward);
 	return GameplayCamera::Position_get() + (right * offset.x) + (forward * offset.y) + (Up * offset.z);
 }
@@ -79,7 +79,7 @@ Vector3 GameplayCamera::GetOffsetGivenWorldCoords(const Vector3& worldCoords)
 	double x = num1 * cos(-rotation.z  * D2R);
 	double y = num1 * sin(rotation.z  * D2R);
 	double z = sin(-rotation.y * D2R);
-	Vector3 right = Vector3(x, y, z);
+	Vector3 right = Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 	Vector3 up = Vector3::Cross(right, forward);
 	Vector3 delta = worldCoords - GameplayCamera::Position_get();
 	return Vector3(Vector3::Dot(right, delta), Vector3::Dot(forward, delta), Vector3::Dot(up, delta));
@@ -156,8 +156,8 @@ Vector3 GameplayCamera::ScreenToWorld(const Vector2& screenCoord)
 	Vector3 direction1 = Vector3::RotationToDirection(camRot + Vector3(0.f, 0.f, 10.f)) - Vector3::RotationToDirection(vector32);
 	Vector3 direction2 = Vector3::RotationToDirection(vector3) - Vector3::RotationToDirection(vector31);
 	float rad = -DegreeToRadian(camRot.y);
-	Vector3 vector33 = (direction1 * cos(rad)) - (direction2 * sin(rad));
-	Vector3 vector34 = (direction1 * sin(rad)) + (direction2 * cos(rad));
+	Vector3 vector33 = (direction1 * std::cos(rad)) - (direction2 * std::sin(rad));
+	Vector3 vector34 = (direction1 * std::sin(rad)) + (direction2 * std::cos(rad));
 	if (!WorldToScreenRel(((camPos + (direction * 10.f)) + vector33) + vector34, vector2))
 	{
 		return camPos + (direction * 10.f);
@@ -221,10 +221,10 @@ Vector3 get_coords_from_cam(float distance)
 	Vector3 Rot = DegreeToRadian(GET_GAMEPLAY_CAM_ROT(2));
 	Vector3 Coord = GET_GAMEPLAY_CAM_COORD();
 
-	Rot.y = distance * cos(Rot.x);
-	Coord.x = Coord.x + Rot.y * sin(Rot.z * -1.0f);
-	Coord.y = Coord.y + Rot.y * cos(Rot.z * -1.0f);
-	Coord.z = Coord.z + distance * sin(Rot.x);
+	Rot.y = distance * std::cos(Rot.x);
+	Coord.x = Coord.x + Rot.y * std::sin(Rot.z * -1.0f);
+	Coord.y = Coord.y + Rot.y * std::cos(Rot.z * -1.0f);
+	Coord.z = Coord.z + distance * std::sin(Rot.x);
 
 	return Coord;
 }

@@ -330,12 +330,19 @@ namespace GTAmodel
 	}
 	bool Model::Load(DWORD timeOut) const
 	{
-		// Do not WAIT on the menu thread. Callers must retry on a later frame.
-		(void)timeOut;
 		if (HAS_MODEL_LOADED(this->hash))
 			return true;
 		REQUEST_MODEL(this->hash);
-		return HAS_MODEL_LOADED(this->hash) != 0;
+
+		// Yield the script so streaming can finish before a one-shot spawn continues.
+		const std::uint64_t start = GetTickMs();
+		while (!HAS_MODEL_LOADED(this->hash))
+		{
+			if (GetTickMs() - start >= timeOut)
+				return false;
+			WAIT(0);
+		}
+		return true;
 	}
 	void Model::LoadAndWait() const
 	{

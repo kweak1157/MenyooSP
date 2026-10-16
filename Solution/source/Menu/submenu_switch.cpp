@@ -26,6 +26,7 @@
 #include "..\Submenus\PtfxSubs.h"
 #include "..\Submenus\PedAnimation.h"
 #include "..\Submenus\PedModelChanger.h"
+#include "..\Submenus\PedSelector.h"
 #include "..\Submenus\PedComponentChanger.h"
 #include "..\Submenus\PedSpeech.h"
 #include "..\Submenus\BreatheStuff.h"
@@ -100,6 +101,7 @@ void Menu::submenu_switch()
 	case SUB::FACIALMOOD:				sub::FacialAnims_catind::Sub_FacialMood(); break;
 	case SUB::MOVEMENTGROUP:			sub::MovementGroup_(); break;
 	case SUB::MODELCHANGER:							sub::ModelChanger_(); break;
+	case SUB::PEDSELECTOR: sub::PedSelector(); break;
 	case SUB::MODELCHANGER_FAVOURITES:				sub::PedFavourites_catind::Sub_PedFavourites(); break;
 	case SUB::MODELCHANGER_ANIMAL:					sub::ModelChanger_Animal(); break;
 	case SUB::MODELCHANGER_AMBFEMALES:				sub::ModelChanger_AmbientFemale(); break;
@@ -136,6 +138,7 @@ void Menu::submenu_switch()
 	case SUB::SPAWNVEHICLE_OPTIONS:				sub::SpawnVehicle_Options(); break;
 	case SUB::SPAWNVEHICLE_ALLCATS:				sub::SpawnVehicle_AllCatsSub(); break;
 	case SUB::SPAWNVEHICLE_FAVOURITES:			sub::SpawnVehicle_Favourites(); break;
+	case SUB::SPAWNVEHICLE_ADDON:				sub::SpawnVehicle_Addon(); break;
 	case SUB::FUNNYVEHICLES:					sub::FunnyVehicles_catind::Sub_FunnyVehicles(); break;
 	case SUB::MODSHOP:					sub::ModShop_(); break;
 	case SUB::MS_BENNYS:				sub::Bennys_catind::Sub_BennysMain(); break;
@@ -249,7 +252,10 @@ void Menu::submenu_switch()
 	case SUB::SPOONER_SPAWN_PROP:					sub::Spooner::Submenus::Sub_SpawnProp(); break;
 	case SUB::SPOONER_SPAWN_PROP_FAVOURITES:		sub::Spooner::Submenus::Sub_SpawnProp_Favourites(); break;
 	case SUB::SPOONER_SPAWN_PED:					sub::Spooner::Submenus::Sub_SpawnPed(); break;
+	case SUB::SPOONER_SPAWN_ADDON_PEDS: sub::PedSelector(); break;
 	case SUB::SPOONER_SPAWN_VEHICLE:				sub::Spooner::Submenus::Sub_SpawnVehicle(); break;
+	case SUB::SPOONER_SPAWN_ADDON_VEHICLES:		sub::SpawnVehicle_Addon(true); break;
+	case SUB::SPOONER_SPAWN_SAVED_VEHICLES:		sub::VehicleSaver_catind::Sub_VehSaver(true); break;
 	case SUB::SPOONER_MANAGEMARKERS:							sub::Spooner::Submenus::Sub_ManageMarkers(); break;
 	case SUB::SPOONER_MANAGEMARKERS_REMOVAL:					sub::Spooner::Submenus::Sub_ManageMarkers_Removal(); break;
 	case SUB::SPOONER_MANAGEMARKERS_INMARKER:					sub::Spooner::Submenus::Sub_ManageMarkers_InMarker(); break;

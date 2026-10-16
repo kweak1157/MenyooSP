@@ -8,12 +8,14 @@
 * (at your option) any later version.
 */
 #include "CustomHelpText.h"
+#include "Game.h"
 
 #include "..\macros.h"
 
 #include "..\Natives\natives2.h"
 #include "..\Menu\Language.h"
 #include "..\Util\Clock.h"
+#include "..\Util\StringManip.h"
 
 #include <string>
 #include <sstream>
@@ -69,7 +71,7 @@ namespace Game
 	void CustomHelpText::ShowThisFrame(std::wostream& s)
 	{
 		std::wstring wtext = (dynamic_cast<std::wostringstream&>(s).str());
-		ShowThisFrame(std::string(wtext.begin(), wtext.end()));
+		ShowThisFrame(WideToUtf8(wtext));
 	}
 	void CustomHelpText::ShowThisFrame()
 	{
@@ -103,7 +105,7 @@ namespace Game
 
 	void CustomHelpText::ShowTimedText(const std::string& text, DWORD how_many_ms)
 	{
-		if (!_timer) PLAY_SOUND_FRONTEND(-1, "WEAPON_SELECT_ARMOR", "HUD_AMMO_SHOP_SOUNDSET", 0);
+		if (!_timer) Sound::PlayFrontend("HUD_AMMO_SHOP_SOUNDSET", "WEAPON_SELECT_ARMOR");
 		SetText(text);
 		_timer = GetTickMs() + how_many_ms;
 	}
@@ -114,7 +116,7 @@ namespace Game
 	void CustomHelpText::ShowTimedText(std::wostream& s, DWORD how_many_ms)
 	{
 		std::wstring wtext = (dynamic_cast<std::wostringstream&>(s).str());
-		ShowTimedText(std::string(wtext.begin(), wtext.end()), how_many_ms);
+		ShowTimedText(WideToUtf8(wtext), how_many_ms);
 	}
 
 }

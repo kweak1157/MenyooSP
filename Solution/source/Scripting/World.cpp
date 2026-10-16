@@ -117,7 +117,7 @@ namespace World
 		float ti;
 		GET_CURR_WEATHER_STATE(&fr, &t, &ti);
 
-		time = (ti * 1000);
+		time = static_cast<DWORD>(ti * 1000.0f);
 
 		for (UINT8 i = 0; i < sWeatherNames.size(); i++)
 		{
@@ -479,15 +479,15 @@ namespace World
 	GTAprop CreateProp(GTAmodel::Model model, Vector3 position, bool dynamic, bool placeOnGround)
 	{
 		if (!model.IsInCdImage()) return 0;
+		if (!model.Load(3000)) return 0;
 
 		if (placeOnGround)
 		{
 			position.z = World::GetGroundHeight(position) + model.Dim1().z;//model.Dim2().z;
 		}
 
-		model.Load(3000);
-
 		GTAentity prop = CREATE_OBJECT(model.hash, position.x, position.y, position.z, 1, 1, dynamic);
+		if (!prop.Exists()) return 0;
 		if (placeOnGround) prop.PlaceOnGround();
 		return prop;
 	}
@@ -498,6 +498,7 @@ namespace World
 			position.z = World::GetGroundHeight(position) + model.Dim1().z;//model.Dim2().z;
 		}
 		GTAprop prop = CreateProp(model, position, dynamic, false);
+		if (!prop.Exists()) return 0;
 		prop.Position_set(position); // More accurate position
 		if (placeOnGround) prop.PlaceOnGround();
 		prop.Rotation_set(rotation); // Rotation
@@ -650,7 +651,7 @@ namespace World
 	{
 		DRAW_SPOT_LIGHT(pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, colour.R, colour.G, colour.B, distance, brightness, roundness, radius, fadeout);
 	}
-	void DrawSpotLightWithShadow(const Vector3& pos, const Vector3& dir, const RgbS& colour, float distance, float brightness, float roundness, float radius, float fadeout, float shadowUnk)
+	void DrawSpotLightWithShadow(const Vector3& pos, const Vector3& dir, const RgbS& colour, float distance, float brightness, float roundness, float radius, float fadeout, int shadowUnk)
 	{
 		DRAW_SHADOWED_SPOT_LIGHT(pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, colour.R, colour.G, colour.B, distance, brightness, roundness, radius, fadeout, shadowUnk);
 	}

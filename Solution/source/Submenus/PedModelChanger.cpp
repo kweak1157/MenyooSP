@@ -281,7 +281,7 @@ namespace sub
 					spe.Handle = playerPed;
 					spe.HashName = get_ped_model_label(model, true);
 					if (spe.HashName.length() == 0)
-						int_to_hexstring(model.hash, true);
+						spe.HashName = int_to_hexstring(model.hash, true);
 					spe.LastAnimation.dict.clear();
 					spe.LastAnimation.name.clear();
 					if (att.Exists() && spe.AttachmentArgs.isAttached)

@@ -157,8 +157,8 @@ namespace sub
 					//OnscreenKeyboard::State::arg1._uint = GET_HASH_KEY(statName);
 					//OnscreenKeyboard::State::arg2._int = statValue;
 				}
-				if (bStatValue_plus) { if (statValue < stat.max) { statValue += 1.0f; StatSetInt(statName, statValue); } }
-				if (bStatValue_minus) { if (statValue > stat.min) { statValue -= 1.0f; StatSetInt(statName, statValue); } }
+				if (bStatValue_plus) { if (statValue < stat.max) { statValue += 1; StatSetInt(statName, statValue); } }
+				if (bStatValue_minus) { if (statValue > stat.min) { statValue -= 1; StatSetInt(statName, statValue); } }
 				break;
 			}
 			case StatDataType_t::FLOAT:
@@ -181,8 +181,8 @@ namespace sub
 					//OnscreenKeyboard::State::arg1._uint = GET_HASH_KEY(statName);
 					//OnscreenKeyboard::State::arg2._float = statValue;
 				}
-				if (bStatValue_plus) { if (statValue < stat.max) { statValue += 0.05f; StatSetInt(statName, statValue); } }
-				if (bStatValue_minus) { if (statValue > stat.min) { statValue -= 0.05f; StatSetInt(statName, statValue); } }
+				if (bStatValue_plus) { if (statValue < stat.max) { statValue += 0.05f; StatSetFloat(statName, statValue); } }
+				if (bStatValue_minus) { if (statValue > stat.min) { statValue -= 0.05f; StatSetFloat(statName, statValue); } }
 				break;
 			}
 			}

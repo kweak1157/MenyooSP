@@ -16,6 +16,8 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <limits>
+#include <Windows.h>
 
 // Integer/String manipulation
 std::string int_to_hexstring(unsigned long i, bool zerox)
@@ -67,6 +69,32 @@ std::optional<int> TryParseInt(std::string_view text)
 std::optional<float> TryParseFloat(std::string_view text)
 {
 	return TryParseNumber<float>(text);
+}
+
+std::string WideToUtf8(std::wstring_view text)
+{
+	if (text.empty() || text.size() > static_cast<std::size_t>((std::numeric_limits<int>::max)()))
+		return {};
+	const int length = static_cast<int>(text.size());
+	const int size = WideCharToMultiByte(CP_UTF8, 0, text.data(), length, nullptr, 0, nullptr, nullptr);
+	if (size == 0) return {};
+	std::string result(size, '\0');
+	if (WideCharToMultiByte(CP_UTF8, 0, text.data(), length, result.data(), size, nullptr, nullptr) == 0)
+		return {};
+	return result;
+}
+
+std::wstring Utf8ToWide(std::string_view text)
+{
+	if (text.empty() || text.size() > static_cast<std::size_t>((std::numeric_limits<int>::max)()))
+		return {};
+	const int length = static_cast<int>(text.size());
+	const int size = MultiByteToWideChar(CP_UTF8, 0, text.data(), length, nullptr, 0);
+	if (size == 0) return {};
+	std::wstring result(size, L'\0');
+	if (MultiByteToWideChar(CP_UTF8, 0, text.data(), length, result.data(), size) == 0)
+		return {};
+	return result;
 }
 
 namespace boost

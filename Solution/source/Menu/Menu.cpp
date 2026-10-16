@@ -26,6 +26,7 @@
 
 #include <Windows.h>
 #include <utility>
+#include <type_traits>
 
 
 float get_xcoord_at_menu_rightEdge(float widthOfElement, float extraWidth, bool centered)
@@ -170,7 +171,7 @@ UINT8 Menu::breakscroll = 0;
 INT16 Menu::currentsub_ar_index = 0;
 INT Menu::currentsub_ar[100] = {};
 INT Menu::currentop_ar[100] = {};
-INT Menu::SetSub_delayed = 0;
+INT Menu::SetSub_delayed = -1;
 int Menu::delayedTimer = 0;
 bool Menu::bit_controller = 0, Menu::bit_mouse = 0;
 bool Menu::bit_centre_title = 1, Menu::bit_centre_options = 0, Menu::bit_centre_breaks = 1,
@@ -452,7 +453,7 @@ void Menu::background()
 	else DRAW_RECT(0.16f + menuPos.x, bg_Y + menuPos.y, 0.20f, bg_length, BG.R, BG.G, BG.B, BG.A, false);
 
 	// Draw scroller indicator rect
-	if (totalop > GTA_MAXOP) temp = GTA_MAXOP; else temp = totalop;
+	if (totalop > GTA_MAXOP) temp = GTA_MAXOP; else temp = static_cast<float>(totalop);
 	float scr_rect_Y = ((temp + 1.0f) * 0.035f) + 0.1415f;
 	if (gradients) DRAW_SPRITE("CommonMenu", "Gradient_Nav"/*"interaction_bgd"*/, 0.16f + menuPos.x, scr_rect_Y + menuPos.y, 0.20f, 0.0345f, 0.0f, titlebox.R, titlebox.G, titlebox.B, titlebox.A, false, 0);
 	else DRAW_RECT(0.16f + menuPos.x, scr_rect_Y + menuPos.y, 0.20f, 0.0345f, titlebox.R, titlebox.G, titlebox.B, titlebox.A, false);
@@ -509,10 +510,10 @@ void Menu::optionhi()
 		{
 			//for (inull = 0; inull <= GTA_BETOP; inull++)
 			//if (currentop == totalop - GTA_BETOP + inull) break;
-			Y_coord = GTA_SCROLLOP + currentop - totalop + GTA_BETOP;
+			Y_coord = static_cast<float>(GTA_SCROLLOP + currentop - totalop + GTA_BETOP);
 		}
 	}
-	else Y_coord = currentop;
+	else Y_coord = static_cast<float>(currentop);
 
 	Y_coord = (Y_coord * 0.035f) + 0.1415f;
 
@@ -539,6 +540,13 @@ void Menu::while_closed()
 			justopened();
 
 		Game::Sound::PlayFrontend("FocusIn", "HintCamSounds");
+		// A lost reopen page must not leave the menu permanently closed.
+		if (LOOCsub == SUB::CLOSED)
+		{
+			LOOCsub = SUB::MAINMENU;
+			currentsub_ar_index = 0;
+			currentop_w_breaks = 1;
+		}
 		currentsub = LOOCsub;
 		if (currentsub == SUB::MAINMENU)
 		{
@@ -681,6 +689,11 @@ void Menu::SetSub_new(INT sub_index)
 
 void Menu::SetSub_closed()
 {
+	// Two close requests can arrive in one frame (for example, pause and F8).
+	// Preserve the last open page so the next press can reopen it.
+	if (currentsub == SUB::CLOSED)
+		return;
+
 	//Game::RequestScript("cellphone_controller");
 	ENABLE_ALL_CONTROL_ACTIONS(0);
 	ENABLE_ALL_CONTROL_ACTIONS(2);
@@ -1193,7 +1206,7 @@ void AddOption(std::string text, bool& option_code_bool, void(&callback)(), int 
 	OptionY = 0;
 	if ((Menu::currentop < GTA_SCROLLOP && Menu::printingop <= GTA_MAXOP) || Menu::totalop <= GTA_MAXOP)
 	{
-		OptionY = Menu::printingop;
+		OptionY = static_cast<float>(Menu::printingop);
 	}
 	else
 	{
@@ -1202,11 +1215,11 @@ void AddOption(std::string text, bool& option_code_bool, void(&callback)(), int 
 
 			if (Menu::currentop > (Menu::totalop - GTA_BETOP))
 			{
-				OptionY = GTA_SCROLLOP + (GTA_BETOP - (Menu::totalop - Menu::printingop));
+				OptionY = static_cast<float>(GTA_SCROLLOP + (GTA_BETOP - (Menu::totalop - Menu::printingop)));
 			}
 			else
 			{
-				OptionY = GTA_SCROLLOP + (Menu::printingop - Menu::currentop);
+				OptionY = static_cast<float>(GTA_SCROLLOP + (Menu::printingop - Menu::currentop));
 			}
 		}
 	}
@@ -1394,7 +1407,7 @@ void AddBreak(std::string text)
 	OptionY = 0;
 	if ((Menu::currentop < GTA_SCROLLOP && Menu::printingop <= GTA_MAXOP) || Menu::totalop <= GTA_MAXOP)
 	{
-		OptionY = Menu::printingop;
+		OptionY = static_cast<float>(Menu::printingop);
 	}
 	else
 	{
@@ -1403,11 +1416,11 @@ void AddBreak(std::string text)
 
 			if (Menu::currentop > (Menu::totalop - GTA_BETOP))
 			{
-				OptionY = GTA_SCROLLOP + (GTA_BETOP - (Menu::totalop - Menu::printingop));
+				OptionY = static_cast<float>(GTA_SCROLLOP + (GTA_BETOP - (Menu::totalop - Menu::printingop)));
 			}
 			else
 			{
-				OptionY = GTA_SCROLLOP + (Menu::printingop - Menu::currentop);
+				OptionY = static_cast<float>(GTA_SCROLLOP + (Menu::printingop - Menu::currentop));
 			}
 		}
 	}
@@ -1456,8 +1469,17 @@ void AddBreak(std::string text)
 	}
 
 }
-void AddNumber(const std::string& text, float value, __int8 decimal_places, bool& A_PRESS, bool& RIGHT_PRESS, bool& LEFT_PRESS, bool gxt)
+template <typename Number>
+static void AddNumberImpl(const std::string& text, Number value, __int8 decimal_places, bool& A_PRESS, bool& RIGHT_PRESS, bool& LEFT_PRESS, bool gxt)
 {
+	const auto getValueWidth = [&]()
+	{
+		if constexpr (std::is_integral_v<Number>)
+		{
+			if (decimal_places == 0) return Game::Print::GetTextWidth(value);
+		}
+		return Game::Print::GetTextWidth(static_cast<float>(value), decimal_places);
+	};
 	null = 0;
 	AddOption(text, null, nullFunc, -1, false, gxt);
 
@@ -1472,28 +1494,36 @@ void AddNumber(const std::string& text, float value, __int8 decimal_places, bool
 				Vector3 textureRes = GET_TEXTURE_RESOLUTION("CommonMenu", "arrowright");
 				textureRes.x /= (Game::defaultScreenRes.first * 2);
 				textureRes.y /= (Game::defaultScreenRes.second * 2);
-				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005, 0.0f, true);
+				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005f, 0.0f, true);
 				DRAW_SPRITE("CommonMenu", "arrowright", newXpos, OptionY + 0.016f + menuPos.y, textureRes.x, textureRes.y, 0.0f, selectedtext.R, selectedtext.G, selectedtext.B, selectedtext.A, false, 0); // Right
-				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005, textureRes.x - 0.005 + Game::Print::GetTextWidth(value, decimal_places), true);
+				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005f, textureRes.x - 0.005f + getValueWidth(), true);
 				DRAW_SPRITE("CommonMenu", "arrowleft", newXpos, OptionY + 0.016f + menuPos.y, textureRes.x, textureRes.y, 0.0f, selectedtext.R, selectedtext.G, selectedtext.B, selectedtext.A, false, 0); // Left
 
 				Game::Print::setupdraw(0, Vector2(0.26, 0.26), true, true, false, selectedtext);
-				newXpos = get_xcoord_at_menu_rightEdge(Game::Print::GetTextWidth(value, decimal_places), textureRes.x - 0.005, true);
+				newXpos = get_xcoord_at_menu_rightEdge(getValueWidth(), textureRes.x - 0.005f, true);
 				Game::Print::setupdraw(0, Vector2(0.26, 0.26), true, true, false, selectedtext);
 			}
 			else
 			{
-				newXpos = get_xcoord_at_menu_rightEdge(Game::Print::GetTextWidth(value, decimal_places), 0.0024f, true);
+				newXpos = get_xcoord_at_menu_rightEdge(getValueWidth(), 0.0024f, true);
 				Game::Print::setupdraw(0, Vector2(0.26, 0.26), true, true, false, selectedtext);
 			}
 		}
 		else
 		{
-			newXpos = get_xcoord_at_menu_rightEdge(Game::Print::GetTextWidth(value, decimal_places), 0.0024f, true);
+			newXpos = get_xcoord_at_menu_rightEdge(getValueWidth(), 0.0024f, true);
 			Game::Print::setupdraw(0, Vector2(0.26, 0.26), true, true, false, optiontext);
 		}
 
-		Game::Print::drawfloat(value, decimal_places, newXpos, OptionY + 0.0056 + menuPos.y);
+		if constexpr (std::is_integral_v<Number>)
+		{
+			if (decimal_places == 0)
+				Game::Print::drawinteger(value, newXpos, OptionY + 0.0056f + menuPos.y);
+			else
+				Game::Print::drawfloat(static_cast<float>(value), decimal_places, newXpos, OptionY + 0.0056f + menuPos.y);
+		}
+		else
+			Game::Print::drawfloat(value, decimal_places, newXpos, OptionY + 0.0056f + menuPos.y);
 	}
 
 	if (Menu::printingop == *Menu::currentopATM)
@@ -1506,6 +1536,18 @@ void AddNumber(const std::string& text, float value, __int8 decimal_places, bool
 		else if (IsOptionLPressed()) LEFT_PRESS = true;
 	}
 
+}
+void AddNumber(const std::string& text, float value, __int8 decimal_places, bool& A_PRESS, bool& RIGHT_PRESS, bool& LEFT_PRESS, bool gxt)
+{
+	AddNumberImpl(text, value, decimal_places, A_PRESS, RIGHT_PRESS, LEFT_PRESS, gxt);
+}
+void AddNumber(const std::string& text, int value, __int8 decimal_places, bool& A_PRESS, bool& RIGHT_PRESS, bool& LEFT_PRESS, bool gxt)
+{
+	AddNumberImpl(text, value, decimal_places, A_PRESS, RIGHT_PRESS, LEFT_PRESS, gxt);
+}
+void AddNumber(const std::string& text, double value, __int8 decimal_places, bool& A_PRESS, bool& RIGHT_PRESS, bool& LEFT_PRESS, bool gxt)
+{
+	AddNumberImpl(text, static_cast<float>(value), decimal_places, A_PRESS, RIGHT_PRESS, LEFT_PRESS, gxt);
 }
 void draw_tickol_tick_BNW(const std::string& textureDict, const std::string& normal, const std::string& selected, const RGBA& colour)
 {
@@ -1669,13 +1711,13 @@ inline void AddTexter(const std::string& text, int selectedindex, const TA& text
 				Vector3 textureRes = GET_TEXTURE_RESOLUTION("CommonMenu", "arrowright");
 				textureRes.x /= (Game::defaultScreenRes.first * 2);
 				textureRes.y /= (Game::defaultScreenRes.second * 2);
-				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005, 0.0f, true);
+				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005f, 0.0f, true);
 				DRAW_SPRITE("CommonMenu", "arrowright", newXpos, OptionY + 0.016f + menuPos.y, textureRes.x, textureRes.y, 0.0f, selectedtext.R, selectedtext.G, selectedtext.B, selectedtext.A, false, 0); // Right
-				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005, textureRes.x - 0.005 + Game::Print::GetTextWidth(chartickStr), true);
+				newXpos = get_xcoord_at_menu_rightEdge(textureRes.x - 0.005f, textureRes.x - 0.005f + Game::Print::GetTextWidth(chartickStr), true);
 				DRAW_SPRITE("CommonMenu", "arrowleft", newXpos, OptionY + 0.016f + menuPos.y, textureRes.x, textureRes.y, 0.0f, selectedtext.R, selectedtext.G, selectedtext.B, selectedtext.A, false, 0); // Left
 
 				Game::Print::setupdraw(0, Vector2(0.26, 0.26), true, true, false, selectedtext);
-				newXpos = get_xcoord_at_menu_rightEdge(Game::Print::GetTextWidth(chartickStr), textureRes.x - 0.005, true);
+				newXpos = get_xcoord_at_menu_rightEdge(Game::Print::GetTextWidth(chartickStr), textureRes.x - 0.005f, true);
 				Game::Print::setupdraw(0, Vector2(0.26, 0.26), true, true, false, selectedtext);
 			}
 			else
@@ -1690,7 +1732,7 @@ inline void AddTexter(const std::string& text, int selectedindex, const TA& text
 			Game::Print::setupdraw(0, Vector2(0.26, 0.26), true, true, false, optiontext);
 		}
 
-		Game::Print::drawstring(chartickStr, newXpos, OptionY + 0.0056 + menuPos.y);
+		Game::Print::drawstring(chartickStr, newXpos, OptionY + 0.0056f + menuPos.y);
 	}
 
 	if (Menu::printingop == *Menu::currentopATM)
@@ -1712,7 +1754,7 @@ void AddTexter(const std::string& text, int selectedindex, const std::vector<std
 
 
 
-void Add_preset_colour_options_previews(UINT8 const r, UINT8 const g, UINT8 const b)
+void Add_preset_colour_options_previews(int const r, int const g, int const b)
 {
 	Vector2 res = { 0.1f, 0.0889f };
 

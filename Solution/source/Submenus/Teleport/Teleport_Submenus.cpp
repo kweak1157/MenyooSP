@@ -59,7 +59,7 @@ namespace sub::TeleportLocations_catind
 					_selectedCategory = &cat;
 					if (reinterpret_cast<DWORD64>(cat.nextNamedLocListList) < SUB::MAX_SUBS && cat.nextNamedLocListList != nullptr)
 					{
-						Menu::SetSub_delayed = reinterpret_cast<DWORD64>(cat.nextNamedLocListList);
+						Menu::SetSub_delayed = static_cast<INT>(reinterpret_cast<DWORD64>(cat.nextNamedLocListList));
 					}
 					else
 					{

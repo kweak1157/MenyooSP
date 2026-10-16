@@ -63,6 +63,7 @@ namespace sub
 			misc_vehPopu_off = 0;
 
 		AddTitle("Misc Options");
+		AddToggle("Sound Toggler", Game::Sound::bMenuSounds);
 		bool notifications_off = false;
 		AddToggle("Notification Toggler", Game::Print::bNotifications, null, notifications_off);
 		if (notifications_off)
@@ -826,8 +827,8 @@ namespace sub
 
 	namespace GameCamOptions_catind
 	{
-		float _shakeAmplitude = 1.0f;
-		INT8 _shakeId = -1;
+		float _shakeAmplitude = 0.30f;
+		INT8 _shakeId = static_cast<INT8>(CameraShake::Hand);
 
 		void Sub_GameCamOptions()
 		{

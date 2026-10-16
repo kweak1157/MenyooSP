@@ -35,6 +35,8 @@
 #include <pugixml\src\pugixml.hpp>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <cmath>
 
 
 namespace sub::Spooner
@@ -635,6 +637,236 @@ namespace sub::Spooner
 			ep.Task().FollowPointRoute(this->route, this->speed);
 		}
 
+		void DriveFollowRoute::GetXmlNodeTaskSpecific(pugi::xml_node& nodeTask) const
+		{
+			nodeTask.append_child("SpeedInKmph").text() = this->speedInKmph;
+			nodeTask.append_child("DrivingStyle").text() = this->drivingStyle;
+			auto nodeRoute = nodeTask.append_child("Route");
+			for (const auto& routePoint : this->route)
+			{
+				auto nodeRoutePoint = nodeRoute.append_child("Coord");
+				nodeRoutePoint.append_attribute("X") = routePoint.x;
+				nodeRoutePoint.append_attribute("Y") = routePoint.y;
+				nodeRoutePoint.append_attribute("Z") = routePoint.z;
+			}
+		}
+		void DriveFollowRoute::ImportXmlNodeTaskSpecific(pugi::xml_node& nodeTask)
+		{
+			this->speedInKmph = nodeTask.child("SpeedInKmph").text().as_float(10.0f);
+			this->drivingStyle = nodeTask.child("DrivingStyle").text().as_int(DrivingStyle::Normal);
+			this->route.clear();
+			for (auto nodeRoutePoint : nodeTask.child("Route").children("Coord"))
+			{
+				this->route.emplace_back(nodeRoutePoint.attribute("X").as_float(),
+					nodeRoutePoint.attribute("Y").as_float(), nodeRoutePoint.attribute("Z").as_float());
+			}
+		}
+		void DriveFollowRoute::ImportTaskDataSpecific(STSTask* otherTsk)
+		{
+			auto otherTskT = otherTsk->GetTypeTask<STSTasks::DriveFollowRoute>();
+			this->speedInKmph = otherTskT->speedInKmph;
+			this->drivingStyle = otherTskT->drivingStyle;
+			this->route = otherTskT->route;
+		}
+		DriveFollowRoute::DriveFollowRoute()
+		{
+			this->type = STSTaskType::DriveFollowRoute;
+			this->submenu = Submenus::Sub_TaskSequence::DriveFollowRoute;
+			this->duration = 40000;
+			this->durationAfterLife = -2; // No durationAfterLife setting
+			this->isLoopedTask = false;
+			this->speedInKmph = 10.0f;
+			this->drivingStyle = DrivingStyle::Normal;
+		}
+		void DriveFollowRoute::RunP(GTAped& ep)
+		{
+			if (this->holdingAtEnd)
+				ep.Task().ClearAll();
+			this->holdingAtEnd = false;
+			this->segmentStartSet = false;
+			this->nextSteeringUpdate = 0;
+			this->nextRetargetTime = 0;
+			this->hasCruiseSpeed = false;
+			this->nextRoutePoint = 0;
+			this->routeVehicle = 0;
+			this->legStarted = false;
+			this->TickP(ep);
+		}
+		void DriveFollowRoute::GetDrivingCommand(const Vector3& position, Vector3& target, float& speed) const
+		{
+			const Vector3& end = this->route[this->nextRoutePoint];
+			const Vector3& start = this->segmentStart;
+			const float dx = end.x - start.x, dy = end.y - start.y, dz = end.z - start.z;
+			const float lengthSquared = dx * dx + dy * dy + dz * dz;
+			speed = std::isfinite(this->speedInKmph) ? (std::max)(0.0f, this->speedInKmph / 3.6f) : 0.0f;
+			target = end;
+			if (lengthSquared < 0.01f)
+				return;
+
+			const float length = std::sqrt(lengthSquared);
+			const float projection = std::clamp(((position.x - start.x) * dx + (position.y - start.y) * dy
+				+ (position.z - start.z) * dz) / lengthSquared, 0.0f, 1.0f);
+			const Vector3 nearest(start.x + dx * projection, start.y + dy * projection, start.z + dz * projection);
+			const float deviation = position.DistanceTo(nearest);
+			// Look far enough ahead to cruise; small tracking errors must not cause braking.
+			const float excessDeviation = (std::max)(0.0f, deviation - 2.0f);
+			const float lookAhead = std::clamp(std::clamp(speed, 4.0f, 25.0f) / (1.0f + excessDeviation * 0.25f), 2.0f, 25.0f);
+			const float targetProgress = (std::min)(1.0f, projection + lookAhead / length);
+			target = Vector3(start.x + dx * targetProgress, start.y + dy * targetProgress, start.z + dz * targetProgress);
+			if (excessDeviation > 0.0f)
+				speed = (std::min)(speed, (std::max)(2.5f, speed / (1.0f + excessDeviation * 0.15f)));
+
+			// Plan across checkpoints so dense points do not cause repeated brake/accelerate cycles.
+			float distanceToEvent = position.DistanceTo(end);
+			const float planningHorizon = speed * speed / 4.0f + 25.0f;
+			float ix = dx, iy = dy, iz = dz, incomingLength = length;
+			std::size_t pointIndex = this->nextRoutePoint;
+			while (distanceToEvent <= planningHorizon)
+			{
+				const Vector3& corner = this->route[pointIndex];
+				std::size_t nextIndex = pointIndex + 1;
+				while (nextIndex < this->route.size() && corner.DistanceTo(this->route[nextIndex]) < 0.1f)
+					++nextIndex;
+				float cornerSpeed = speed;
+				float nx = 0.0f, ny = 0.0f, nz = 0.0f, nextLength = 0.0f;
+				if (nextIndex == this->route.size())
+					cornerSpeed = 0.0f;
+				else
+				{
+					const Vector3& next = this->route[nextIndex];
+					nx = next.x - corner.x; ny = next.y - corner.y; nz = next.z - corner.z;
+					nextLength = std::sqrt(nx * nx + ny * ny + nz * nz);
+					const float turnCosine = std::clamp((ix * nx + iy * ny + iz * nz) / (incomingLength * nextLength), -1.0f, 1.0f);
+					if (turnCosine < 0.5f)
+					{
+						const float turnRadius = (std::min)(incomingLength, nextLength) / (2.0f * std::sqrt((1.0f - turnCosine) * 0.5f));
+						cornerSpeed = (std::min)(speed, turnCosine < -0.5f ? 2.5f : (std::max)(3.5f, std::sqrt(2.5f * turnRadius)));
+					}
+				}
+				const float brakingSpeed = std::sqrt(cornerSpeed * cornerSpeed + 4.0f * (std::max)(0.0f, distanceToEvent - 1.0f));
+				speed = (std::min)(speed, brakingSpeed);
+				if (nextIndex == this->route.size())
+					break;
+				distanceToEvent += nextLength;
+				ix = nx; iy = ny; iz = nz; incomingLength = nextLength;
+				pointIndex = nextIndex;
+			}
+		}
+		void DriveFollowRoute::TickP(GTAped& ep)
+		{
+			if (this->holdingAtEnd)
+				return;
+			if (this->route.empty() || !ep.IsInVehicle())
+			{
+				this->routeVehicle = 0;
+				this->legStarted = false;
+				return;
+			}
+
+			GTAvehicle veh = ep.CurrentVehicle();
+			if (!veh.Exists() || veh.Driver_get().Handle() != ep.Handle())
+			{
+				this->routeVehicle = 0;
+				this->legStarted = false;
+				return;
+			}
+			if (this->routeVehicle != veh.Handle())
+			{
+				this->routeVehicle = veh.Handle();
+				this->legStarted = false;
+				this->hasCruiseSpeed = false;
+			}
+
+			// Advance using the actual vehicle position, not road-node/task completion.
+			const Vector3 position = veh.Position_get();
+			if (!this->segmentStartSet)
+			{
+				this->segmentStart = position;
+				this->segmentStartSet = true;
+			}
+			while (this->nextRoutePoint < this->route.size()
+				&& position.DistanceTo(this->route[this->nextRoutePoint]) <= 1.5f)
+			{
+				this->segmentStart = this->route[this->nextRoutePoint];
+				++this->nextRoutePoint;
+				this->legStarted = false;
+			}
+			if (this->nextRoutePoint >= this->route.size())
+			{
+				ep.Task().ClearAll();
+				veh.StopImmediately();
+				TASK_VEHICLE_TEMP_ACTION(ep.Handle(), veh.Handle(), 6, -1); // Hold the parking brake.
+				this->holdingAtEnd = true;
+				return;
+			}
+			const Model& vehModel = veh.Model();
+			const bool isRoadVehicle = !vehModel.IsHeli() && !vehModel.IsPlane() && !vehModel.IsBoat();
+			if (this->legStarted && (!isRoadVehicle || GetTickMs() < this->nextSteeringUpdate))
+				return;
+			Vector3 point = this->route[this->nextRoutePoint];
+			float speedInMps = this->speedInKmph / 3.6f;
+			if (isRoadVehicle)
+			{
+				this->GetDrivingCommand(position, point, speedInMps);
+				const std::uint64_t now = GetTickMs();
+				this->nextSteeringUpdate = now + 100;
+				if (this->hasCruiseSpeed)
+				{
+					const float elapsed = (std::min)(1.0f, float(now - this->lastSpeedUpdate) / 1000.0f);
+					speedInMps = std::clamp(speedInMps, (std::max)(0.0f, this->commandedSpeed - 3.0f * elapsed), this->commandedSpeed + 2.0f * elapsed);
+				}
+				this->lastSpeedUpdate = now;
+				this->hasCruiseSpeed = true;
+				this->commandedSpeed = speedInMps;
+				const float retargetDistance = (std::max)(2.0f, speedInMps * 0.3f);
+				if (this->legStarted && (now < this->nextRetargetTime
+					|| point.DistanceTo(this->steeringTarget) < retargetDistance))
+				{
+					// Change cruise speed on the existing task; do not restart its braking logic.
+					ep.MaxDrivingSpeed_set(speedInMps);
+					ep.DrivingSpeed_set(speedInMps);
+					return;
+				}
+				this->nextRetargetTime = now + 350;
+			}
+			ep.MaxDrivingSpeed_set(speedInMps);
+			if (vehModel.IsHeli())
+				TASK_HELI_MISSION(ep.Handle(), veh.Handle(), 0, 0, point.x, point.y, point.z, 4, speedInMps, 2.0f, -1.0f, 10000, 100, -1082130432, 0);
+			else if (vehModel.IsPlane())
+				TASK_PLANE_MISSION(ep.Handle(), veh.Handle(), 0, 0, point.x, point.y, point.z, 4, speedInMps, 2.0f, -1.0f, 100, 200, false);
+			else if (vehModel.IsBoat())
+				TASK_BOAT_MISSION(ep.Handle(), veh.Handle(), 0, 0, point.x, point.y, point.z, 4, speedInMps, 786469, 1.0f, 1071);
+			else
+			{
+				constexpr int forceStraightLine = 16777216;
+				// Stop for traffic instead of swerving, changing lanes or taking detours.
+				constexpr int stopForTraffic = 1 | 2;
+				constexpr int stopAtLights = 128;
+				const int routeDrivingStyle = forceStraightLine | stopForTraffic | (this->drivingStyle & stopAtLights);
+				constexpr int goToRacing = 14; // Drive through steering targets; parking is handled at the real endpoint.
+				TASK_VEHICLE_MISSION_COORS_TARGET(ep.Handle(), veh.Handle(), point.x, point.y, point.z,
+					goToRacing, speedInMps, routeDrivingStyle, 0.25f, -1.0f, false);
+			}
+			this->steeringTarget = point;
+			this->commandedSpeed = speedInMps;
+			this->legStarted = true;
+		}
+		void DriveFollowRoute::EndP(GTAped& ep)
+		{
+			GTAvehicle veh = ep.CurrentVehicle();
+			if (this->routeVehicle != 0 && ep.IsInVehicle() && veh.Exists()
+				&& veh.Handle() == this->routeVehicle && veh.Driver_get().Handle() == ep.Handle())
+				ep.Task().ClearAll();
+			this->nextRoutePoint = 0;
+			this->routeVehicle = 0;
+			this->legStarted = false;
+			this->holdingAtEnd = false;
+			this->segmentStartSet = false;
+			this->nextSteeringUpdate = 0;
+			this->nextRetargetTime = 0;
+			this->hasCruiseSpeed = false;
+		}
+
 		void FollowEntity::GetXmlNodeTaskSpecific(pugi::xml_node& nodeTask) const
 		{
 			nodeTask.append_child("Speed").text() = this->speed;
@@ -870,7 +1102,7 @@ namespace sub::Spooner
 		void PlayAnimation::RunP(GTAped& ep)
 		{
 			if (this->durationToAnimDuration)
-				this->duration = GET_ENTITY_ANIM_TOTAL_TIME(ep.Handle(), this->animDict.c_str(), this->animName.c_str());
+				this->duration = static_cast<int>(GET_ENTITY_ANIM_TOTAL_TIME(ep.Handle(), this->animDict.c_str(), this->animName.c_str()));
 
 			//if (IS_ENTITY_PLAYING_ANIM(ep.Handle, animDict.c_str(), animDict.c_str(), 3))
 			ep.Task().PlayAnimation(this->animDict, this->animName, this->speed, this->speedMultiplier, this->durationAfterLife > 0 ? -1 : this->duration, this->flag, 0.0f, this->lockPos);
@@ -1582,6 +1814,25 @@ namespace sub::Spooner
 		void EmptyVehicle::RunP(GTAped& ep)
 		{
 			TASK_EVERYONE_LEAVE_VEHICLE(ep.Handle());
+		}
+
+		VehicleBlowup::VehicleBlowup()
+		{
+			this->type = STSTaskType::VehicleBlowup;
+			this->submenu = Submenus::Sub_TaskSequence::Nothing;
+			this->duration = -1; // No settings
+			this->durationAfterLife = -2; // No durationAfterLife setting
+			this->isLoopedTask = false;
+		}
+		void VehicleBlowup::Run(void* ve)
+		{
+			GTAvehicle vehicle = reinterpret_cast<SpoonerEntity*>(ve)->Handle;
+			if (!vehicle.Exists() || !vehicle.IsVehicle())
+				return;
+
+			vehicle.SetInvincible(false);
+			vehicle.SetExplosionProof(false);
+			vehicle.Explode();
 		}
 
 		void ChangeTextureVariation::GetXmlNodeTaskSpecific(pugi::xml_node& nodeTask) const

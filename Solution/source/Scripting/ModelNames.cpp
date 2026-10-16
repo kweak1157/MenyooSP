@@ -12,6 +12,8 @@
 #include "..\macros.h"
 
 #include "enums.h"
+#include "StockVehicleModels.h"
+#include "AddonVehicleModels.h"
 #include "..\Util\ExePath.h"
 #include "..\Memory\GTAmemory.h"
 #include "..\Natives\natives2.h"
@@ -29,6 +31,8 @@
 
 #pragma region Vehicle model labels
 std::vector<GTAmodel::Model> g_vehHashes;
+std::vector<GTAmodel::Model> g_vehHashes_ADDON;
+static std::unordered_map<DWORD, std::string> addonVehicleModelNames;
 std::vector<GTAmodel::Model> g_vehHashes_SUPER;
 std::vector<GTAmodel::Model> g_vehHashes_SPORT;
 std::vector<GTAmodel::Model> g_vehHashes_SPORTSCLASSIC;
@@ -154,6 +158,23 @@ void PopulatePedModelsArray()
 		std::sort(hlist->begin(), hlist->end(), [](const std::pair<std::string, std::string>& a, const std::pair<std::string, std::string>& b) -> bool { return boost::to_lower_copy(a.second) < boost::to_lower_copy(b.second); });
 	}
 }
+static void PopulateAddonVehicleModelsArray()
+{
+	g_vehHashes_ADDON.clear();
+	addonVehicleModelNames.clear();
+	for (const auto& name : FindAddonVehicleModelNames(ExePathW()))
+		addonVehicleModelNames.emplace(GET_HASH_KEY(name), name);
+	std::unordered_set<DWORD> addedHashes;
+	for (const auto& model : g_vehHashes)
+	{
+		// Compare model hashes: add-ons can share a display name with a stock vehicle.
+		if (addonVehicleModelNames.find(model.hash) != addonVehicleModelNames.end()
+			&& !IsStockVehicleModel(model.hash) && model.IsInCdImage() && model.IsVehicle()
+			&& addedHashes.insert(model.hash).second)
+			g_vehHashes_ADDON.push_back(model);
+	}
+}
+
 void PopulateVehicleModelsArray()
 {
 	g_vehHashes.clear();
@@ -340,6 +361,7 @@ void PopulateVehicleModelsArray()
 	{
 		std::sort(hlist->begin(), hlist->end(), [](const Model& a, const Model& b) -> bool { return boost::to_lower_copy(a.VehicleDisplayName(true)) < boost::to_lower_copy(b.VehicleDisplayName(true)); });
 	}
+	PopulateAddonVehicleModelsArray();
 }
 void PopulateObjectModelsArray()
 {
@@ -379,8 +401,19 @@ void PopulateGlobalEntityModelsArrays()
 }
 
 // Model - labels
+static std::unordered_map<DWORD, std::pair<std::string, std::string>> addonPedModelNames;
+
+void RegisterAddonPedModelName(DWORD hash, const std::string& modelName, const std::string& caption)
+{
+	if (!modelName.empty())
+		addonPedModelNames[hash] = { modelName, caption.empty() ? modelName : caption };
+}
+
 std::string get_ped_model_label(const GTAmodel::Model& model, bool properName)
 {
+	const auto addon = addonPedModelNames.find(model.hash);
+	if (addon != addonPedModelNames.end())
+		return properName ? addon->second.second : addon->second.first;
 	for (UINT i = 0; i < g_pedModels.size(); i++)
 	{
 		if (GET_HASH_KEY(g_pedModels[i].first) == model.hash)
@@ -393,6 +426,11 @@ std::string get_ped_model_label(const GTAmodel::Model& model, bool properName)
 std::string get_vehicle_model_label(const GTAmodel::Model& model, bool properName)
 {
 	return model.VehicleDisplayName(properName);
+}
+std::string get_addon_vehicle_model_name(const GTAmodel::Model& model)
+{
+	const auto entry = addonVehicleModelNames.find(model.hash);
+	return entry != addonVehicleModelNames.end() ? entry->second : std::string();
 }
 std::string get_prop_model_label(const GTAmodel::Model& model)
 {

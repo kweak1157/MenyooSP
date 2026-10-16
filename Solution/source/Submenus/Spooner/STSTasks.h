@@ -18,6 +18,7 @@
 #include "..\..\Scripting\PTFX.h"
 
 #include <cstdint>
+#include <cstddef>
 #include <vector>
 #include <string>
 
@@ -238,6 +239,36 @@ namespace sub::Spooner
 			std::vector<Vector3> route;
 			FollowRoute();
 			void RunP(GTAped& ep) override;
+		};
+
+		class DriveFollowRoute final : public STSTask
+		{
+		private:
+			std::size_t nextRoutePoint = 0;
+			Vehicle routeVehicle = 0;
+			bool legStarted = false;
+			bool holdingAtEnd = false;
+			Vector3 segmentStart;
+			bool segmentStartSet = false;
+			Vector3 steeringTarget;
+			float commandedSpeed = 0.0f;
+			std::uint64_t nextSteeringUpdate = 0;
+			std::uint64_t nextRetargetTime = 0;
+			std::uint64_t lastSpeedUpdate = 0;
+			bool hasCruiseSpeed = false;
+			void GetDrivingCommand(const Vector3& position, Vector3& target, float& speed) const;
+			void GetXmlNodeTaskSpecific(pugi::xml_node& nodeTask) const override;
+			void ImportXmlNodeTaskSpecific(pugi::xml_node& nodeTask) override;
+			void ImportTaskDataSpecific(STSTask* otherTsk) override;
+		public:
+			float speedInKmph;
+			int drivingStyle;
+			std::vector<Vector3> route;
+			DriveFollowRoute();
+			void RunP(GTAped& ep) override;
+			void TickP(GTAped& ep) override;
+			void EndP(GTAped& ep) override;
+			bool StopsSequence() const override { return this->holdingAtEnd; }
 		};
 
 		class FollowEntity final : public STSTask
@@ -551,6 +582,13 @@ namespace sub::Spooner
 		public:
 			EmptyVehicle();
 			void RunP(GTAped& ep) override;
+		};
+
+		class VehicleBlowup final : public STSTask
+		{
+		public:
+			VehicleBlowup();
+			void Run(void* ve) override;
 		};
 
 		class ChangeTextureVariation final : public STSTask

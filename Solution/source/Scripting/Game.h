@@ -48,6 +48,8 @@ namespace Game
 
 	namespace Sound
 	{
+		extern bool bMenuSounds;
+
 		class GameSound
 		{
 		private:

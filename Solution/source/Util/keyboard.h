@@ -231,6 +231,6 @@ bool IsKeyJustUp(DWORD key, bool exclusive = true);
 void ResetKeyState(DWORD key);
 
 // Game
-std::string VkCodeToStr(UINT8 key);
+std::string VkCodeToStr(int key);
 
 

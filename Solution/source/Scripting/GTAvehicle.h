@@ -222,19 +222,19 @@ public:
 
 	RgbS CustomPrimaryColour_get() const;
 	void CustomPrimaryColour_set(RgbS value);
-	void CustomPrimaryColour_set(BYTE r, BYTE g, BYTE b);
+	void CustomPrimaryColour_set(int r, int g, int b);
 
 	RgbS CustomSecondaryColour_get() const;
 	void CustomSecondaryColour_set(RgbS value);
-	void CustomSecondaryColour_set(BYTE r, BYTE g, BYTE b);
+	void CustomSecondaryColour_set(int r, int g, int b);
 
 	RgbS NeonLightsColour_get() const;
 	void NeonLightsColour_set(RgbS value);
-	void NeonLightsColour_set(BYTE r, BYTE g, BYTE b);
+	void NeonLightsColour_set(int r, int g, int b);
 
 	RgbS TyreSmokeColour_get() const;
 	void TyreSmokeColour_set(RgbS value);
-	void TyreSmokeColour_set(BYTE r, BYTE g, BYTE b);
+	void TyreSmokeColour_set(int r, int g, int b);
 
 	int Livery_get() const;
 	void Livery_set(int liveryIndex);

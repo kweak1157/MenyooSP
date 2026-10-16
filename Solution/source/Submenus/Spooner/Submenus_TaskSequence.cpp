@@ -363,24 +363,17 @@ namespace sub::Spooner
 
 				PAtCoord(tskPtr->destination);
 			}
-			void FollowRoute()
+			static void PRoute(std::vector<Vector3>& route)
 			{
-				auto tskPtr = _selectedSTST->GetTypeTask<STSTasks::FollowRoute>();
-
 				const Vector3& entityPos = SelectedEntity.Handle.Position_get();
 
-				for (auto porit = tskPtr->route.begin(); porit != tskPtr->route.end(); ++porit)
+				for (auto porit = route.begin(); porit != route.end(); ++porit)
 				{
 					World::DrawMarker(MarkerType::ThickChevronUp, *porit, Vector3(), Vector3(180.0f, 0.0f, 0.0f), Vector3(1, 1, 1), RGBA(177, 33, 193, 210));
-					World::DrawLine(porit == tskPtr->route.begin() ? entityPos : *(porit - 1), *porit, RGBA(177, 33, 193, 210));
+					World::DrawLine(porit == route.begin() ? entityPos : *(porit - 1), *porit, RGBA(177, 33, 193, 210));
 				}
 
-				bool bSpeed_plus = false, bSpeed_minus = false;
-				AddTexter("Speed", (tskPtr->speed > 2.5f ? 1 : 0), std::vector<std::string>{"Walk", "Run"}, null, bSpeed_plus, bSpeed_minus);
-				if (bSpeed_plus) { if (tskPtr->speed < 4.0f) tskPtr->speed = 4.0f; }
-				if (bSpeed_minus) { if (tskPtr->speed > 1.0f) tskPtr->speed = 1.0f; }
-
-				for (auto cit = tskPtr->route.begin(); cit != tskPtr->route.end();)
+				for (auto cit = route.begin(); cit != route.end();)
 				{
 					AddOption("~italic~" + cit->ToString(), null);
 
@@ -399,7 +392,7 @@ namespace sub::Spooner
 						}
 						if (bRemoveCoordPressed)
 						{
-							cit = tskPtr->route.erase(cit);
+							cit = route.erase(cit);
 							//Menu::Up();
 						}
 						else ++cit;
@@ -414,7 +407,7 @@ namespace sub::Spooner
 					AddTickol("Add Player Position", true, bSetPosToMe, bSetPosToMe, TICKOL::SMALLNEWSTAR); if (bSetPosToMe)
 					{
 						Vector3 myPos = GTAentity(PLAYER_PED_ID()).Position_get();
-						tskPtr->route.push_back(myPos);
+						route.push_back(myPos);
 						Menu::Down();
 					}
 				}
@@ -424,11 +417,60 @@ namespace sub::Spooner
 					AddTickol("Add Camera Target Position", true, bSetPosToHitCoords, bSetPosToHitCoords, TICKOL::SMALLNEWSTAR); if (bSetPosToHitCoords)
 					{
 						Vector3 hitCoords = spoocam.RaycastForCoord(Vector2(0.0f, 0.0f), 0, 160.0f, 3.0f);
-						tskPtr->route.push_back(hitCoords);
+						route.push_back(hitCoords);
 						Menu::Down();
 					}
 				}
 
+			}
+			void FollowRoute()
+			{
+				auto tskPtr = _selectedSTST->GetTypeTask<STSTasks::FollowRoute>();
+
+				bool bSpeed_plus = false, bSpeed_minus = false;
+				AddTexter("Speed", (tskPtr->speed > 2.5f ? 1 : 0), std::vector<std::string>{"Walk", "Run"}, null, bSpeed_plus, bSpeed_minus);
+				if (bSpeed_plus) { if (tskPtr->speed < 4.0f) tskPtr->speed = 4.0f; }
+				if (bSpeed_minus) { if (tskPtr->speed > 1.0f) tskPtr->speed = 1.0f; }
+
+				PRoute(tskPtr->route);
+			}
+			void DriveFollowRoute()
+			{
+				auto tskPtr = _selectedSTST->GetTypeTask<STSTasks::DriveFollowRoute>();
+
+				bool bSpeed_plus = false, bSpeed_minus = false, bSpeed_input = false;
+				AddNumber("Speed (KMPH)", tskPtr->speedInKmph, 0, bSpeed_input, bSpeed_plus, bSpeed_minus);
+				if (bSpeed_plus) { if (tskPtr->speedInKmph < FLT_MAX) tskPtr->speedInKmph += 1.0f; }
+				if (bSpeed_minus) { if (tskPtr->speedInKmph > -FLT_MAX) tskPtr->speedInKmph -= 1.0f; }
+				if (bSpeed_input)
+				{
+					std::string inputStr = Game::InputBox("", 6U, "", std::to_string(tskPtr->speedInKmph).substr(0, 5));
+					if (inputStr.length() > 0)
+					{
+						try { tskPtr->speedInKmph = stof(inputStr); }
+						catch (...) { Game::Print::PrintError_InvalidInput(); }
+					}
+					//OnscreenKeyboard::State::Set(OnscreenKeyboard::Purpose::SetArg1Float, std::string(), 5U, std::string(), std::to_string(tskPtr->speedInKmph).substr(0, 5));
+					//OnscreenKeyboard::State::arg1._ptr = reinterpret_cast<void*>(&tskPtr->speedInKmph);
+				}
+
+				int cdsi = 0;
+				std::vector<std::string> cds;
+				for (UINT i = 0; i < DrivingStyle::nameArray.size(); i++)
+				{
+					if (DrivingStyle::nameArray[i].style == tskPtr->drivingStyle)
+					{
+						cdsi = i;
+						cds.push_back(DrivingStyle::nameArray[i].name);
+						break;
+					}
+				}
+				bool bDrivingStyle_plus = false, bDrivingStyle_minus = false;
+				AddTexter("Driving Style", 0, cds, null, bDrivingStyle_plus, bDrivingStyle_minus);
+				if (bDrivingStyle_plus) { if (cdsi < DrivingStyle::nameArray.size() - 1) { cdsi++; tskPtr->drivingStyle = DrivingStyle::nameArray[cdsi].style; } }
+				if (bDrivingStyle_minus) { if (cdsi > 0) { cdsi--; tskPtr->drivingStyle = DrivingStyle::nameArray[cdsi].style; } }
+
+				PRoute(tskPtr->route);
 			}
 			void FollowEntity()
 			{

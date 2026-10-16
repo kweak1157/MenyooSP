@@ -57,6 +57,7 @@ namespace sub
 	bool SpawnVehicle_RemoveVehicleModelFromFavourites(GTAmodel::Model vehModel);
 
 	void SpawnVehicle_AllCatsSub();
+	void SpawnVehicle_Addon(bool spawnIntoWorld = false);
 	void SpawnVehicle_Favourites();
 
 	// Vehicle saver
@@ -67,9 +68,9 @@ namespace sub
 		extern UINT8 _driverVisibilityTexterIndex;
 
 		void VehSaver_SaveToFile(std::string filePath, GTAvehicle ev);
-		void VehSaver_ReadFromFile(std::string filePath, GTAentity ped);
+		void VehSaver_ReadFromFile(std::string filePath, GTAentity ped, bool spawnIntoWorld = false);
 
-		void Sub_VehSaver();
+		void Sub_VehSaver(bool spawnIntoWorld = false);
 		void Sub_VehSaver_InItem();
 		int saveCarVars();
 

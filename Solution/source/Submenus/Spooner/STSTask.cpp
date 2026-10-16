@@ -69,10 +69,12 @@ namespace sub::Spooner
 		{ STSTaskType::ExitVehicle,{ "Exit Vehicle (If In One)", EntityType::PED } },
 		{ STSTaskType::DriveWander,{ "Cruise (If In Vehicle)", EntityType::PED } },
 		{ STSTaskType::DriveToCoord,{ "Drive To Position (If In Vehicle)", EntityType::PED } },
+		{ STSTaskType::DriveFollowRoute,{ "Follow Route (If In Vehicle)", EntityType::PED } },
 		{ STSTaskType::DriveFollowEntity,{ "Drive & Follow Entity (If In Vehicle)", EntityType::PED } },
 		{ STSTaskType::DriveLandPlane,{ "Land Plane (If In One)", EntityType::PED } },
 
 		{ STSTaskType::EmptyVehicle,{ "Empty Vehicle", EntityType::VEHICLE } },
+		{ STSTaskType::VehicleBlowup,{ "Vehicle Blowup", EntityType::VEHICLE } },
 		{ STSTaskType::AchieveVehicleForwardSpeed,{ "Achieve Vehicle Speed", EntityType::VEHICLE } },
 
 		{ STSTaskType::ChangeTextureVariation,{ "Change Texture Variation", EntityType::PROP } },
@@ -121,12 +123,20 @@ namespace sub::Spooner
 		GTAped vePed = *reinterpret_cast<GTAentity*>(ve);
 		RunP(vePed);
 	}
+	void STSTask::Tick(void* ve)
+	{
+		GTAped vePed = *reinterpret_cast<GTAentity*>(ve);
+		TickP(vePed);
+	}
 	void STSTask::End(void* ve)
 	{
 		GTAped vePed = *reinterpret_cast<GTAentity*>(ve);
 		EndP(vePed);
 	}
 	void STSTask::RunP(GTAped& ep)
+	{
+	}
+	void STSTask::TickP(GTAped& ep)
 	{
 	}
 	void STSTask::EndP(GTAped& ep)

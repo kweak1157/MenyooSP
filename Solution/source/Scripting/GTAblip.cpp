@@ -713,7 +713,7 @@ void GTAblip::Position_set(const Vector3& value)
 
 void GTAblip::Rotation_set(float valueInDegrees)
 {
-	SET_BLIP_ROTATION(this->mHandle, valueInDegrees);
+	SET_BLIP_ROTATION(this->mHandle, static_cast<int>(valueInDegrees));
 }
 
 void GTAblip::SetScale(float value)

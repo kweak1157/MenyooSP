@@ -123,7 +123,7 @@ namespace _VehicleFly_
 		//vehicle.ApplyForce(Vector3(control, 0, 0), Vector3(vehicle_md.Dim1.x - 0.2f, vehicle_md.Dim2.y - 0.2f, 0));
 
 		//vehicle.ApplyForceRelative(Vector3(control / 2, 0, 0), Vector3(control / 2, 0, 0));
-		vehicle.ApplyForceRelative(Vector3(-1.2 * control, 0, 0));
+		vehicle.ApplyForceRelative(Vector3(-1.2f * control, 0, 0));
 
 		//vehicle.Position_set(vehicle.GetOffsetInWorldCoords(-1.0f * control, 0, 0));
 	}

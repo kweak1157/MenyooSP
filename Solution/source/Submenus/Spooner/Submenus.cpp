@@ -902,6 +902,7 @@ namespace sub
 				for (UINT i = 0; i < Databases::EntityDb.size(); i++)
 				{
 					auto& e = Databases::EntityDb[i];
+					EntityManagement::RestorePedName(e);
 					if (_entTypeToShowTexterValue != 0 && static_cast<UINT8>(e.Type) != _entTypeToShowTexterValue)
 						continue;
 					bool bEntityExists = e.Handle.Exists();
@@ -1035,6 +1036,7 @@ namespace sub
 			}
 			Model selectedEntityModel = SelectedEntity.Handle.Model();
 
+			EntityManagement::RestorePedName(SelectedEntity);
 			AddTitle(SelectedEntity.HashName);
 
 			switch (SelectedEntity.Type)
@@ -2923,7 +2925,10 @@ namespace sub
 			AddTitle("Spawn Into World");
 			AddOption("Object", null, nullFunc, SUB::SPOONER_SPAWN_PROP);
 			AddOption("Ped", null, nullFunc, SUB::SPOONER_SPAWN_PED);
+			AddOption("Addon Peds", null, nullFunc, SUB::SPOONER_SPAWN_ADDON_PEDS);
 			AddOption("Vehicle", null, nullFunc, SUB::SPOONER_SPAWN_VEHICLE);
+			AddOption("Addon Vehicles", null, nullFunc, SUB::SPOONER_SPAWN_ADDON_VEHICLES);
+			AddOption("Saved Vehicles", null, nullFunc, SUB::SPOONER_SPAWN_SAVED_VEHICLES);
 		}
 		void Sub_SpawnProp()
 		{

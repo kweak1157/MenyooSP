@@ -784,7 +784,7 @@ namespace sub::Spooner
 				ev.RoofState_set((VehicleRoofState)nodeVehicleStuff.child("RoofState").text().as_int());
 				ev.SirenActive_set(nodeVehicleStuff.child("SirenActive").text().as_bool());
 				if (nodeVehicleStuff.child("EngineOn")) ev.EngineRunning_set(nodeVehicleStuff.child("EngineOn").text().as_bool());
-				if (nodeVehicleStuff.child("EngineHealth")) ev.EngineHealth_set(nodeVehicleStuff.child("EngineHealth").text().as_int());
+				if (nodeVehicleStuff.child("EngineHealth")) ev.EngineHealth_set(nodeVehicleStuff.child("EngineHealth").text().as_float());
 				if (nodeVehicleStuff.child("LightsOn")) ev.LightsOn_set(nodeVehicleStuff.child("LightsOn").text().as_bool());
 				if (nodeVehicleStuff.child("IsRadioLoud").text().as_int(0))
 				{
@@ -2071,12 +2071,12 @@ namespace sub::Spooner
 				e.IsStill = true;
 
 				Vector3 position, rotation;
-				position.x = ini.GetDoubleValue(section.pItem, "X");
-				position.y = ini.GetDoubleValue(section.pItem, "Y");
-				position.z = ini.GetDoubleValue(section.pItem, "Z");
-				rotation.x = ini.GetDoubleValue(section.pItem, "Pitch");
-				rotation.y = ini.GetDoubleValue(section.pItem, "Roll");
-				rotation.z = ini.GetDoubleValue(section.pItem, "Yaw");
+				position.x = static_cast<float>(ini.GetDoubleValue(section.pItem, "X"));
+				position.y = static_cast<float>(ini.GetDoubleValue(section.pItem, "Y"));
+				position.z = static_cast<float>(ini.GetDoubleValue(section.pItem, "Z"));
+				rotation.x = static_cast<float>(ini.GetDoubleValue(section.pItem, "Pitch"));
+				rotation.y = static_cast<float>(ini.GetDoubleValue(section.pItem, "Roll"));
+				rotation.z = static_cast<float>(ini.GetDoubleValue(section.pItem, "Yaw"));
 
 				if (e.Type == EntityType::PROP)
 				{

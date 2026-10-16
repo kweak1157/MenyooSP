@@ -84,7 +84,9 @@ namespace sub::Spooner
 		AimAtCoord = 49,
 		AimAtEntity = 50,
 		AddBlip = 51,
-		RemoveBlip = 52
+		RemoveBlip = 52,
+		DriveFollowRoute = 53,
+		VehicleBlowup = 54
 	};
 
 	extern std::vector<std::pair<STSTaskType, std::pair<std::string, EntityType>>> vSTSTaskTypeNames;
@@ -121,9 +123,12 @@ namespace sub::Spooner
 		void Assign(STSTask* right);
 
 		virtual void Run(void* ve);
+		void Tick(void* ve);
 		virtual void End(void* ve);
 		virtual void RunP(GTAped& ep);
+		virtual void TickP(GTAped& ep);
 		virtual void EndP(GTAped& ep);
+		virtual bool StopsSequence() const { return false; }
 
 		void GetXmlNode(pugi::xml_node& nodeTask) const;
 		pugi::xml_node GetXmlNode() const;

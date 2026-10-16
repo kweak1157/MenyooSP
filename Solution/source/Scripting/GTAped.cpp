@@ -333,7 +333,9 @@ void GTAped::GiveNM(const NMString& messageid)
 
 GTAentity GTAped::Clone(float heading, bool createNetH, bool createPedH)
 {
-	return CLONE_PED(this->mHandle, heading, createNetH, createPedH);
+	GTAentity clone = CLONE_PED(this->mHandle, createNetH, createPedH, false);
+	if (clone.Handle() != 0) clone.Heading_set(heading);
+	return clone;
 }
 
 bool GTAped::IsSubTaskActive(const PedSubTask& taskType)

@@ -38,6 +38,7 @@ namespace sub::Spooner
 			void SlideToCoord();
 			void GoToCoord();
 			void FollowRoute();
+			void DriveFollowRoute();
 			void FollowEntity();
 			void PatrolInRange();
 			void WanderFreely();

@@ -18,6 +18,9 @@ std::string int_to_hexstring(unsigned long i, bool zerox);
 std::optional<int> TryParseInt(std::string_view text);
 std::optional<float> TryParseFloat(std::string_view text);
 
+std::string WideToUtf8(std::wstring_view text);
+std::wstring Utf8ToWide(std::string_view text);
+
 namespace boost
 {
 	// +ve numbers + ASCII (no UTF-8)

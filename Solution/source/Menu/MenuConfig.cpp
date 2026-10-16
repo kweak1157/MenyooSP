@@ -21,6 +21,7 @@
 #include "..\Natives\types.h" // RGBA/RgbS
 #include "..\Util\GTAmath.h"
 #include "..\Util\FileLogger.h"
+#include "..\Util\ConfigValue.h"
 
 #include "..\Submenus\Spooner\SpoonerMode.h"
 #include "..\Submenus\Spooner\SpoonerSettings.h"
@@ -69,12 +70,12 @@ void MenuConfig::ConfigRead()
 
 	MenuConfig::bSaveAtIntervals = ini.GetBoolValue(section_settings.c_str(), "sync_with_config_at_intervals", MenuConfig::bSaveAtIntervals);
 	loop_Check_self_death_model = ini.GetBoolValue(section_settings.c_str(), "DeathModelReset", loop_Check_self_death_model);
-	menubinds = ini.GetLongValue(section_settings.c_str(), "open_key", menubinds);
-	menubindsGamepad.first = ini.GetLongValue(section_settings.c_str(), "open_button_for_gamepad_1", menubindsGamepad.first);
-	menubindsGamepad.second = ini.GetLongValue(section_settings.c_str(), "open_button_for_gamepad_2", menubindsGamepad.second);
-	respawnbinds = ini.GetLongValue(section_settings.c_str(), "manual_respawn_button", respawnbinds);
-	menuPos.x = ini.GetDoubleValue(section_settings.c_str(), "menuPosX", (menuPos.x + 0.0598f) * 100); menuPos.x = menuPos.x / 100 - 0.0598f;
-	menuPos.y = ini.GetDoubleValue(section_settings.c_str(), "menuPosY", (menuPos.y + 0.074f) * 100); menuPos.y = menuPos.y / 100 - 0.074f;
+	menubinds = ConfigValue::ReadInteger(ini, section_settings.c_str(), "open_key", menubinds);
+	menubindsGamepad.first = ConfigValue::ReadInteger(ini, section_settings.c_str(), "open_button_for_gamepad_1", menubindsGamepad.first);
+	menubindsGamepad.second = ConfigValue::ReadInteger(ini, section_settings.c_str(), "open_button_for_gamepad_2", menubindsGamepad.second);
+	respawnbinds = ConfigValue::ReadInteger(ini, section_settings.c_str(), "manual_respawn_button", respawnbinds);
+	menuPos.x = ConfigValue::ReadReal(ini, section_settings.c_str(), "menuPosX", (menuPos.x + 0.0598f) * 100); menuPos.x = menuPos.x / 100 - 0.0598f;
+	menuPos.y = ConfigValue::ReadReal(ini, section_settings.c_str(), "menuPosY", (menuPos.y + 0.074f) * 100); menuPos.y = menuPos.y / 100 - 0.074f;
 	Menu::bit_glare_test = ini.GetBoolValue(section_settings.c_str(), "Titlebox_Globe", Menu::bit_glare_test);
 	Menu::bit_centre_title = ini.GetBoolValue(section_settings.c_str(), "centre_title", Menu::bit_centre_title);
 	Menu::bit_centre_options = ini.GetBoolValue(section_settings.c_str(), "centre_options", Menu::bit_centre_options);
@@ -86,7 +87,7 @@ void MenuConfig::ConfigRead()
 	std::string section_general = "general";/////////
 
 
-	bind_no_clip = ini.GetLongValue(section_general.c_str(), "FreeCamButton", bind_no_clip);
+	bind_no_clip = ConfigValue::ReadInteger(ini, section_general.c_str(), "FreeCamButton", bind_no_clip);
 
 
 	std::string section_colours = "colours";/////////
@@ -96,72 +97,72 @@ void MenuConfig::ConfigRead()
 	loop_RainbowBoxes = ini.GetBoolValue(section_colours.c_str(), "rainbow_mode", loop_RainbowBoxes);
 	Menu::thin_line_over_screct = ini.GetBoolValue(section_colours.c_str(), "thin_line_over_footer", Menu::thin_line_over_screct);
 
-	titlebox.R = ini.GetLongValue(section_colours.c_str(), "titlebox_R", titlebox.R);
-	titlebox.G = ini.GetLongValue(section_colours.c_str(), "titlebox_G", titlebox.G);
-	titlebox.B = ini.GetLongValue(section_colours.c_str(), "titlebox_B", titlebox.B);
-	titlebox.A = ini.GetLongValue(section_colours.c_str(), "titlebox_A", titlebox.A);
+	titlebox.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titlebox_R", titlebox.R);
+	titlebox.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titlebox_G", titlebox.G);
+	titlebox.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titlebox_B", titlebox.B);
+	titlebox.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titlebox_A", titlebox.A);
 
-	BG.R = ini.GetLongValue(section_colours.c_str(), "BG_R", BG.R);
-	BG.G = ini.GetLongValue(section_colours.c_str(), "BG_G", BG.G);
-	BG.B = ini.GetLongValue(section_colours.c_str(), "BG_B", BG.B);
-	BG.A = ini.GetLongValue(section_colours.c_str(), "BG_A", BG.A);
+	BG.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "BG_R", BG.R);
+	BG.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "BG_G", BG.G);
+	BG.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "BG_B", BG.B);
+	BG.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "BG_A", BG.A);
 
-	titletext.R = ini.GetLongValue(section_colours.c_str(), "titletext_R", titletext.R);
-	titletext.G = ini.GetLongValue(section_colours.c_str(), "titletext_G", titletext.G);
-	titletext.B = ini.GetLongValue(section_colours.c_str(), "titletext_B", titletext.B);
-	titletext.A = ini.GetLongValue(section_colours.c_str(), "titletext_A", titletext.A);
+	titletext.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titletext_R", titletext.R);
+	titletext.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titletext_G", titletext.G);
+	titletext.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titletext_B", titletext.B);
+	titletext.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "titletext_A", titletext.A);
 
-	optiontext.R = ini.GetLongValue(section_colours.c_str(), "optiontext_R", optiontext.R);
-	optiontext.G = ini.GetLongValue(section_colours.c_str(), "optiontext_G", optiontext.G);
-	optiontext.B = ini.GetLongValue(section_colours.c_str(), "optiontext_B", optiontext.B);
-	optiontext.A = ini.GetLongValue(section_colours.c_str(), "optiontext_A", optiontext.A);
+	optiontext.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optiontext_R", optiontext.R);
+	optiontext.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optiontext_G", optiontext.G);
+	optiontext.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optiontext_B", optiontext.B);
+	optiontext.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optiontext_A", optiontext.A);
 
-	selectedtext.R = ini.GetLongValue(section_colours.c_str(), "selectedtext_R", selectedtext.R);
-	selectedtext.G = ini.GetLongValue(section_colours.c_str(), "selectedtext_G", selectedtext.G);
-	selectedtext.B = ini.GetLongValue(section_colours.c_str(), "selectedtext_B", selectedtext.B);
-	selectedtext.A = ini.GetLongValue(section_colours.c_str(), "selectedtext_A", selectedtext.A);
+	selectedtext.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectedtext_R", selectedtext.R);
+	selectedtext.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectedtext_G", selectedtext.G);
+	selectedtext.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectedtext_B", selectedtext.B);
+	selectedtext.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectedtext_A", selectedtext.A);
 
-	optionbreaks.R = ini.GetLongValue(section_colours.c_str(), "optionbreaks_R", optionbreaks.R);
-	optionbreaks.G = ini.GetLongValue(section_colours.c_str(), "optionbreaks_G", optionbreaks.G);
-	optionbreaks.B = ini.GetLongValue(section_colours.c_str(), "optionbreaks_B", optionbreaks.B);
-	optionbreaks.A = ini.GetLongValue(section_colours.c_str(), "optionbreaks_A", optionbreaks.A);
+	optionbreaks.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optionbreaks_R", optionbreaks.R);
+	optionbreaks.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optionbreaks_G", optionbreaks.G);
+	optionbreaks.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optionbreaks_B", optionbreaks.B);
+	optionbreaks.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optionbreaks_A", optionbreaks.A);
 
-	optioncount.R = ini.GetLongValue(section_colours.c_str(), "optioncount_R", optioncount.R);
-	optioncount.G = ini.GetLongValue(section_colours.c_str(), "optioncount_G", optioncount.G);
-	optioncount.B = ini.GetLongValue(section_colours.c_str(), "optioncount_B", optioncount.B);
-	optioncount.A = ini.GetLongValue(section_colours.c_str(), "optioncount_A", optioncount.A);
+	optioncount.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optioncount_R", optioncount.R);
+	optioncount.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optioncount_G", optioncount.G);
+	optioncount.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optioncount_B", optioncount.B);
+	optioncount.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "optioncount_A", optioncount.A);
 
-	selectionhi.R = ini.GetLongValue(section_colours.c_str(), "selectionhi_R", selectionhi.R);
-	selectionhi.G = ini.GetLongValue(section_colours.c_str(), "selectionhi_G", selectionhi.G);
-	selectionhi.B = ini.GetLongValue(section_colours.c_str(), "selectionhi_B", selectionhi.B);
-	selectionhi.A = ini.GetLongValue(section_colours.c_str(), "selectionhi_A", selectionhi.A);
+	selectionhi.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectionhi_R", selectionhi.R);
+	selectionhi.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectionhi_G", selectionhi.G);
+	selectionhi.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectionhi_B", selectionhi.B);
+	selectionhi.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "selectionhi_A", selectionhi.A);
 
-	_globalPedTrackers_Col.R = ini.GetLongValue(section_colours.c_str(), "pedTrackers_R", _globalPedTrackers_Col.R);
-	_globalPedTrackers_Col.G = ini.GetLongValue(section_colours.c_str(), "pedTrackers_G", _globalPedTrackers_Col.G);
-	_globalPedTrackers_Col.B = ini.GetLongValue(section_colours.c_str(), "pedTrackers_B", _globalPedTrackers_Col.B);
-	_globalPedTrackers_Col.A = ini.GetLongValue(section_colours.c_str(), "pedTrackers_A", _globalPedTrackers_Col.A);
+	_globalPedTrackers_Col.R = ConfigValue::ReadInteger(ini, section_colours.c_str(), "pedTrackers_R", _globalPedTrackers_Col.R);
+	_globalPedTrackers_Col.G = ConfigValue::ReadInteger(ini, section_colours.c_str(), "pedTrackers_G", _globalPedTrackers_Col.G);
+	_globalPedTrackers_Col.B = ConfigValue::ReadInteger(ini, section_colours.c_str(), "pedTrackers_B", _globalPedTrackers_Col.B);
+	_globalPedTrackers_Col.A = ConfigValue::ReadInteger(ini, section_colours.c_str(), "pedTrackers_A", _globalPedTrackers_Col.A);
 
 
 	std::string section_fonts = "fonts";/////////
 
 
-	font_title = ini.GetLongValue(section_fonts.c_str(), "title", font_title);
-	font_options = ini.GetLongValue(section_fonts.c_str(), "options", font_options);
-	font_selection = ini.GetLongValue(section_fonts.c_str(), "selection", font_selection);
-	font_breaks = ini.GetLongValue(section_fonts.c_str(), "breaks", font_breaks);
-	font_xyzh = ini.GetLongValue(section_fonts.c_str(), "font_xyzh", font_xyzh);
-	font_speedo = ini.GetLongValue(section_fonts.c_str(), "font_speedo", font_speedo);
+	font_title = ConfigValue::ReadInteger(ini, section_fonts.c_str(), "title", font_title);
+	font_options = ConfigValue::ReadInteger(ini, section_fonts.c_str(), "options", font_options);
+	font_selection = ConfigValue::ReadInteger(ini, section_fonts.c_str(), "selection", font_selection);
+	font_breaks = ConfigValue::ReadInteger(ini, section_fonts.c_str(), "breaks", font_breaks);
+	font_xyzh = ConfigValue::ReadInteger(ini, section_fonts.c_str(), "font_xyzh", font_xyzh);
+	font_speedo = ConfigValue::ReadInteger(ini, section_fonts.c_str(), "font_speedo", font_speedo);
 
 
 	std::string section_spooner = "object-spooner";/////////
 
-	sub::Spooner::SpoonerMode::bindsKeyboard = ini.GetLongValue(section_spooner.c_str(), "SpoonerModeHotkey", sub::Spooner::SpoonerMode::bindsKeyboard);
-	sub::Spooner::SpoonerMode::bindsGamepad.first = ini.GetLongValue(section_spooner.c_str(), "SpoonerModeGamepadBind_1", sub::Spooner::SpoonerMode::bindsGamepad.first);
-	sub::Spooner::SpoonerMode::bindsGamepad.second = ini.GetLongValue(section_spooner.c_str(), "SpoonerModeGamepadBind_2", sub::Spooner::SpoonerMode::bindsGamepad.second);
-	sub::Spooner::Settings::CameraMovementSensitivityKeyboard = (float)ini.GetDoubleValue(section_spooner.c_str(), "CameraMovementSensitivityKeyboard", sub::Spooner::Settings::CameraMovementSensitivityKeyboard);
-	sub::Spooner::Settings::CameraRotationSensitivityMouse = (float)ini.GetDoubleValue(section_spooner.c_str(), "CameraRotationSensitivityMouse", sub::Spooner::Settings::CameraRotationSensitivityMouse);
-	sub::Spooner::Settings::CameraMovementSensitivityGamepad = (float)ini.GetDoubleValue(section_spooner.c_str(), "CameraMovementSensitivityGamepad", sub::Spooner::Settings::CameraMovementSensitivityGamepad);
-	sub::Spooner::Settings::CameraRotationSensitivityGamepad = (float)ini.GetDoubleValue(section_spooner.c_str(), "CameraRotationSensitivityGamepad", sub::Spooner::Settings::CameraRotationSensitivityGamepad);
+	sub::Spooner::SpoonerMode::bindsKeyboard = ConfigValue::ReadInteger(ini, section_spooner.c_str(), "SpoonerModeHotkey", sub::Spooner::SpoonerMode::bindsKeyboard);
+	sub::Spooner::SpoonerMode::bindsGamepad.first = ConfigValue::ReadInteger(ini, section_spooner.c_str(), "SpoonerModeGamepadBind_1", sub::Spooner::SpoonerMode::bindsGamepad.first);
+	sub::Spooner::SpoonerMode::bindsGamepad.second = ConfigValue::ReadInteger(ini, section_spooner.c_str(), "SpoonerModeGamepadBind_2", sub::Spooner::SpoonerMode::bindsGamepad.second);
+	sub::Spooner::Settings::CameraMovementSensitivityKeyboard = ConfigValue::ReadReal(ini, section_spooner.c_str(), "CameraMovementSensitivityKeyboard", sub::Spooner::Settings::CameraMovementSensitivityKeyboard);
+	sub::Spooner::Settings::CameraRotationSensitivityMouse = ConfigValue::ReadReal(ini, section_spooner.c_str(), "CameraRotationSensitivityMouse", sub::Spooner::Settings::CameraRotationSensitivityMouse);
+	sub::Spooner::Settings::CameraMovementSensitivityGamepad = ConfigValue::ReadReal(ini, section_spooner.c_str(), "CameraMovementSensitivityGamepad", sub::Spooner::Settings::CameraMovementSensitivityGamepad);
+	sub::Spooner::Settings::CameraRotationSensitivityGamepad = ConfigValue::ReadReal(ini, section_spooner.c_str(), "CameraRotationSensitivityGamepad", sub::Spooner::Settings::CameraRotationSensitivityGamepad);
 	sub::Spooner::Settings::bShowModelPreviews = ini.GetBoolValue(section_spooner.c_str(), "ShowModelPreviews", sub::Spooner::Settings::bShowModelPreviews);
 	sub::Spooner::Settings::bShowBoxAroundSelectedEntity = ini.GetBoolValue(section_spooner.c_str(), "ShowBoxAroundSelectedEntity", sub::Spooner::Settings::bShowBoxAroundSelectedEntity);
 	sub::Spooner::Settings::bSpawnDynamicProps = ini.GetBoolValue(section_spooner.c_str(), "SpawnDynamicProps", sub::Spooner::Settings::bSpawnDynamicProps);
@@ -173,7 +174,7 @@ void MenuConfig::ConfigRead()
 	sub::Spooner::Settings::bAddToDbAsMissionEntities = ini.GetBoolValue(section_spooner.c_str(), "AddToDbAsMissionEntities", sub::Spooner::Settings::bAddToDbAsMissionEntities);
 	sub::Spooner::Settings::bTeleportToReferenceWhenLoadingFile = ini.GetBoolValue(section_spooner.c_str(), "TeleportToReferenceWhenLoadingFile", sub::Spooner::Settings::bTeleportToReferenceWhenLoadingFile);
 	sub::Spooner::Settings::bKeepPositionWhenAttaching = ini.GetBoolValue(section_spooner.c_str(), "KeepPositionWhenAttaching", sub::Spooner::Settings::bKeepPositionWhenAttaching);
-	sub::Spooner::Settings::SpoonerModeMode = (sub::Spooner::eSpoonerModeMode)ini.GetLongValue(section_spooner.c_str(), "SpoonerModeMethod", (UINT8)sub::Spooner::Settings::SpoonerModeMode);
+	sub::Spooner::Settings::SpoonerModeMode = (sub::Spooner::eSpoonerModeMode)ConfigValue::ReadInteger(ini, section_spooner.c_str(), "SpoonerModeMethod", (UINT8)sub::Spooner::Settings::SpoonerModeMode);
 
 
 	std::string section_haxValues = "hax-values";/////////
@@ -181,6 +182,7 @@ void MenuConfig::ConfigRead()
 
 	 //loop_hide_hud = ini.GetBoolValue(section_haxValues.c_str(), "hide_hud", loop_hide_hud);
 	Game::Print::bNotifications = ini.GetBoolValue(section_haxValues.c_str(), "notifications", Game::Print::bNotifications);
+	Game::Sound::bMenuSounds = ini.GetBoolValue(section_haxValues.c_str(), "menu_sounds", Game::Sound::bMenuSounds);
 	loop_showFullHud = ini.GetBoolValue(section_haxValues.c_str(), "show_full_hud", loop_showFullHud);
 	_ManualRespawn_::g_manualRespawn.Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "manual_respawn", _ManualRespawn_::g_manualRespawn.Enabled());
 	loop_no_clip = ini.GetBoolValue(section_haxValues.c_str(), "freecam", loop_no_clip);
@@ -189,26 +191,26 @@ void MenuConfig::ConfigRead()
 	sub::TVChannelStuff_catind::loop_basictv = ini.GetBoolValue(section_haxValues.c_str(), "basic_tv_player", sub::TVChannelStuff_catind::loop_basictv);
 	loop_sync_clock = ini.GetBoolValue(section_haxValues.c_str(), "sync_clock", loop_sync_clock);
 	loop_pause_clock = ini.GetBoolValue(section_haxValues.c_str(), "pause_clock", loop_pause_clock);
-	pause_clock_H = ini.GetLongValue(section_haxValues.c_str(), "pause_clock_hour", pause_clock_H);
-	pause_clock_M = ini.GetLongValue(section_haxValues.c_str(), "pause_clock_minute", pause_clock_M);
+	pause_clock_H = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "pause_clock_hour", pause_clock_H);
+	pause_clock_M = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "pause_clock_minute", pause_clock_M);
 	loop_ped_population = ini.GetBoolValue(section_haxValues.c_str(), "decreased_ped_population", loop_ped_population);
 	loop_vehicle_population = ini.GetBoolValue(section_haxValues.c_str(), "decreased_veh_population", loop_vehicle_population);
 	loop_clearWeaponPickups = ini.GetBoolValue(section_haxValues.c_str(), "decreased_weapon_pickups", loop_clearWeaponPickups);
-	_globalClearArea_radius = ini.GetDoubleValue(section_haxValues.c_str(), "clear_area_radius", _globalClearArea_radius);
+	_globalClearArea_radius = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "clear_area_radius", _globalClearArea_radius);
 	loop_restricted_areas_access = ini.GetBoolValue(section_haxValues.c_str(), "restricted_area_access", loop_restricted_areas_access);
 	loop_fireworksDisplay = ini.GetBoolValue(section_haxValues.c_str(), "fireworks_ahoy", loop_fireworksDisplay);
 	loop_blackout_mode = ini.GetBoolValue(section_haxValues.c_str(), "emp_mode", loop_blackout_mode);
 	loop_simple_blackout_mode = ini.GetBoolValue(section_haxValues.c_str(), "simple_blackout_mode", loop_simple_blackout_mode);
 	loop_massacre_mode = ini.GetBoolValue(section_haxValues.c_str(), "massacre_mode", loop_massacre_mode);
 	_JumpAroundMode_::bEnabled = ini.GetBoolValue(section_haxValues.c_str(), "jump_around_mode", _JumpAroundMode_::bEnabled);
-	g_frozenRadioStation = (INT16)ini.GetLongValue(section_haxValues.c_str(), "frozen_radio_station", g_frozenRadioStation);
+	g_frozenRadioStation = (INT16)ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "frozen_radio_station", g_frozenRadioStation);
 	_SpSnow.ToggleSnow(ini.GetBoolValue(section_haxValues.c_str(), "snow_on_terrain", _SpSnow.IsSnow()));
 	sub::AnimalRiding_catind::Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "animal_riding_mode", sub::AnimalRiding_catind::Enabled());
 
 	loop_forge_gun = ini.GetBoolValue(section_haxValues.c_str(), "forge_gun", loop_forge_gun);
-	_globalForgeGun_shootForce = ini.GetDoubleValue(section_haxValues.c_str(), "forge_gun_shoot_force", _globalForgeGun_shootForce);
+	_globalForgeGun_shootForce = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "forge_gun_shoot_force", _globalForgeGun_shootForce);
 	sub::GravityGun_catind::Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "gravity_gun", sub::GravityGun_catind::Enabled());
-	sub::GravityGun_catind::ShootForce() = ini.GetDoubleValue(section_haxValues.c_str(), "gravity_gun_shoot_force", sub::GravityGun_catind::ShootForce());
+	sub::GravityGun_catind::ShootForce() = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "gravity_gun_shoot_force", sub::GravityGun_catind::ShootForce());
 	_MagnetGun_::g_magnetGun.Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "magnet_gun", _MagnetGun_::g_magnetGun.Enabled());
 	loop_teleport_gun = ini.GetBoolValue(section_haxValues.c_str(), "teleport_gun", loop_teleport_gun);
 	//loop_kaboom_gun = ini.GetBoolValue(section_haxValues.c_str(), "kaboom_gun", loop_kaboom_gun);
@@ -219,7 +221,7 @@ void MenuConfig::ConfigRead()
 	loop_light_gun = ini.GetBoolValue(section_haxValues.c_str(), "light_gun", loop_light_gun);
 	_RopeGun_::g_ropeGun.Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "rope_gun", _RopeGun_::g_ropeGun.Enabled());
 	loop_bullet_time = ini.GetBoolValue(section_haxValues.c_str(), "bullet_time", loop_bullet_time);
-	loop_weapon_damage_increase = ini.GetDoubleValue(section_haxValues.c_str(), "weapon_damage_multiplier", loop_weapon_damage_increase);
+	loop_weapon_damage_increase = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "weapon_damage_multiplier", loop_weapon_damage_increase);
 	loop_explosive_rounds = ini.GetBoolValue(section_haxValues.c_str(), "explosive_bullets", loop_explosive_rounds);
 	loop_flaming_rounds = ini.GetBoolValue(section_haxValues.c_str(), "flaming_bullets", loop_flaming_rounds);
 	loop_explosive_melee = ini.GetBoolValue(section_haxValues.c_str(), "explosive_melee", loop_explosive_melee);
@@ -231,13 +233,13 @@ void MenuConfig::ConfigRead()
 	loop_self_deleteGun = ini.GetBoolValue(section_haxValues.c_str(), "self_delete_gun", loop_self_deleteGun);
 	bit_infinite_ammo = ini.GetBoolValue(section_haxValues.c_str(), "self_infinite_ammo_clip", bit_infinite_ammo);
 	loop_self_inf_parachutes = ini.GetBoolValue(section_haxValues.c_str(), "infinite_parachutes", loop_self_inf_parachutes);
-	loop_autoKillEnemies = ini.GetLongValue(section_haxValues.c_str(), "auto_kill_enemies", loop_autoKillEnemies);
+	loop_autoKillEnemies = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "auto_kill_enemies", loop_autoKillEnemies);
 
 	sub::LaserSight_catind::bEnabled = ini.GetBoolValue(section_haxValues.c_str(), "laser_sight_toggle", sub::LaserSight_catind::bEnabled);
-	sub::LaserSight_catind::_colour.R = ini.GetLongValue(section_haxValues.c_str(), "laser_sight_R", sub::LaserSight_catind::_colour.R);
-	sub::LaserSight_catind::_colour.G = ini.GetLongValue(section_haxValues.c_str(), "laser_sight_G", sub::LaserSight_catind::_colour.G);
-	sub::LaserSight_catind::_colour.B = ini.GetLongValue(section_haxValues.c_str(), "laser_sight_B", sub::LaserSight_catind::_colour.B);
-	sub::LaserSight_catind::_colour.A = ini.GetLongValue(section_haxValues.c_str(), "laser_sight_A", sub::LaserSight_catind::_colour.A);
+	sub::LaserSight_catind::_colour.R = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "laser_sight_R", sub::LaserSight_catind::_colour.R);
+	sub::LaserSight_catind::_colour.G = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "laser_sight_G", sub::LaserSight_catind::_colour.G);
+	sub::LaserSight_catind::_colour.B = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "laser_sight_B", sub::LaserSight_catind::_colour.B);
+	sub::LaserSight_catind::_colour.A = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "laser_sight_A", sub::LaserSight_catind::_colour.A);
 
 	loop_self_refillHealthInCover = ini.GetBoolValue(section_haxValues.c_str(), "player_refill_health_when_in_cover", loop_self_refillHealthInCover);
 	loop_player_invincibility = ini.GetBoolValue(section_haxValues.c_str(), "player_invincibility", loop_player_invincibility);
@@ -250,7 +252,7 @@ void MenuConfig::ConfigRead()
 	loop_super_run = ini.GetBoolValue(section_haxValues.c_str(), "player_super_run", loop_super_run);
 	loop_superman = ini.GetBoolValue(section_haxValues.c_str(), "player_superman_manual", loop_superman);
 	loop_superman_auto = ini.GetBoolValue(section_haxValues.c_str(), "player_superman_auto", loop_superman_auto);
-	loop_forcefield = ini.GetLongValue(section_haxValues.c_str(), "player_forcefield", loop_forcefield);
+	loop_forcefield = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "player_forcefield", loop_forcefield);
 	_SmashAbility_::g_smashAbility.Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "player_smash_ability", _SmashAbility_::g_smashAbility.Enabled());
 	loop_ignored_by_everyone = ini.GetBoolValue(section_haxValues.c_str(), "player_ignored_by_everyone", loop_ignored_by_everyone);
 	loop_never_wanted = ini.GetBoolValue(section_haxValues.c_str(), "player_never_wanted", loop_never_wanted);
@@ -262,7 +264,7 @@ void MenuConfig::ConfigRead()
 	loop_vehicle_heavymass = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_increased_mass", loop_vehicle_heavymass);
 	loop_race_boost = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_horn_boost", loop_race_boost);
 	loop_unlimVehBoost = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_unlim_native_boost", loop_unlimVehBoost);
-	loop_car_jump = ini.GetLongValue(section_haxValues.c_str(), "vehicle_jump", loop_car_jump);
+	loop_car_jump = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_jump", loop_car_jump);
 	loop_car_hydraulics = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_hydraulics", loop_car_hydraulics);
 	loop_super_grip = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_glue_to_ground", loop_super_grip);
 	loop_SuprKarMode = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_SuprKar_mode", loop_SuprKarMode);
@@ -274,38 +276,38 @@ void MenuConfig::ConfigRead()
 	_VehicleFly_::g_vehicleFly.Enabled() = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_fly_mode", _VehicleFly_::g_vehicleFly.Enabled());
 	loop_multiplat_neons = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_multiplat_neons", loop_multiplat_neons);
 	loop_multiplat_neons_rainbow = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_multiplat_neons_rainbow", loop_multiplat_neons_rainbow);
-	_global_MultiPlatNeons_Col.R = ini.GetLongValue(section_haxValues.c_str(), "vehicle_multiplat_neons_R", _global_MultiPlatNeons_Col.R);
-	_global_MultiPlatNeons_Col.G = ini.GetLongValue(section_haxValues.c_str(), "vehicle_multiplat_neons_G", _global_MultiPlatNeons_Col.G);
-	_global_MultiPlatNeons_Col.B = ini.GetLongValue(section_haxValues.c_str(), "vehicle_multiplat_neons_B", _global_MultiPlatNeons_Col.B);
-	mult69_5 = (float)ini.GetDoubleValue(section_haxValues.c_str(), "vehicle_multiplier_acceleration", mult69_5);
-	mult69_6 = (float)ini.GetDoubleValue(section_haxValues.c_str(), "vehicle_multiplier_brakes", mult69_6);
-	mult69_7 = (float)ini.GetDoubleValue(section_haxValues.c_str(), "vehicle_multiplier_handling", mult69_7);
+	_global_MultiPlatNeons_Col.R = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_multiplat_neons_R", _global_MultiPlatNeons_Col.R);
+	_global_MultiPlatNeons_Col.G = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_multiplat_neons_G", _global_MultiPlatNeons_Col.G);
+	_global_MultiPlatNeons_Col.B = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_multiplat_neons_B", _global_MultiPlatNeons_Col.B);
+	mult69_5 = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "vehicle_multiplier_acceleration", mult69_5);
+	mult69_6 = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "vehicle_multiplier_brakes", mult69_6);
+	mult69_7 = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "vehicle_multiplier_handling", mult69_7);
 
 	_globalSpawnVehicle_drawBmps = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_spawner_enable_previews", _globalSpawnVehicle_drawBmps);
 	_globalSpawnVehicle_plateText = ini.GetValue(section_haxValues.c_str(), "vehicle_spawner_plate_text", _globalSpawnVehicle_plateText.c_str());
-	_globalSpawnVehicle_plateTexter_value = ini.GetLongValue(section_haxValues.c_str(), "vehicle_spawner_plate_text_texter_value", _globalSpawnVehicle_plateTexter_value);
-	_globalSpawnVehicle_plateType = ini.GetLongValue(section_haxValues.c_str(), "vehicle_spawner_plate_type", _globalSpawnVehicle_plateType);
+	_globalSpawnVehicle_plateTexter_value = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_spawner_plate_text_texter_value", _globalSpawnVehicle_plateTexter_value);
+	_globalSpawnVehicle_plateType = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_spawner_plate_type", _globalSpawnVehicle_plateType);
 	_globalSpawnVehicle_autoSit = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_spawner_auto_sit", _globalSpawnVehicle_autoSit);
 	_globalSpawnVehicle_autoUpgrade = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_spawner_auto_upgrade", _globalSpawnVehicle_autoUpgrade);
 	_globalSpawnVehicle_invincible = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_spawner_invincible", _globalSpawnVehicle_invincible);
 	_globalSpawnVehicle_persistent = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_spawner_persistent", _globalSpawnVehicle_persistent);
 	_globalSpawnVehicle_deleteOld = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_spawner_delete_old", _globalSpawnVehicle_deleteOld);
 	_globalSpawnVehicle_neonToggle = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_spawner_neons_on", _globalSpawnVehicle_neonToggle);
-	_globalSpawnVehicle_neonCol.R = ini.GetLongValue(section_haxValues.c_str(), "vehicle_spawner_neons_R", _globalSpawnVehicle_neonCol.R);
-	_globalSpawnVehicle_neonCol.G = ini.GetLongValue(section_haxValues.c_str(), "vehicle_spawner_neons_G", _globalSpawnVehicle_neonCol.G);
-	_globalSpawnVehicle_neonCol.B = ini.GetLongValue(section_haxValues.c_str(), "vehicle_spawner_neons_B", _globalSpawnVehicle_neonCol.B);
-	_globalSpawnVehicle_PrimCol = ini.GetLongValue(section_haxValues.c_str(), "vehicle_spawner_primary_colour", _globalSpawnVehicle_PrimCol);
-	_globalSpawnVehicle_SecCol = ini.GetLongValue(section_haxValues.c_str(), "vehicle_spawner_secondary_colour", _globalSpawnVehicle_SecCol);
+	_globalSpawnVehicle_neonCol.R = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_spawner_neons_R", _globalSpawnVehicle_neonCol.R);
+	_globalSpawnVehicle_neonCol.G = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_spawner_neons_G", _globalSpawnVehicle_neonCol.G);
+	_globalSpawnVehicle_neonCol.B = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_spawner_neons_B", _globalSpawnVehicle_neonCol.B);
+	_globalSpawnVehicle_PrimCol = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_spawner_primary_colour", _globalSpawnVehicle_PrimCol);
+	_globalSpawnVehicle_SecCol = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "vehicle_spawner_secondary_colour", _globalSpawnVehicle_SecCol);
 	_globalLSC_Customs = ini.GetBoolValue(section_haxValues.c_str(), "vehicle_menyoo_customs_lsc", _globalLSC_Customs);
 
-	sub::Clock_catind::loop_clock = ini.GetDoubleValue(section_haxValues.c_str(), "clock", sub::Clock_catind::loop_clock);
-	sub::Clock_catind::_analogueClockPos.x = (float)ini.GetDoubleValue(section_haxValues.c_str(), "clock_screen_pos_x", sub::Clock_catind::_analogueClockPos.x);
-	sub::Clock_catind::_analogueClockPos.y = (float)ini.GetDoubleValue(section_haxValues.c_str(), "clock_screen_pos_y", sub::Clock_catind::_analogueClockPos.y);
+	sub::Clock_catind::loop_clock = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "clock", sub::Clock_catind::loop_clock);
+	sub::Clock_catind::_analogueClockPos.x = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "clock_screen_pos_x", sub::Clock_catind::_analogueClockPos.x);
+	sub::Clock_catind::_analogueClockPos.y = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "clock_screen_pos_y", sub::Clock_catind::_analogueClockPos.y);
 
-	sub::Speedo_catind::loop_speedo = ini.GetLongValue(section_haxValues.c_str(), "speedo", sub::Speedo_catind::loop_speedo);
+	sub::Speedo_catind::loop_speedo = ConfigValue::ReadInteger(ini, section_haxValues.c_str(), "speedo", sub::Speedo_catind::loop_speedo);
 	sub::Speedo_catind::bit_speedo_mph = ini.GetBoolValue(section_haxValues.c_str(), "speedo_mph_instead_of_kmph", sub::Speedo_catind::bit_speedo_mph);
-	sub::Speedo_catind::_speedoPosition.x = (float)ini.GetDoubleValue(section_haxValues.c_str(), "speedo_screen_pos_x", sub::Speedo_catind::_speedoPosition.x);
-	sub::Speedo_catind::_speedoPosition.y = (float)ini.GetDoubleValue(section_haxValues.c_str(), "speedo_screen_pos_y", sub::Speedo_catind::_speedoPosition.y);
+	sub::Speedo_catind::_speedoPosition.x = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "speedo_screen_pos_x", sub::Speedo_catind::_speedoPosition.x);
+	sub::Speedo_catind::_speedoPosition.y = ConfigValue::ReadReal(ini, section_haxValues.c_str(), "speedo_screen_pos_y", sub::Speedo_catind::_speedoPosition.y);
 	sub::Speedo_catind::_currentSpeedoBg.fileName = ini.GetValue(section_haxValues.c_str(), "speedo_bg_name", sub::Speedo_catind::_currentSpeedoBg.fileName.c_str());
 	sub::Speedo_catind::SetCurrentBgIdFromBgNameForConfig();
 
@@ -432,6 +434,7 @@ void MenuConfig::ConfigSave()
 
 										   //ini.SetBoolValue(section_haxValues.c_str(), "hide_hud", loop_hide_hud);
 	ini.SetBoolValue(section_haxValues.c_str(), "notifications", Game::Print::bNotifications);
+	ini.SetBoolValue(section_haxValues.c_str(), "menu_sounds", Game::Sound::bMenuSounds);
 	ini.SetBoolValue(section_haxValues.c_str(), "show_full_hud", loop_showFullHud);
 	ini.SetBoolValue(section_haxValues.c_str(), "manual_respawn", _ManualRespawn_::g_manualRespawn.Enabled());
 	ini.SetBoolValue(section_haxValues.c_str(), "freecam", loop_no_clip);
@@ -585,6 +588,7 @@ void MenuConfig::ConfigResetHaxValues()
 
 	ini.SetLongValue(section_haxValues.c_str(), "frozen_radio_station", -1);
 	ini.SetLongValue(section_haxValues.c_str(), "notifications", 1);
+	ini.SetBoolValue(section_haxValues.c_str(), "menu_sounds", true);
 
 	ini.SetLongValue(section_haxValues.c_str(), "laser_sight_R", sub::LaserSight_catind::_colour.R);
 	ini.SetLongValue(section_haxValues.c_str(), "laser_sight_G", sub::LaserSight_catind::_colour.G);

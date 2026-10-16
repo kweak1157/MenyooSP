@@ -22,6 +22,7 @@ namespace GTAmodel {
 }
 
 extern std::vector<GTAmodel::Model> g_vehHashes;
+extern std::vector<GTAmodel::Model> g_vehHashes_ADDON;
 extern std::vector<GTAmodel::Model> g_vehHashes_SUPER;
 extern std::vector<GTAmodel::Model> g_vehHashes_SPORT;
 extern std::vector<GTAmodel::Model> g_vehHashes_SPORTSCLASSIC;
@@ -71,8 +72,10 @@ void PopulateObjectModelsArray();
 void PopulateGlobalEntityModelsArrays();
 
 // Model - labels
+void RegisterAddonPedModelName(unsigned long hash, const std::string& modelName, const std::string& caption);
 std::string get_ped_model_label(const GTAmodel::Model& model, bool properName);
 std::string get_vehicle_model_label(const GTAmodel::Model& model, bool properName);
+std::string get_addon_vehicle_model_name(const GTAmodel::Model& model);
 std::string get_prop_model_label(const GTAmodel::Model& model);
 
 

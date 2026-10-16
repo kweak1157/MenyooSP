@@ -21,6 +21,7 @@
 #include "..\..\Scripting\GTAvehicle.h"
 #include "..\..\Scripting\GTAped.h"
 #include "..\..\Util\StringManip.h"
+#include "..\..\Util\Clock.h"
 #include "..\..\Scripting\World.h"
 #include "..\..\Scripting\Model.h"
 #include "..\..\Scripting\Game.h"
@@ -42,6 +43,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <iterator>
 
 namespace sub::Spooner
 {
@@ -76,10 +78,23 @@ namespace sub::Spooner
 		{
 			return GetEntityIndexInDb(ent.Handle);
 		}
+		void RestorePedName(SpoonerEntity& ent)
+		{
+			if (ent.Type != EntityType::PED) return;
+			if (!ent.HashName.empty() && !ent.HashName.starts_with("0x")) return;
+			if (!ent.Handle.Exists()) return;
+			const auto model = ent.Handle.Model();
+			const auto fallback = int_to_hexstring(model.hash, true);
+			if (!ent.HashName.empty() && ent.HashName != fallback) return;
+			const auto label = get_ped_model_label(model, true);
+			ent.HashName = label.empty() ? fallback : label;
+		}
+
 		void AddEntityToDb(SpoonerEntity ent, bool missionEnt)
 		{
 			if (ent.Handle.Exists())
 			{
+				RestorePedName(ent);
 				if (ent.HashName.length() == 0)
 					ent.HashName = int_to_hexstring(ent.Handle.Model().hash, true);
 				if (missionEnt)
@@ -310,58 +325,89 @@ namespace sub::Spooner
 			if (!model.IsInCdImage())
 			{
 				const std::string& mdlnme = get_prop_model_label(model);
-				std::string nameOfPlaceWhereYouMayFindThisModelToBeValid = "NO SUGGESTED LOCATIONS";
-				if (!mdlnme.empty())
+				const std::string& modelName = mdlnme.empty() ? name : mdlnme;
+				// MP map archetypes may not be registered in Story Mode yet.
+				const std::string mpPrefixes[] = {
+					"apa_", "ba_", "bkr_", "ch_", "ex_", "gr_", "h4_", "hei_",
+					"imp_", "mp_", "sm_", "stt_", "vw_", "xm_", "xs_"
+				};
+				const bool isMpModel = modelName.find("_mp_") != std::string::npos ||
+					std::any_of(std::begin(mpPrefixes), std::end(mpPrefixes), [&modelName](const std::string& prefix) {
+						return modelName.compare(0, prefix.size(), prefix) == 0;
+					});
+				if (isMpModel && GET_HASH_KEY(modelName) == model.hash && !NETWORK_IS_IN_SESSION())
 				{
-					for (auto& prfx : std::vector<std::pair<std::string, std::string>>
+					SET_INSTANCE_PRIORITY_MODE(true);
+					ON_ENTER_MP();
+					const std::uint64_t start = GetTickMs();
+					while (!model.IsInCdImage() && GetTickMs() - start < 3000)
+						WAIT(0);
+				}
+				if (!model.IsInCdImage())
+				{
+					std::string nameOfPlaceWhereYouMayFindThisModelToBeValid;
+					if (!mdlnme.empty())
 					{
-						{ "v_club", "Nightclubs" },
-						{ "bah", "Bahama Mama's" },
-						{ "cc", "Comedy club (Split Sides West)" },
-						{ "vu", "Vanilla Unicorn" },
-						{ "rock", "Tequila-la" },
-						{ "v_res", "Residential - Vanilla Unicorn" },
-						{ "d", "Strawberry Ave - Franklin's house" },
-						{ "fa", "Strawberry Ave - Franklin's house" },
-						{ "fh", "Vinewood Hills - Franklin's house" },
-						{ "j", "FIB janitor's apartment" },
-						{ "lest", "Lester's place" },
-						{ "m", "Michael's place" },
-						{ "mp", "Multiplayer apartments" },
-						{ "r", "Madrazo's ranch" },
-						{ "son", "Jimmy's room" },
-						{ "mson", "Jimmy's room" },
-						{ "tre", "Floyd's apartment" },
-						{ "tt", "Trevor's trailer" },
-						{ "v_med", "medical facilities" },
-						{ "lab", "Humane Labs" },
-						{ "cor", "Morgue" },
-						{ "hosp", "Hospital" },
-						{ "p", "Psychiatrist's office (Michael's shrink)" },
-						{ "v_ret", "Retail outlets" },
-						{ "247", "Convenience stores" },
-						{ "csr", "Car showroom (Simeon)" },
-						{ "fh", "Farmhouse" },
-						{ "gc", "Gun club (Ammunation)" },
-						{ "ml", "Meth lab" },
-						{ "ps", "Ponsonby's clothing" },
-						{ "ta", "tattoo parlour" },
-						{ "v_serv", "Services" },
-						{ "bs", "Barber shops" },
-						{ "ct", "Control towers" },
-						{ "v_corp", "Corporate" },
-						{ "face", "Lifeinvader Building" }
-
-					})
-					{
-						if (mdlnme.size() > prfx.first.size())
+						for (auto& prfx : std::vector<std::pair<std::string, std::string>>
 						{
-							if (mdlnme.compare(0, prfx.first.size(), prfx.first) == 0)
-								nameOfPlaceWhereYouMayFindThisModelToBeValid = prfx.second;
+							{ "v_club", "Nightclubs" },
+							{ "bah", "Bahama Mama's" },
+							{ "cc", "Comedy club (Split Sides West)" },
+							{ "vu", "Vanilla Unicorn" },
+							{ "rock", "Tequila-la" },
+							{ "v_res", "Residential - Vanilla Unicorn" },
+							{ "d", "Strawberry Ave - Franklin's house" },
+							{ "fa", "Strawberry Ave - Franklin's house" },
+							{ "fh", "Vinewood Hills - Franklin's house" },
+							{ "j", "FIB janitor's apartment" },
+							{ "lest", "Lester's place" },
+							{ "m", "Michael's place" },
+							{ "mp", "Multiplayer apartments" },
+							{ "r", "Madrazo's ranch" },
+							{ "son", "Jimmy's room" },
+							{ "mson", "Jimmy's room" },
+							{ "tre", "Floyd's apartment" },
+							{ "tt", "Trevor's trailer" },
+							{ "v_med", "medical facilities" },
+							{ "lab", "Humane Labs" },
+							{ "cor", "Morgue" },
+							{ "hosp", "Hospital" },
+							{ "p", "Psychiatrist's office (Michael's shrink)" },
+							{ "v_ret", "Retail outlets" },
+							{ "247", "Convenience stores" },
+							{ "csr", "Car showroom (Simeon)" },
+							{ "fh", "Farmhouse" },
+							{ "gc", "Gun club (Ammunation)" },
+							{ "ml", "Meth lab" },
+							{ "ps", "Ponsonby's clothing" },
+							{ "ta", "tattoo parlour" },
+							{ "v_serv", "Services" },
+							{ "bs", "Barber shops" },
+							{ "ct", "Control towers" },
+							{ "v_corp", "Corporate" },
+							{ "face", "Lifeinvader Building" }
+
+						})
+						{
+							if (mdlnme.size() > prfx.first.size())
+							{
+								if (mdlnme.compare(0, prfx.first.size(), prfx.first) == 0)
+									nameOfPlaceWhereYouMayFindThisModelToBeValid = prfx.second;
+							}
 						}
 					}
+					if (nameOfPlaceWhereYouMayFindThisModelToBeValid.empty())
+						Game::Print::PrintBottomCentre("~r~Error:~s~ Object model unavailable in the current game or map.\nNot all listed models can be spawned as objects.");
+					else
+						Game::Print::PrintBottomCentre("~r~Error:~s~ Invalid model.\n Check suggested locations: [" + nameOfPlaceWhereYouMayFindThisModelToBeValid + "]");
+					return SpoonerEntity();
 				}
-				Game::Print::PrintBottomCentre("~r~Error:~s~ Invalid model.\n Check suggested locations: [" + nameOfPlaceWhereYouMayFindThisModelToBeValid + "]");
+			}
+			if (!model.Load(3000))
+			{
+				if (unloadModel)
+					SET_MODEL_AS_NO_LONGER_NEEDED(model.hash);
+				Game::Print::PrintBottomCentre("~r~Error:~s~ Object model did not load in time. Try again.");
 				return SpoonerEntity();
 			}
 
@@ -371,6 +417,7 @@ namespace sub::Spooner
 			bool bDynamic = Settings::bSpawnDynamicProps;
 			bool bFreezePos = !bDynamic;
 			bool bCollision = true;
+			bool bPlaceOnGround = false;
 
 			auto& spoocam = SpoonerMode::spoonerModeCamera;
 
@@ -379,10 +426,7 @@ namespace sub::Spooner
 				GTAentity myPedOrVehicle = myPed.IsInVehicle() ? (GTAentity)myPed.CurrentVehicle() : (GTAentity)myPed;
 
 				newEntity.Handle = World::CreateProp(model, myPedOrVehicle.GetOffsetInWorldCoords(0, myPedOrVehicle.Dim1().y + 2.6f + dimensions.Dim2.y, 0), myPedOrVehicle.Rotation_get(), bDynamic, false);
-				if (unloadModel)
-					model.Unload();
-				if (!myPedOrVehicle.IsInAir())
-					PLACE_OBJECT_ON_GROUND_PROPERLY(newEntity.Handle.Handle());
+				bPlaceOnGround = !myPedOrVehicle.IsInAir();
 			}
 			else
 			{
@@ -390,9 +434,17 @@ namespace sub::Spooner
 				spawnPos.z += dimensions.Dim1.z;
 
 				newEntity.Handle = World::CreateProp(model, spawnPos, Vector3(0, 0, spoocam.Rotation_get().z), bDynamic, false);
+			}
+
+			if (!newEntity.Handle.Exists())
+			{
 				if (unloadModel)
 					model.Unload();
+				Game::Print::PrintBottomCentre("~r~Error:~s~ Unable to create this object.");
+				return SpoonerEntity();
 			}
+			if (bPlaceOnGround)
+				PLACE_OBJECT_ON_GROUND_PROPERLY(newEntity.Handle.Handle());
 
 			SET_NETWORK_ID_CAN_MIGRATE(OBJ_TO_NET(newEntity.Handle.Handle()), true);
 			newEntity.Handle.Dynamic_set(false);
@@ -406,7 +458,8 @@ namespace sub::Spooner
 			newEntity.Handle.SetMeleeProof(Settings::bSpawnInvincibleEntities);
 			model.LoadCollision(100);
 			newEntity.Handle.IsCollisionEnabled_set(bCollision);
-			model.Unload();
+			if (unloadModel)
+				model.Unload();
 
 			newEntity.Type = (EntityType)newEntity.Handle.Type();
 

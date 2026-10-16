@@ -1076,7 +1076,7 @@ void GTAvehicle::CustomPrimaryColour_set(RgbS value)
 {
 	SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(this->mHandle, value.R, value.G, value.B);
 }
-void GTAvehicle::CustomPrimaryColour_set(BYTE r, BYTE g, BYTE b)
+void GTAvehicle::CustomPrimaryColour_set(int r, int g, int b)
 {
 	SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(this->mHandle, r, g, b);
 }
@@ -1091,7 +1091,7 @@ void GTAvehicle::CustomSecondaryColour_set(RgbS value)
 {
 	SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(this->mHandle, value.R, value.G, value.B);
 }
-void GTAvehicle::CustomSecondaryColour_set(BYTE r, BYTE g, BYTE b)
+void GTAvehicle::CustomSecondaryColour_set(int r, int g, int b)
 {
 	SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(this->mHandle, r, g, b);
 }
@@ -1106,7 +1106,7 @@ void GTAvehicle::NeonLightsColour_set(RgbS value)
 {
 	SET_VEHICLE_NEON_COLOUR(this->mHandle, value.R, value.G, value.B);
 }
-void GTAvehicle::NeonLightsColour_set(BYTE r, BYTE g, BYTE b)
+void GTAvehicle::NeonLightsColour_set(int r, int g, int b)
 {
 	SET_VEHICLE_NEON_COLOUR(this->mHandle, r, g, b);
 }
@@ -1121,7 +1121,7 @@ void GTAvehicle::TyreSmokeColour_set(RgbS value)
 {
 	SET_VEHICLE_TYRE_SMOKE_COLOR(this->mHandle, value.R, value.G, value.B);
 }
-void GTAvehicle::TyreSmokeColour_set(BYTE r, BYTE g, BYTE b)
+void GTAvehicle::TyreSmokeColour_set(int r, int g, int b)
 {
 	SET_VEHICLE_TYRE_SMOKE_COLOR(this->mHandle, r, g, b);
 }

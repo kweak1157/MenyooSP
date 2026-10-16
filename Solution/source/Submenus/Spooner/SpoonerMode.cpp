@@ -57,6 +57,20 @@ namespace sub::Spooner
 		float spoonerModeCameraCamDistance = 5.0f;
 		eSpoonerModeMode& spoonerModeMode = Settings::SpoonerModeMode;
 
+		void OpenMainMenu()
+		{
+			memset(Menu::currentsub_ar, 0, sizeof(Menu::currentsub_ar));
+			memset(Menu::currentop_ar, 0, sizeof(Menu::currentop_ar));
+			Menu::currentsub_ar_index = 0;
+			Menu::currentsub = SUB::MAINMENU;
+			Menu::currentop = 1;
+			Menu::SetSub_delayed = -1;
+			Menu::SetSub_new(SUB::SPOONER_MAIN);
+			Menu::currentop = 2;
+			Menu::currentop_w_breaks = 2;
+			*Menu::currentopATM = 2;
+		}
+
 		bool IsHotkeyPressed()
 		{
 			if (std::find(std::begin(Menu::currentsub_ar), std::end(Menu::currentsub_ar), SUB::SPOONER_MAIN) == std::end(Menu::currentsub_ar))
@@ -198,6 +212,7 @@ namespace sub::Spooner
 			auto idindb = EntityManagement::GetEntityIndexInDb(inEntity);
 			if (idindb >= 0)
 			{
+				EntityManagement::RestorePedName(Databases::EntityDb[idindb]);
 				outEntity = &Databases::EntityDb[idindb];
 				return true;
 			}
@@ -341,13 +356,7 @@ namespace sub::Spooner
 						Menu::add_IB(INPUT_VEH_EXIT, "Open main menu");
 						if (IS_DISABLED_CONTROL_JUST_PRESSED(2, INPUT_VEH_EXIT))
 						{
-							memset(Menu::currentsub_ar, 0, sizeof(Menu::currentsub_ar));
-							memset(Menu::currentop_ar, 0, sizeof(Menu::currentop_ar));
-							Menu::currentsub_ar[0] = SUB::MAINMENU;
-							Menu::currentop_ar[0] = 1;
-							Menu::currentsub_ar_index = 0;
-							Menu::SetSub_new(SUB::SPOONER_MAIN);
-							Menu::currentop = 2;
+							OpenMainMenu();
 						}
 
 						if (!bIsSomethingHeld)
@@ -620,13 +629,7 @@ namespace sub::Spooner
 						Menu::add_IB(INPUT_VEH_EXIT, "Open main menu");
 						if (IS_DISABLED_CONTROL_JUST_PRESSED(2, INPUT_VEH_EXIT))
 						{
-							memset(Menu::currentsub_ar, 0, sizeof(Menu::currentsub_ar));
-							memset(Menu::currentop_ar, 0, sizeof(Menu::currentop_ar));
-							Menu::currentsub_ar[0] = SUB::MAINMENU;
-							Menu::currentop_ar[0] = 1;
-							Menu::currentsub_ar_index = 0;
-							Menu::SetSub_new(SUB::SPOONER_MAIN);
-							Menu::currentop = 2;
+							OpenMainMenu();
 						}
 
 						if (!bIsSomethingHeld)
@@ -919,16 +922,11 @@ namespace sub::Spooner
 
 		void TurnOn()
 		{
-			if (!g_menuNotOpenedYet)
-			{
-				SpoonerMode::bEnabled = true;
-				if (Menu::currentsub != SUB::CLOSED)
-					Game::Print::PrintBottomLeft("~b~Note:~s~ Spooner Mode instructions only appear when Menyoo is closed.");
-			}
-			else
-			{
-				Game::Print::PrintBottomCentre("~r~Error:~s~ Menu not opened yet.");
-			}
+			if (g_menuNotOpenedYet)
+				Menu::justopened();
+
+			SpoonerMode::bEnabled = true;
+			OpenMainMenu();
 		}
 		void TurnOff()
 		{

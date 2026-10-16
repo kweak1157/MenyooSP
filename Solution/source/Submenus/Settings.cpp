@@ -61,8 +61,8 @@ namespace sub
 			settings_ypos_plus = 0, settings_ypos_minus = 0;
 
 		AddTitle("Menu Position");
-		AddNumber("Offset X", menuPos.x * 100 + 6.0, 2, null, settings_xpos_plus, settings_xpos_minus);
-		AddNumber("Offset Y", menuPos.y * 100 + 7.4, 2, null, settings_ypos_plus, settings_ypos_minus);
+		AddNumber("Offset X", menuPos.x * 100 + 6.0f, 2, null, settings_xpos_plus, settings_xpos_minus);
+		AddNumber("Offset Y", menuPos.y * 100 + 7.4f, 2, null, settings_ypos_plus, settings_ypos_minus);
 
 
 		if (settings_xpos_plus) {

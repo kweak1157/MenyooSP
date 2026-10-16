@@ -13,6 +13,9 @@
 
 #include "..\Util\GTAmath.h"
 #include "..\Util\Clock.h"
+#include "..\Util\StringManip.h"
+#include "..\Util\ExePath.h"
+#include "..\Util\keyboard.h"
 //#include "..\Scripting\enums.h"
 #include "..\Natives\natives2.h"
 #include "..\Memory\GTAmemory.h"
@@ -27,12 +30,12 @@
 
 std::ostream& operator<<(std::ostream& stream, std::wstring& text)
 {
-	stream << std::string(text.begin(), text.end());
+	stream << WideToUtf8(text);
 	return stream;
 }
 std::wostream& operator<<(std::wostream& stream, std::string& text)
 {
-	stream << std::wstring(text.begin(), text.end());
+	stream << Utf8ToWide(text);
 	return stream;
 }
 
@@ -114,6 +117,8 @@ namespace Game
 
 	namespace Sound
 	{
+		bool bMenuSounds = true;
+
 		GameSound::GameSound()
 			: active(false),
 			soundID(-1)
@@ -161,11 +166,13 @@ namespace Game
 
 		void PlayFrontend(const std::string& sound_dict, const std::string& sound_name)
 		{
+			if (!bMenuSounds)
+				return;
 			AUDIO::PLAY_SOUND_FRONTEND(-1, sound_name.c_str(), sound_dict.c_str(), FALSE);
 		}
 		void PlayFrontend_default(const std::string& sound_name)
 		{
-			AUDIO::PLAY_SOUND_FRONTEND(-1, sound_name.c_str(), "HUD_FRONTEND_DEFAULT_SOUNDSET", FALSE);
+			PlayFrontend("HUD_FRONTEND_DEFAULT_SOUNDSET", sound_name);
 		}
 	}
 
@@ -319,7 +326,7 @@ namespace Game
 		void PrintBottomCentre(std::wostream& s, int time)
 		{
 			std::wstring wtext2 = (dynamic_cast<std::wostringstream&>(s).str());
-			PrintBottomCentre(std::string(wtext2.begin(), wtext2.end()), time);
+			PrintBottomCentre(WideToUtf8(wtext2), time);
 		}
 
 		void Notification::Hide()
@@ -362,7 +369,7 @@ namespace Game
 		Notification PrintBottomLeft(std::wostream& s, bool gxt)
 		{
 			std::wstring wtext = (dynamic_cast<std::wostringstream&>(s).str());
-			return PrintBottomLeft(std::string(wtext.begin(), wtext.end()), gxt);
+			return PrintBottomLeft(WideToUtf8(wtext), gxt);
 		}
 		Notification PrintBottomLeft(std::string s, const std::string& sender, const std::string& subject, const std::string& picName, int iconType, bool flash, bool gxt)
 		{
@@ -403,7 +410,7 @@ namespace Game
 		Notification PrintBottomLeft(std::wostream& s, const std::string& sender, const std::string& subject, const std::string& picName, int iconType, bool flash, bool gxt)
 		{
 			std::wstring wtext = (dynamic_cast<std::wostringstream&>(s).str());
-			return PrintBottomLeft(std::string(wtext.begin(), wtext.end()), sender, subject, picName, iconType, flash, gxt);
+			return PrintBottomLeft(WideToUtf8(wtext), sender, subject, picName, iconType, flash, gxt);
 		}
 
 		// Messages - Errors
@@ -457,9 +464,38 @@ namespace Game
 
 		//CustomKeyboardText ckt;
 		DISPLAY_ONSCREEN_KEYBOARD(true, "", "", preText.c_str(), "", "", "", maxChars);
+		bool pasteWasDown = false;
 
 		while (UPDATE_ONSCREEN_KEYBOARD() == 0)
 		{
+			const bool pasteDown = (get_key_pressed(VK_CONTROL) && get_key_pressed('V'))
+				|| (get_key_pressed(VK_SHIFT) && get_key_pressed(VK_INSERT));
+			if (pasteDown && !pasteWasDown)
+			{
+				DWORD foregroundProcess = 0;
+				GetWindowThreadProcessId(GetForegroundWindow(), &foregroundProcess);
+				if (foregroundProcess == GetCurrentProcessId())
+				{
+					std::string pastedText = GetClipboardTextUtf8();
+					// The game keyboard has no paste operation. Reopen it with the
+					// copied line as editable text; Enter and Escape still work normally.
+					pastedText = pastedText.substr(0, pastedText.find_first_of("\r\n"));
+					if (pastedText.size() > static_cast<std::size_t>(maxChars))
+					{
+						std::size_t end = static_cast<std::size_t>(maxChars);
+						while (end > 0 && (static_cast<unsigned char>(pastedText[end]) & 0xc0) == 0x80)
+							--end;
+						pastedText.resize(end);
+					}
+					if (!pastedText.empty())
+					{
+						CANCEL_ONSCREEN_KEYBOARD();
+						DISPLAY_ONSCREEN_KEYBOARD(true, "", "", pastedText.c_str(), "", "", "", maxChars);
+					}
+				}
+			}
+			pasteWasDown = pasteDown;
+
 			SET_TEXT_FONT(/*GTAfont::Arial*/0);
 			SET_TEXT_SCALE(0.34f, 0.34f);
 			SET_TEXT_COLOUR(255, 255, 255, 255);
@@ -496,7 +532,8 @@ namespace Game
 			return escReturn;
 		}
 
-		return GET_ONSCREEN_KEYBOARD_RESULT();
+		const char* result = GET_ONSCREEN_KEYBOARD_RESULT();
+		return result != nullptr ? result : escReturn;
 	}
 
 	//PLAYER_PED_ID()
